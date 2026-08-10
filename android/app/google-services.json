@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "617858400184",
+    "project_id": "isim-sehir-multiplayer",
+    "storage_bucket": "isim-sehir-multiplayer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:617858400184:android:9e75b5cc98c3fb7acd594d",
+        "android_client_info": {
+          "package_name": "com.tamam.isim_sehir_hayvan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMdVzNAPVDVD8qY1NOM9_wXWMcJOndTjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

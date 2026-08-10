@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'lobby_page.dart'; // Yeni oluşturduğumuz lobi sayfasını bağlıyoruz
+import 'lobby_page.dart';
+import 'game_mode_page.dart';
+import 'ad_service.dart'; // 🎯 AdMob Reklam Servisimiz Eklendi
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -104,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    // ARTIK LOBİYE UÇURUYORUZ: Seçilen tüm profil bilgilerini yanımıza alıp lobiye geçiyoruz
+    // Seçilen tüm profil bilgilerini yanımıza alıp lobiye geçiyoruz
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -209,6 +211,11 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
+      ),
+
+      // 🎯 SAYFA ALTINA SABİT BANNER REKLAM (Takma ad yazılırken klavye açılınca otomatik gizlenir)
+      bottomNavigationBar: const SafeArea(
+        child: BottomBannerAdWidget(),
       ),
     );
   }

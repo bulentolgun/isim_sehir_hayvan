@@ -56,12 +56,16 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
       _konfetiGoster = true;
     });
   }
-
   void _anaMenuyeDon() {
     Navigator.pushAndRemoveUntil(
       context,
-      // 🔴 'const LobbyPage()' artık senin projenle %100 uyumlu
-      MaterialPageRoute(builder: (context) => const LobbyPage()),
+      MaterialPageRoute(builder: (context) => LobbyPage(
+        // Lobi sayfasının bizden zorunlu olarak istediği parametreleri buraya ekliyoruz:
+        oyuncuAdi: widget.oyuncuAdi,
+        aksesuarIndex: 0,
+        renkIndex: 0,
+        yuzIndex: 0,
+      )),
           (route) => false,
     );
   }
