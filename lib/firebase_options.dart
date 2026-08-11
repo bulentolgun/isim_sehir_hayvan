@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '617858400184',
     projectId: 'isim-sehir-multiplayer',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
-    iosBundleId: 'com.tamam.isim_sehir_hayvan',
+    iosBundleId: 'com.tamam.isimsehirhayvan',
   );
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyA5iYit7QkCDsJjNsN6E6WBfePIJBB5azg',
