@@ -5,6 +5,8 @@ import 'database_helper.dart';
 import 'login_page.dart';
 import 'deep_link_service.dart';
 import 'firebase_options.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart'; // Hataları yakalamak için gerekli
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,14 +15,24 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // 🎯 FIREBASE CRASHLYTICS HATA YAKALAYICILARI
+  // 1. Flutter çerçevesindeki (görünüm, widget) tüm ölümcül hataları yakalar
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  // 2. Arka planda (asenkron, veritabanı vb.) olan gizli hataları yakalar
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   // EMÜLATÖR TESTİ İÇİN ADMOB GEÇİCİ OLARAK KAPATILDI
-  /*
+
   try {
     await MobileAds.instance.initialize();
   } catch (e) {
     debugPrint("AdMob Web üzerinde çalışmadığı için atlandı.");
   }
-  */
+
 
   try {
     // 3. SQLite Veritabanı ve Arka Plan Senkronizasyonu
@@ -28,6 +40,9 @@ void main() async {
   } catch (e) {
     debugPrint("SQLite Web üzerinde çalışmadığı için atlandı.");
   }
+
+  // 🎯 İŞTE EKSİK OLAN VE OYUNU BAŞLATAN O SİHİRLİ SATIR:
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -56,8 +71,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
-          primary: Colors.purple,
+          seedColor: Colors.indigo, // Logonuzun mavi-mor tonu
+          primary: Colors.indigo,
         ),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,

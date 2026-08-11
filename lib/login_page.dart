@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     Colors.blue,
     Colors.orange,
     Colors.green,
-    Colors.purple,
+    Colors.indigo,
     Colors.pink,
     Colors.red
   ];
@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
           if (hasSavedUser && savedOyuncuAdi != null)
             Builder(
               builder: (context) => IconButton(
-                icon: const Icon(Icons.menu_rounded, color: Colors.purple, size: 32),
+                icon: const Icon(Icons.menu_rounded, color: Colors.indigo, size: 32),
                 tooltip: "Menü",
                 onPressed: () => Scaffold.of(context).openEndDrawer(),
               ),
@@ -165,11 +165,11 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             UserAccountsDrawerHeader(
               decoration: const BoxDecoration(
-                color: Colors.purple,
+                color: Colors.indigo,
               ),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(Icons.person, size: 45, color: Colors.purple.shade700),
+                child: Icon(Icons.person, size: 45, color: Colors.indigo.shade700),
               ),
               accountName: Text(
                 mevcutOyuncu,
@@ -178,7 +178,7 @@ class _LoginPageState extends State<LoginPage> {
               accountEmail: const Text("Hoş geldin Yarışmacı! 🎮"),
             ),
             ListTile(
-              leading: const Icon(Icons.menu_book_rounded, color: Colors.purple),
+              leading: const Icon(Icons.menu_book_rounded, color: Colors.indigo),
               title: const Text("Oyun Kuralları", style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: const Text("Puanlama ve yarışma rehberi"),
               onTap: () {
@@ -190,14 +190,14 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.privacy_tip_outlined, color: Colors.purple),
-              title: const Text('Gizlilik Politikası', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              leading: const Icon(Icons.privacy_tip_outlined, color: Colors.indigo),
+              title: const Text('İsim Şehir Oyunu Gizlilik Politikası', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               subtitle: const Text('Veri kullanımı ve gizlilik haklarınız'),
               onTap: () async {
                 Navigator.pop(context); // Menüyü kapatır
 
                 // BURAYA KENDİ GITHUB LİNKİNİZİ YAPIŞTIRIN
-                final Uri url = Uri.parse('https://KULLANICI_ADINIZ.github.io/gizlilik-politikasi/');
+                final Uri url = Uri.parse('https://bulentolgun.github.io/isim-sehir-gizlilik/');
 
                 if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
                   debugPrint('Sayfa açılamadı');
@@ -206,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.mark_email_unread_rounded, color: Colors.purple),
+              leading: const Icon(Icons.mark_email_unread_rounded, color: Colors.indigo),
               title: const Text("Bize Ulaşın", style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: const Text("Şikayet, öneri ve destek"),
               onTap: () {
@@ -238,7 +238,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.gamepad_rounded, size: 80, color: Colors.purple),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  'assets/logo.png', // Eğer logonuzun adı logo.png ise burayı .png yapmayı unutmayın!
+                  height: 120,
+                ),
+              ),
               const SizedBox(height: 15),
               const Text(
                 "İsim Şehir Hayvan Oyunu",
@@ -311,10 +317,10 @@ class _LoginPageState extends State<LoginPage> {
                       hasSavedUser = false;
                     });
                   },
-                  icon: const Icon(Icons.swap_horiz, color: Colors.purple),
+                  icon: const Icon(Icons.swap_horiz, color: Colors.indigo),
                   label: const Text(
                     "Farklı bir isimle giriş yap",
-                    style: TextStyle(color: Colors.purple, fontSize: 15, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.indigo, fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ]
@@ -329,10 +335,10 @@ class _LoginPageState extends State<LoginPage> {
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: "Oyuncu Adınız",
-                    prefixIcon: const Icon(Icons.person, color: Colors.purple),
+                    prefixIcon: const Icon(Icons.person, color: Colors.indigo),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.purple, width: 2),
+                      borderSide: const BorderSide(color: Colors.indigo, width: 2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
@@ -340,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 25),
                 const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text("Avatarını Özelleştir", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
+                  child: Text("Avatarını Özelleştir", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo)),
                 ),
                 const SizedBox(height: 15),
 
@@ -359,8 +365,8 @@ class _LoginPageState extends State<LoginPage> {
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: secilenYuzIndex == index ? Colors.purple.withOpacity(0.1) : Colors.transparent,
-                            border: Border.all(color: secilenYuzIndex == index ? Colors.purple : Colors.grey.shade300, width: 1.5),
+                            color: secilenYuzIndex == index ? Colors.indigo.withOpacity(0.1) : Colors.transparent,
+                            border: Border.all(color: secilenYuzIndex == index ? Colors.indigo : Colors.grey.shade300, width: 1.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(yuzler[index], style: const TextStyle(fontSize: 24)),
@@ -386,8 +392,8 @@ class _LoginPageState extends State<LoginPage> {
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: secilenAksesuarIndex == index ? Colors.purple.withOpacity(0.1) : Colors.transparent,
-                            border: Border.all(color: secilenAksesuarIndex == index ? Colors.purple : Colors.grey.shade300, width: 1.5),
+                            color: secilenAksesuarIndex == index ? Colors.indigo.withOpacity(0.1) : Colors.transparent,
+                            border: Border.all(color: secilenAksesuarIndex == index ? Colors.indigo : Colors.grey.shade300, width: 1.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(aksesuarlar[index], style: const TextStyle(fontSize: 24)),
@@ -436,7 +442,7 @@ class _LoginPageState extends State<LoginPage> {
                     _girisYap(name, secilenYuzIndex, secilenAksesuarIndex, secilenRenkIndex);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
+                    backgroundColor: Colors.indigo,
                     minimumSize: const Size(double.infinity, 55),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   ),

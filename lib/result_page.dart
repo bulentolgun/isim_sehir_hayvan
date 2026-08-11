@@ -87,7 +87,7 @@ class ResultPage extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // 📊 GENEL PUAN VE 1.000+ KİŞİLİK CANLI SIRALAMA YÜKSELİŞ KARTI
+              // 📊 GENEL PUAN VE SIRALAMA KARTI
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -111,15 +111,36 @@ class ResultPage extends StatelessWidget {
                             Text("Genel Puanın:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
-                        Text(
-                          "$eskiGenelPuan P ➔ $yeniGenelPuan P",
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Row(
+                                children: [
+                                  Text("$yeniGenelPuan P", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    (yeniGenelPuan - eskiGenelPuan) >= 0
+                                        ? "(+${yeniGenelPuan - eskiGenelPuan} Puan)"
+                                        : "(${yeniGenelPuan - eskiGenelPuan} Puan)",
+                                    style: TextStyle(
+                                      color: (yeniGenelPuan - eskiGenelPuan) >= 0 ? Colors.green.shade700 : Colors.red.shade700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                     const Divider(height: 24),
 
-                    // 1.000+ KİŞİLİK CANLI SIRALAMA DEĞİŞİMİ
+                    // SIRALAMA DEĞİŞİMİ
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -127,32 +148,29 @@ class ResultPage extends StatelessWidget {
                           children: [
                             Icon(Icons.leaderboard, color: Colors.purple, size: 20),
                             SizedBox(width: 8),
-                            Text("Sıralama Konumun:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            Text("Sıralaman:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
-                        Row(
-                          children: [
-                            Text("#$eskiSiralama ➔ #$yeniSiralama", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                            const SizedBox(width: 6),
-                            if (siralamaFarki > 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(6)),
-                                child: Text("▲ $siralamaFarki Sıra Yükseldin", style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 10)),
-                              )
-                            else if (siralamaFarki < 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(6)),
-                                child: Text("▼ ${siralamaFarki.abs()} Sıra Geriledin", style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.bold, fontSize: 10)),
-                              )
-                            else
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(6)),
-                                child: const Text("Değişmedi", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 10)),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Row(
+                                children: [
+                                  Text("#$yeniSiralama", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  const SizedBox(width: 6),
+                                  if (siralamaFarki > 0)
+                                    Text("(▲ $siralamaFarki Yükseldin)", style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 12))
+                                  else if (siralamaFarki < 0)
+                                    Text("(▼ ${siralamaFarki.abs()} Geriledin)", style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.bold, fontSize: 12))
+                                  else
+                                    const Text("(- Değişmedi)", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12)),
+                                ],
                               ),
-                          ],
+                            ),
+                          ),
                         ),
                       ],
                     ),

@@ -12,7 +12,7 @@ class AdService {
 
   String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
+      return 'ca-app-pub-1815802672526148/6431616325';
     } else if (Platform.isIOS) {
       return 'ca-app-pub-3940256099942544/2934735716';
     }
@@ -21,7 +21,7 @@ class AdService {
 
   String get mediumRectangleAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
+      return 'ca-app-pub-1815802672526148/4022103076';
     } else if (Platform.isIOS) {
       return 'ca-app-pub-3940256099942544/2934735716';
     }
@@ -30,7 +30,7 @@ class AdService {
 
   String get interstitialAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/1033173712';
+      return 'ca-app-pub-1815802672526148/2648283988';
     } else if (Platform.isIOS) {
       return 'ca-app-pub-3940256099942544/4452514319';
     }
