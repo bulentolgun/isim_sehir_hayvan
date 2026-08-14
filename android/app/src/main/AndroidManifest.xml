@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 🚀 İŞTE EKSİK OLAN HAYATİ İNTERNET İZNİ 🚀 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
-        android:label="isim_sehir_hayvan"
+        android:label="İsim Şehir"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

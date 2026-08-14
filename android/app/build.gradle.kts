@@ -2,12 +2,15 @@ import java.util.Properties
 import java.io.FileInputStream
 
 plugins {
+
     id("com.android.application")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
     // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.firebase.crashlytics")
+
 }
 
 // 🎯 1. ŞİFRE DOSYASINI OKUMA BÖLÜMÜ
@@ -48,8 +51,11 @@ android {
 
     buildTypes {
         release {
-            // 🎯 3. ÜRETİM SÜRÜMÜNÜ İMZAYA BAĞLAMA
+            // 🎯 3. ÜRETİM SÜRÜMÜNÜ İMZAYA BAĞLAMA (Bu kısım kalıyor)
             signingConfig = signingConfigs.getByName("release")
+
+            // 🟢 YENİ EKLENEN KISIM (Bu satırı ekliyoruz)
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

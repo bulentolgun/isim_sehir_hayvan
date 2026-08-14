@@ -3,9 +3,8 @@ import 'ad_service.dart';
 
 class ResultPage extends StatelessWidget {
   final String oyuncuAdi;
-  final String rakipAdi;
-  final int oyuncuMacSkor;
-  final int rakipMacSkor;
+  // 🟢 DÜZELTME 1: Tek rakip yerine tüm oyuncuların skor haritası geliyor
+  final Map<String, int> tumMacSkorlari;
   final int eskiGenelPuan;
   final int yeniGenelPuan;
   final int eskiSiralama;
@@ -14,9 +13,7 @@ class ResultPage extends StatelessWidget {
   const ResultPage({
     super.key,
     required this.oyuncuAdi,
-    required this.rakipAdi,
-    required this.oyuncuMacSkor,
-    required this.rakipMacSkor,
+    required this.tumMacSkorlari,
     required this.eskiGenelPuan,
     required this.yeniGenelPuan,
     required this.eskiSiralama,
@@ -25,9 +22,19 @@ class ResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool kazandi = oyuncuMacSkor > rakipMacSkor;
-    bool berabere = oyuncuMacSkor == rakipMacSkor;
-    int siralamaFarki = eskiSiralama - yeniSiralama; // Pozitifse yükselmiştir
+    // 🟢 DÜZELTME 2: Gelen haritayı puanlara göre büyükten küçüğe sıralıyoruz
+    List<MapEntry<String, int>> siraliSkorlar = tumMacSkorlari.entries.toList();
+    siraliSkorlar.sort((a, b) => b.value.compareTo(a.value));
+
+    // Sıralamadaki yerimizi buluyoruz
+    int benimSiram = siraliSkorlar.indexWhere((element) => element.key == oyuncuAdi) + 1;
+    int enYuksekSkor = siraliSkorlar.isNotEmpty ? siraliSkorlar.first.value : 0;
+
+    // Kazanma durumu: Eğer 1. sıradaysak (veya 1. ile aynı puandaysak) kazandık demektir
+    bool kazandi = (tumMacSkorlari[oyuncuAdi] == enYuksekSkor && enYuksekSkor > 0);
+    bool berabere = kazandi && siraliSkorlar.where((e) => e.value == enYuksekSkor).length > 1;
+
+    int siralamaFarki = eskiSiralama - yeniSiralama;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -40,22 +47,22 @@ class ResultPage extends StatelessWidget {
 
               // 🏆 DURUM İKONU VE BAŞLIK
               Icon(
-                kazandi ? Icons.emoji_events : (berabere ? Icons.handshake : Icons.sentiment_dissatisfied),
+                kazandi && !berabere ? Icons.emoji_events : (berabere ? Icons.handshake : Icons.sentiment_dissatisfied),
                 size: 90,
-                color: kazandi ? Colors.amber.shade700 : (berabere ? Colors.orange : Colors.red),
+                color: kazandi && !berabere ? Colors.amber.shade700 : (berabere ? Colors.orange : Colors.red),
               ),
               const SizedBox(height: 15),
               Text(
-                kazandi ? "MAÇIN GALİBİSİN! 🎉" : (berabere ? "MAÇ BERABERE BİTTİ!" : "MAÇI RAKİP KAZANDI"),
+                kazandi && !berabere ? "MAÇIN GALİBİSİN! 🎉" : (berabere ? "LİDERLİĞİ PAYLAŞTIN!" : "MAÇI KAYBETTİN!"),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: kazandi ? Colors.green.shade700 : (berabere ? Colors.orange.shade800 : Colors.red.shade700),
+                  color: kazandi && !berabere ? Colors.green.shade700 : (berabere ? Colors.orange.shade800 : Colors.red.shade700),
                 ),
               ),
               const SizedBox(height: 25),
 
-              // ⚔️ MAÇ SKOR KARTI
+              // ⚔️ YENİ: DİNAMİK LİDERLİK TABLOSU KARTI
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -63,31 +70,75 @@ class ResultPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.purple.shade100, width: 1.5),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: Column(
                   children: [
-                    Column(
-                      children: [
-                        Text(oyuncuAdi, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 15)),
-                        const SizedBox(height: 6),
-                        Text("$oyuncuMacSkor P", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.purple)),
-                      ],
-                    ),
-                    const Text("VS", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.purple)),
-                    Column(
-                      children: [
-                        Text(rakipAdi, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 15)),
-                        const SizedBox(height: 6),
-                        Text("$rakipMacSkor P", style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.purple)),
-                      ],
-                    ),
+                    const Text("MAÇ SIRALAMASI", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple, fontSize: 13, letterSpacing: 1.2)),
+                    const SizedBox(height: 15),
+
+                    // Oyuncuları sırayla ekrana çizdiriyoruz
+                    ...siraliSkorlar.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      String isim = entry.value.key;
+                      int skor = entry.value.value;
+                      bool benMiyim = isim == oyuncuAdi;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: benMiyim ? Colors.purple.shade100 : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: benMiyim ? Colors.purple.shade300 : Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            // Sıra Numarası ve Madalya
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: index == 0 ? Colors.amber : (index == 1 ? Colors.grey.shade400 : (index == 2 ? Colors.brown.shade300 : Colors.grey.shade200)),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                "${index + 1}",
+                                style: TextStyle(color: index < 3 ? Colors.white : Colors.black54, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Oyuncu Adı
+                            Expanded(
+                              child: Text(
+                                benMiyim ? "$isim (Sen)" : isim,
+                                style: TextStyle(
+                                  fontWeight: benMiyim ? FontWeight.w900 : FontWeight.bold,
+                                  color: benMiyim ? Colors.purple.shade900 : Colors.black87,
+                                  fontSize: 15,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Skor
+                            Text(
+                              "$skor P",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: benMiyim ? Colors.purple.shade900 : Colors.purple.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ],
                 ),
               ),
 
               const SizedBox(height: 25),
 
-              // 📊 GENEL PUAN VE SIRALAMA KARTI
+              // 📊 GENEL PUAN VE SIRALAMA KARTI (Aynı kaldı)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -100,7 +151,6 @@ class ResultPage extends StatelessWidget {
                     const Text("GENEL İSTATİSTİK DURUMUN", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple, fontSize: 13)),
                     const SizedBox(height: 15),
 
-                    // PUAN DEĞİŞİMİ
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -123,8 +173,8 @@ class ResultPage extends StatelessWidget {
                                   const SizedBox(width: 6),
                                   Text(
                                     (yeniGenelPuan - eskiGenelPuan) >= 0
-                                        ? "(+${yeniGenelPuan - eskiGenelPuan} Puan)"
-                                        : "(${yeniGenelPuan - eskiGenelPuan} Puan)",
+                                        ? "(+${yeniGenelPuan - eskiGenelPuan})"
+                                        : "(${yeniGenelPuan - eskiGenelPuan})",
                                     style: TextStyle(
                                       color: (yeniGenelPuan - eskiGenelPuan) >= 0 ? Colors.green.shade700 : Colors.red.shade700,
                                       fontWeight: FontWeight.bold,
@@ -140,7 +190,6 @@ class ResultPage extends StatelessWidget {
                     ),
                     const Divider(height: 24),
 
-                    // SIRALAMA DEĞİŞİMİ
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -198,8 +247,6 @@ class ResultPage extends StatelessWidget {
           ),
         ),
       ),
-
-      // 🎯 SAYFA ALTINA SABİT BANNER REKLAM
       bottomNavigationBar: const SafeArea(
         child: BottomBannerAdWidget(),
       ),

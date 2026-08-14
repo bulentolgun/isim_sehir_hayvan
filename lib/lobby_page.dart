@@ -97,7 +97,6 @@ class LobbyPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🎯 ODA LOBİSİ SİMGESİ YUKARIYA ÇEKİLDİ
                   const SizedBox(height: 10),
                   Icon(
                     isFriendMode ? Icons.groups_rounded : Icons.timer,
@@ -167,12 +166,11 @@ class LobbyPage extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     ),
                     icon: Icon(Icons.arrow_back, color: Colors.grey.shade700, size: 18),
-                    label: Text("Geri Dön", style: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                    label: const Text("Geri Dön", style: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // 🎯 ODA LOBİSİNİN ALTINA EKLENEN ORTA BOYUT BANNER REKLAM (300x250)
                   Container(
                     width: 300,
                     height: 250,
@@ -193,11 +191,9 @@ class LobbyPage extends StatelessWidget {
           ],
         ),
       ),
-      // 🎯 KÜÇÜK ALT BANNER TAMAMEN İPTAL EDİLDİ
     );
   }
 
-  /// 🎯 DÜZELTİLDİ: GERÇEK PUANA GÖRE KESİN SIRALAMA HESABI
   Future<Map<String, dynamic>> _oyuncuBilgileriniGetir(String oyuncuAdi) async {
     int dbSkor = await DatabaseHelper.instance.getOyuncuSkor();
     String ben = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
@@ -212,7 +208,6 @@ class LobbyPage extends StatelessWidget {
       }
     }
 
-    // Eğer isim eşleşmesi bir şekilde gerçekleşmediyse, puana göre sırasını matematiksel bul
     if (siralama == -1) {
       for (int i = 0; i < tablo.length; i++) {
         if (dbSkor >= (tablo[i]['skor'] as int)) {
@@ -233,7 +228,6 @@ class LobbyPage extends StatelessWidget {
     };
   }
 
-  // 🎯 FIREBASE İLE GERÇEK ODA OLUŞTURMA
   Future<void> _canliOdaOlustur(BuildContext context, String mevcutOyuncu) async {
     final String kod = (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
 
@@ -250,7 +244,6 @@ class LobbyPage extends StatelessWidget {
     }
   }
 
-  // 🎯 CANLI ODA LOBİSİ DİYALOĞU
   void _canliOdaLobiEkraniGoster(BuildContext context, String mevcutOyuncu, String kod, {required bool isHost}) {
     showDialog(
       context: context,
@@ -298,7 +291,7 @@ class LobbyPage extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               title: Column(
                 children: [
-                  const Text("🎮 Oda Lobisi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                  const Text("🎮 Oyun Odası", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                   const SizedBox(height: 14),
 
                   Container(
@@ -506,110 +499,199 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
+  // 🚀 KUSURSUZLAŞTIRILMIŞ EŞLEŞTİRME VE BAŞLATMA MANTIĞI
   void _eslesmeVeBaslat(BuildContext context, int turSayisi) {
-    int kalanSaniye = 5;
+    int kalanSaniye = 6;
     bool rakipBulundu = false;
     String secilenRakip = "";
+    String ortakHarf = "A";
     Timer? timer;
+    StreamSubscription? odaDinleyici;
     String ben = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
+    String aktifOdaId = "";
+    bool islemBasladi = false;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            timer ??= Timer.periodic(const Duration(seconds: 1), (t) async {
-              if (!rakipBulundu && kalanSaniye > 1) {
-                try {
-                  var onlineQuery = await FirebaseFirestore.instance
-                      .collection('liderlik_tablosu')
-                      .where('is_bot', isEqualTo: false)
-                      .limit(10)
-                      .get();
+      builder: (dialogContext) {
+        return PopScope(
+          canPop: false,
+          child: StatefulBuilder(
+            builder: (innerContext, setDialogState) {
+              if (!islemBasladi) {
+                islemBasladi = true;
 
-                  if (onlineQuery.docs.isNotEmpty) {
-                    var digerOyuncular = onlineQuery.docs
-                        .where((doc) => doc.id != ben)
-                        .toList();
+                // 1. ADIM: Odayı bul veya kur
+                _rastgeleEslesmeOdasinaGir(ben, turSayisi).then((sonuc) async {
+                  if (sonuc.containsKey('error')) {
+                    if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    return;
+                  }
 
-                    if (digerOyuncular.isNotEmpty) {
-                      digerOyuncular.shuffle();
-                      setDialogState(() {
+                  aktifOdaId = sonuc['docId'];
+                  bool odayaKatildi = sonuc['joined'];
+
+                  // 2A. Odaya direkt katıldıysak beklemeye gerek yok! Hemen oyuna geç!
+                  if (odayaKatildi) {
+                    rakipBulundu = true;
+                    secilenRakip = sonuc['rakip'];
+                    ortakHarf = sonuc['harf'];
+
+                    if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    if (context.mounted) {
+                      _oyunaGit(context, ben, secilenRakip, turSayisi, aktifOdaId, ortakHarf);
+                    }
+                    return;
+                  }
+
+                  // 2B. Yeni oda kurduysak, Firebase'i "canlı" dinlemeye başla (Saniyede bir istek atmayı bitirdik)
+                  odaDinleyici = FirebaseFirestore.instance.collection('odalar').doc(aktifOdaId).snapshots().listen((doc) {
+                    if (doc.exists && doc.data()?['durum'] == 'BASLADI') {
+                      List<dynamic> oyuncular = doc.data()?['oyuncular'] ?? [];
+                      if (oyuncular.length >= 2) {
                         rakipBulundu = true;
-                        secilenRakip = digerOyuncular.first.data()['kullanici_adi'] ?? "Ahmet_34";
+                        secilenRakip = oyuncular.firstWhere((p) => p != ben, orElse: () => "GizemliOyuncu").toString();
+                        ortakHarf = doc.data()?['secilenHarf'] ?? "A";
+
+                        timer?.cancel();
+                        odaDinleyici?.cancel();
+
+                        if (dialogContext.mounted) Navigator.pop(dialogContext);
+                        if (context.mounted) {
+                          _oyunaGit(context, ben, secilenRakip, turSayisi, aktifOdaId, ortakHarf);
+                        }
+                      }
+                    }
+                  });
+
+                  // Sadece odayı kurduktan sonra süreyi başlatıyoruz ki süre adil işlesin
+                  timer = Timer.periodic(const Duration(seconds: 1), (t) async {
+                    if (kalanSaniye <= 1) {
+                      t.cancel();
+                      odaDinleyici?.cancel(); // Süre bitince dinlemeyi kapat
+
+                      // Kimse gelmediyse, sahipsiz odayı Firebase'den temizle
+                      if (aktifOdaId.isNotEmpty) {
+                        FirebaseFirestore.instance.collection('odalar').doc(aktifOdaId).delete();
+                      }
+
+                      // Bota düşüş
+                      final randomBot = await DatabaseHelper.instance.getRandomBot();
+                      secilenRakip = randomBot['bot_adi'] ?? "Ahmet_34";
+
+                      if (dialogContext.mounted) Navigator.pop(dialogContext);
+                      if (context.mounted) {
+                        // Bota düşerken odaKodu boş gönderilir
+                        _oyunaGit(context, ben, secilenRakip, turSayisi, "", null);
+                      }
+                    } else {
+                      setDialogState(() {
+                        kalanSaniye--;
                       });
                     }
-                  }
-                } catch (_) {}
-              }
-
-              if (kalanSaniye == 2 && !rakipBulundu) {
-                final randomBot = await DatabaseHelper.instance.getRandomBot();
-                setDialogState(() {
-                  rakipBulundu = true;
-                  secilenRakip = randomBot['bot_adi'] ?? "Ahmet_34";
+                  });
                 });
               }
 
-              if (kalanSaniye > 1) {
-                setDialogState(() {
-                  kalanSaniye--;
-                });
-              } else {
-                t.cancel();
-                if (dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-
-                if (context.mounted) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GamePage(
-                        oyuncuAdi: ben,
-                        rakipAdi: secilenRakip.isEmpty ? "Ahmet_34" : secilenRakip,
-                        yuzIndex: yuzIndex,
-                        aksesuarIndex: aksesuarIndex,
-                        renkIndex: renkIndex,
-                        mevcutTur: 1,
-                        toplamTurSayisi: turSayisi,
-                        oyuncuKumulatifSkor: 0,
-                        rakip1KumulatifSkor: 0,
-                      ),
+              return AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                title: const Text("⚔️ Rakip Aranıyor", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!rakipBulundu) ...[
+                      const CircularProgressIndicator(color: Colors.purple),
+                      const SizedBox(height: 15),
+                      const Text("Gerçek oyuncu bekleniyor...", style: TextStyle(fontSize: 15)),
+                    ] else ...[
+                      const Icon(Icons.check_circle, color: Colors.green, size: 48),
+                      const SizedBox(height: 10),
+                      Text("Eşleşme Tamam!\n$secilenRakip", textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
+                    ],
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(10)),
+                      child: Text("Süre: $kalanSaniye", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
                     ),
-                  );
-                }
-              }
-            });
-
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text("⚔️ Rakip Eşleşiyor", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!rakipBulundu) ...[
-                    const CircularProgressIndicator(color: Colors.purple),
-                    const SizedBox(height: 15),
-                    const Text("Uygun rakip aranıyor...", style: TextStyle(fontSize: 15)),
-                  ] else ...[
-                    const Icon(Icons.check_circle, color: Colors.green, size: 48),
-                    const SizedBox(height: 10),
-                    Text("Rakip Bulundu!\n$secilenRakip", textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
                   ],
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(10)),
-                    child: Text("Oyun Başlıyor: $kalanSaniye", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         );
       },
     );
+  }
+
+  // 🚀 SAYFA GEÇİŞİNİ TEMİZLEMEK İÇİN YARDIMCI FONKSİYON
+  void _oyunaGit(BuildContext context, String ben, String secilenRakip, int turSayisi, String odaKodu, String? harf) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GamePage(
+          oyuncuAdi: ben,
+          rakipAdi: secilenRakip,
+          yuzIndex: yuzIndex,
+          aksesuarIndex: aksesuarIndex,
+          renkIndex: renkIndex,
+          mevcutTur: 1,
+          toplamTurSayisi: turSayisi,
+          oyuncuKumulatifSkor: 0,
+          rakip1KumulatifSkor: 0,
+          odaKodu: odaKodu.isNotEmpty ? odaKodu : null,
+          secilenHarf: harf,
+        ),
+      ),
+    );
+  }
+
+  // 🚀 GÜNCELLENDİ: FİREBASE BEKLEME ODASI YÖNETİMİ
+  Future<Map<String, dynamic>> _rastgeleEslesmeOdasinaGir(String ben, int turSayisi) async {
+    try {
+      var mevcutOda = await FirebaseFirestore.instance
+          .collection('odalar')
+          .where('durum', isEqualTo: 'BEKLIYOR')
+          .where('isRandomMatch', isEqualTo: true)
+          .where('toplamTurSayisi', isEqualTo: turSayisi)
+          .limit(1)
+          .get();
+
+      if (mevcutOda.docs.isNotEmpty) {
+        // HAZIR ODA BULUNDU
+        String docId = mevcutOda.docs.first.id;
+        List<String> harfler = ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
+        harfler.shuffle();
+        String ortakHarf = harfler.first;
+        String kurucu = mevcutOda.docs.first.data()['kurucu'] ?? "Rakip";
+
+        await FirebaseFirestore.instance.collection('odalar').doc(docId).update({
+          'oyuncular': FieldValue.arrayUnion([ben]),
+          'durum': 'BASLADI',
+          'secilenHarf': ortakHarf
+        });
+
+        return {'docId': docId, 'joined': true, 'harf': ortakHarf, 'rakip': kurucu};
+      } else {
+        // BEKLEYEN ODA YOK, YENİ KUR
+        var yeniOda = FirebaseFirestore.instance.collection('odalar').doc();
+        await yeniOda.set({
+          'odaKodu': yeniOda.id,
+          'kurucu': ben,
+          'oyuncular': [ben],
+          'durum': 'BEKLIYOR',
+          'isRandomMatch': true,
+          'toplamTurSayisi': turSayisi,
+          'mevcutTur': 1,
+          'olusturulmaTarihi': FieldValue.serverTimestamp(),
+        });
+
+        return {'docId': yeniOda.id, 'joined': false};
+      }
+    } catch (e) {
+      print("🚨 Matchmaking hatası: $e");
+      return {'error': true};
+    }
   }
 }

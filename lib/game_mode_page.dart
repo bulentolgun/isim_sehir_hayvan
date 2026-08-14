@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'lobby_page.dart';
 import 'ad_service.dart'; // 🎯 Reklam Servisimiz (Artık Aktif!)
-import 'auth_service.dart';
-import 'nickname_dialog.dart';
 
 class GameModePage extends StatelessWidget {
   final String oyuncuAdi;
@@ -11,12 +9,12 @@ class GameModePage extends StatelessWidget {
   final int renkIndex;
 
   const GameModePage({
-    Key? key,
+    super.key, // Modern super parametre kullanımı
     required this.oyuncuAdi,
     required this.yuzIndex,
     required this.aksesuarIndex,
     required this.renkIndex,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +30,7 @@ class GameModePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 30),
+              // Yanlışlıkla LoginPage'in yapıştırıldığı yer temizlendi ve ikon eski haline döndürüldü
               const Icon(
                 Icons.sports_esports_rounded,
                 size: 90,
@@ -52,7 +51,7 @@ class GameModePage extends StatelessWidget {
               Text(
                 "Hoş geldin $mevcutOyuncu!\nNasıl oynamak istersin?",
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 15,
                 ),

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'tdk_service.dart';
+import 'gemini_service.dart'; // 🚀
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 30, // 🎯
+      version: 31, // 🎯 Versiyon 30'dan 31'e yükseltildi (Bozuk listeyi temizlemek için)
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -61,7 +61,7 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 🎯 BURASI ÇOK ÖNEMLİ: Kod her güncellendiğinde eski kelime havuzunu silip yenisini %100 yükleyecek
+    // 🎯 Kod her güncellendiğinde eski kelime havuzunu silip yenisini %100 yükleyecek
     await db.execute('DROP TABLE IF EXISTS words');
     await db.execute('''
       CREATE TABLE words (
@@ -73,7 +73,8 @@ class DatabaseHelper {
     ''');
     await _sqlDosyasindanKelimeleriYukle(db);
 
-    if (oldVersion < 6) {
+    // 🎯 Eğer versiyon 31'den küçükse, virüslü (gerçek oyuncu karışmış) tabloyu çöpe at ve baştan kur!
+    if (oldVersion < 31) {
       await db.delete('botlar');
       await _1000BotuVeritabaninaEkle(db);
     }
@@ -205,15 +206,15 @@ class DatabaseHelper {
     }
   }
 
-  // 🎯 KUSURSUZ DOĞRULAMA (ÜLKELER DAHİL HER ŞEYİ KÜÇÜK HARF YAPARAK KIYASLAR)
+  // 🚀 KUSURSUZ DOĞRULAMA: Veritabanı -> Gemini AI -> Öğrenme Döngüsü
   Future<bool> _checkWordInDbOrTdk(int catId, String harf, String kelime) async {
     final db = await instance.database;
 
-    // 🎯 DÜZELTME: Kategori ne olursa olsun, girilen kelimeyi kontrol için %100 küçük harfe çeviriyoruz.
-    // Bu sayede kullanıcı "tüRkiye" de yazsa, "TÜRKİYE" de yazsa veritabanında kesinlikle bulunur.
+    // Her şeyi küçük harfe çevirerek %100 eşleşme garantisi sağlıyoruz
     String arananKelime = trToLowerCase(kelime.trim());
     String arananHarf = trToLowerCase(harf.trim()[0]);
 
+    // 1. AŞAMA: ÖNCE KENDİ VERİTABANIMIZA BAKIYORUZ (Sıfır Gecikme)
     List<Map<String, dynamic>> res = await db.query(
       'words',
       where: 'category_id = ? AND (first_letter = ? OR LOWER(first_letter) = ?)',
@@ -221,15 +222,13 @@ class DatabaseHelper {
     );
 
     for (var row in res) {
-      // Veritabanındaki kelimeyi de kıyaslama için küçük harfe çeviriyoruz.
       String dbKelime = trToLowerCase(row['word_value'].toString().trim());
-
-      // Kelime birebir uyuşuyor mu veya boşluksuz hali tutuyor mu?
       if (dbKelime == arananKelime || dbKelime.replaceAll(' ', '') == arananKelime.replaceAll(' ', '')) {
-        return true; // ✅ VERİTABANINDA BULUNDU, PUANI VER!
+        return true; // ✅ VERİTABANINDA ZATEN VAR, PUANI VER!
       }
     }
 
+    // Özel isim istisnalarına bakıyoruz
     bool ozelIsimGecerli = _ozelIsimKontrolEt(catId, arananKelime);
     if (ozelIsimGecerli) {
       await db.insert('words', {
@@ -240,22 +239,40 @@ class DatabaseHelper {
       return true;
     }
 
-    if (catId == 1 || catId == 2 || catId == 6) {
+    // 2. AŞAMA: KESİN RET (Sadece Şehir ve Ülke için geçerli)
+    if (catId == 2 || catId == 6) {
       return false;
     }
 
+    // 3. AŞAMA: GEMİNİ YAPAY ZEKA HAKEMİNE BAŞVURU
     try {
-      bool tdkGecerli = await TdkService.kelimeyiTdkdanDogrula(catId, arananKelime);
-      if (tdkGecerli) {
+      bool geminiOnayi = await GeminiService.kelimeyiGeminiyeSor(catId, arananKelime);
+
+      if (geminiOnayi) {
+        // 1. Kullanıcının telefonundaki lokal SQL'e ekle (Bir daha internete çıkmasın)
         await db.insert('words', {
           'category_id': catId,
           'first_letter': arananHarf,
           'word_value': kelime.trim(),
         }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+        // 2. 🚀 FİREBASE'E GÖNDER: Global kelime kütüphanesi büyüsün!
+        try {
+          await FirebaseFirestore.instance.collection('onaylanmis_yeni_kelimeler').add({
+            'kelime': arananKelime,
+            'kategori_id': catId,
+            'harf': arananHarf,
+            'eklenme_tarihi': FieldValue.serverTimestamp(),
+          });
+          print("🌐 Yeni kelime Firebase'e eklendi: $arananKelime");
+        } catch (fbError) {
+          print("Firebase kelime ekleme hatası: $fbError");
+        }
+
         return true;
       }
     } catch (e) {
-      print("TDK Servis Kontrol Hatası: $e");
+      print("Yapay Zeka Servis Kontrol Hatası: $e");
     }
 
     return false;
@@ -320,33 +337,43 @@ class DatabaseHelper {
     }
   }
 
+  // 🚀 İŞTE GÜVENLİK DUVARI ÖRÜLEN YENİ BOT KAYDETME FONKSİYONUMUZ
   Future<void> saveBotSkor(String botAdi, int eklenecekSkor) async {
     final db = await instance.database;
+
+    // 1. KİMLİK KONTROLÜ: Gelen isim gerçekten 'botlar' tablosunda var mı?
     List<Map<String, dynamic>> res = await db.query(
       'botlar',
       where: 'bot_adi = ?',
       whereArgs: [botAdi],
     );
 
-    int mevcut = res.isNotEmpty ? (res.first['skor'] as int) : 0;
+    // 🚨 GÜVENLİK DUVARI: Eğer bu isim botlar tablosunda yoksa, bu GERÇEK BİR OYUNCUDUR!
+    if (res.isEmpty) {
+      print("🚨 KORUMA AKTİF: \$botAdi gerçek bir oyuncu. Arka planda bot gibi puan eklenmesi engellendi!");
+      return; // Gerçek oyuncunun skorunu bozmamak için işlemi hemen durdur!
+    }
+
+    // İsim gerçekten bot ise skorunu hesapla
+    int mevcut = res.first['skor'] as int;
     int yeniBotSkor = mevcut + eklenecekSkor;
 
-    await db.insert(
+    // 2. Insert (Ekleme) yerine UPDATE (Güncelleme) kullanıyoruz
+    await db.update(
       'botlar',
-      {
-        'bot_adi': botAdi,
-        'skor': yeniBotSkor,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      {'skor': yeniBotSkor},
+      where: 'bot_adi = ?',
+      whereArgs: [botAdi],
     );
 
+    // 3. Firebase'i güvenli şekilde güncelle (is_bot: true DEMEDEN!)
     try {
-      await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(botAdi).set({
-        'kullanici_adi': botAdi,
+      await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(botAdi).update({
         'skor': yeniBotSkor,
-        'is_bot': true,
-      }, SetOptions(merge: true));
-    } catch (_) {}
+      });
+    } catch (e) {
+      print("Firebase bot skor güncelleme hatası: \$e");
+    }
   }
 
   Future<List<Map<String, dynamic>>> getTumLiderlikTablosu(String oyuncuAdi) async {
