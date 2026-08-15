@@ -13439,7 +13439,7 @@ INSERT INTO words (category_id, first_letter, word_value) VALUES
 (2, 'e', 'edirne'), (2, 'e', 'elazığ'), (2, 'e', 'erzincan'), (2, 'e', 'erzurum'), (2, 'e', 'eskişehir'),
 (2, 'g', 'gaziantep'), (2, 'g', 'giresun'), (2, 'g', 'gümüşhane'),
 (2, 'h', 'hakkari'), (2, 'h', 'hatay'),
-(2, 'ı', 'ığdır'), (2, 'ı', 'isparta'),
+(2, 'ı', 'ığdır'), (2, 'ı', 'ısparta'),
 (2, 'i', 'istanbul'), (2, 'i', 'izmir'),
 (2, 'k', 'kahramanmaraş'), (2, 'k', 'karabük'), (2, 'k', 'karaman'), (2, 'k', 'kars'), (2, 'k', 'kastamonu'), (2, 'k', 'kayseri'), (2, 'k', 'kırıkkale'), (2, 'k', 'kırklareli'), (2, 'k', 'kırşehir'), (2, 'k', 'kilis'), (2, 'k', 'kocaeli'), (2, 'k', 'konya'), (2, 'k', 'kütahya'),
 (2, 'm', 'malatya'), (2, 'm', 'manisa'), (2, 'm', 'mardin'), (2, 'm', 'mersin'), (2, 'm', 'muğla'), (2, 'm', 'muş'),

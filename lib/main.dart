@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // 🎯 Google AdMob Kütüphanesi
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // 🟢 KİMLİK DOĞRULAMA İÇİN EKLENDİ
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart'; // Hataları yakalamak için gerekli
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // 🟢 GİZLİ KASA KÜTÜPHANESİ EKLENDİ
@@ -40,6 +41,14 @@ Future<void> main() async {
     return true;
   };
 
+  // 🟢 ÇÖZÜM NOKTASI: Veritabanı işlemlerinden ÖNCE Anonim Giriş yapıyoruz!
+  try {
+    await FirebaseAuth.instance.signInAnonymously();
+    debugPrint("✅ Firebase Anonim Giriş Başarılı! Artık Firestore veri izni verecek.");
+  } catch (e) {
+    debugPrint("🚨 Firebase Anonim Giriş Hatası: $e");
+  }
+
   // EMÜLATÖR TESTİ İÇİN ADMOB GEÇİCİ OLARAK KAPATILDI
   try {
     await MobileAds.instance.initialize();
@@ -49,7 +58,8 @@ Future<void> main() async {
 
   try {
     // 3. SQLite Veritabanı ve Arka Plan Senkronizasyonu
-    await DatabaseHelper.instance.database;
+    // Giriş yapıldığı için artık permission-denied hatası VERMEYECEK!
+    DatabaseHelper.instance.database;
   } catch (e) {
     debugPrint("SQLite Web üzerinde çalışmadığı için atlandı.");
   }

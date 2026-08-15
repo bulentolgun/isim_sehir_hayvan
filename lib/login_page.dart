@@ -148,9 +148,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _girisYap(String name, int yuz, int aksesuar, int renk) async {
-    if (_isLoading) return;
 
-    setState(() { _isLoading = true; });
 
     try {
       await _saveUser(name, yuz, aksesuar, renk);

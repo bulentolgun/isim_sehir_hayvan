@@ -501,7 +501,7 @@ class LobbyPage extends StatelessWidget {
 
   // 🚀 KUSURSUZLAŞTIRILMIŞ EŞLEŞTİRME VE BAŞLATMA MANTIĞI
   void _eslesmeVeBaslat(BuildContext context, int turSayisi) {
-    int kalanSaniye = 6;
+    int kalanSaniye = 5;
     bool rakipBulundu = false;
     String secilenRakip = "";
     String ortakHarf = "A";
@@ -603,7 +603,7 @@ class LobbyPage extends StatelessWidget {
                     if (!rakipBulundu) ...[
                       const CircularProgressIndicator(color: Colors.purple),
                       const SizedBox(height: 15),
-                      const Text("Gerçek oyuncu bekleniyor...", style: TextStyle(fontSize: 15)),
+                      const Text("Rakip bekleniyor...", style: TextStyle(fontSize: 15)),
                     ] else ...[
                       const Icon(Icons.check_circle, color: Colors.green, size: 48),
                       const SizedBox(height: 10),

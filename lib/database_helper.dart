@@ -24,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 31, // 🎯 Versiyon 30'dan 31'e yükseltildi (Bozuk listeyi temizlemek için)
+      version: 31,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -61,7 +61,6 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 🎯 Kod her güncellendiğinde eski kelime havuzunu silip yenisini %100 yükleyecek
     await db.execute('DROP TABLE IF EXISTS words');
     await db.execute('''
       CREATE TABLE words (
@@ -73,14 +72,12 @@ class DatabaseHelper {
     ''');
     await _sqlDosyasindanKelimeleriYukle(db);
 
-    // 🎯 Eğer versiyon 31'den küçükse, virüslü (gerçek oyuncu karışmış) tabloyu çöpe at ve baştan kur!
     if (oldVersion < 31) {
       await db.delete('botlar');
       await _1000BotuVeritabaninaEkle(db);
     }
   }
 
-  // 🎯 GÜVENLİ VE HIZLI SQL YÜKLEME
   static Future<void> _sqlDosyasindanKelimeleriYukle(Database db) async {
     try {
       String sqlContent = await rootBundle.loadString('assets/game_data.sql');
@@ -100,7 +97,6 @@ class DatabaseHelper {
     }
   }
 
-  // 🚀 1.000 KİŞİLİK CANLI VE DİNAMİK BOT HAVUZU OLUŞTURMA
   static Future<void> _1000BotuVeritabaninaEkle(Database db) async {
     List<String> sehirKodlari = ["34", "06", "35", "16", "07", "01", "60", "61", "55", "42", "22", "10", "20", "26", "27", "33", "41", "45", "54"];
     List<String> unvanlar = ["Pro", "Star", "Master", "Kral", "Efsane", "Gamer", "Kaptan", "TR", "X", "Uzman", "Atak", "Zeki", "Hizli", "Guc", "Lider"];
@@ -166,7 +162,6 @@ class DatabaseHelper {
     }));
   }
 
-  // 🎯 TÜRKÇE HARF DUYARLI KÜÇÜK HARF DÖNÜŞTÜRÜCÜ
   String trToLowerCase(String text) {
     if (text.isEmpty) return "";
     return text
@@ -181,7 +176,6 @@ class DatabaseHelper {
         .toLowerCase();
   }
 
-  // 🎯 İLK HARF ŞARTINI VE İ/I HARF TOLERANSINI KONTROL EDEN METOD
   Future<int> checkWordWithToleranceAndTdk(int catId, String harf, String kelime) async {
     String temizKelime = kelime.trim();
     if (temizKelime.isEmpty || temizKelime == "-") return 0;
@@ -189,111 +183,171 @@ class DatabaseHelper {
     String girilenIlkharf = trToLowerCase(temizKelime[0]);
     String secilenHarf = trToLowerCase(harf);
 
-    bool harfUyumluMu = (girilenIlkharf == secilenHarf) ||
-        (girilenIlkharf == 'i' && secilenHarf == 'ı') ||
-        (girilenIlkharf == 'ı' && secilenHarf == 'i');
-
-    if (!harfUyumluMu) {
+    // 🚀 DÜZELTME 1: KATI TÜRKÇE KURALI - Artık İ ve I tamamen ayrı değerlendirilir. Eşleşme yoksa 0 puan!
+    if (girilenIlkharf != secilenHarf) {
       return 0;
     }
 
-    bool tamDogru = await _checkWordInDbOrTdk(catId, harf, temizKelime);
-
-    if (tamDogru) {
-      return 1;
-    } else {
-      return 0;
-    }
+    bool tamDogru = await _checkWordInDb(catId, harf, temizKelime);
+    return tamDogru ? 1 : 0;
   }
 
-  // 🚀 KUSURSUZ DOĞRULAMA: Veritabanı -> Gemini AI -> Öğrenme Döngüsü
-  Future<bool> _checkWordInDbOrTdk(int catId, String harf, String kelime) async {
+  Future<bool> _checkWordInDb(int catId, String harf, String kelime) async {
     final db = await instance.database;
-
-    // Her şeyi küçük harfe çevirerek %100 eşleşme garantisi sağlıyoruz
     String arananKelime = trToLowerCase(kelime.trim());
     String arananHarf = trToLowerCase(harf.trim()[0]);
 
-    // 1. AŞAMA: ÖNCE KENDİ VERİTABANIMIZA BAKIYORUZ (Sıfır Gecikme)
+    // 🚀 DÜZELTME 2: GERÇEK TÜRKÇE BÜYÜK/KÜÇÜK HARF UYUMU
+    String arananHarfBuyuk = arananHarf.toUpperCase();
+    if (arananHarf == 'ı') arananHarfBuyuk = 'I';
+    else if (arananHarf == 'i') arananHarfBuyuk = 'İ';
+    else if (arananHarf == 'ğ') arananHarfBuyuk = 'Ğ';
+    else if (arananHarf == 'ü') arananHarfBuyuk = 'Ü';
+    else if (arananHarf == 'ş') arananHarfBuyuk = 'Ş';
+    else if (arananHarf == 'ö') arananHarfBuyuk = 'Ö';
+    else if (arananHarf == 'ç') arananHarfBuyuk = 'Ç';
+
+    List<String> harfIhtimalleri = [arananHarf, arananHarfBuyuk];
+    String placeholders = List.filled(harfIhtimalleri.length, '?').join(', ');
+
     List<Map<String, dynamic>> res = await db.query(
       'words',
-      where: 'category_id = ? AND (first_letter = ? OR LOWER(first_letter) = ?)',
-      whereArgs: [catId, arananHarf, arananHarf],
+      where: 'category_id = ? AND first_letter IN ($placeholders)',
+      whereArgs: [catId, ...harfIhtimalleri],
     );
 
     for (var row in res) {
       String dbKelime = trToLowerCase(row['word_value'].toString().trim());
       if (dbKelime == arananKelime || dbKelime.replaceAll(' ', '') == arananKelime.replaceAll(' ', '')) {
-        return true; // ✅ VERİTABANINDA ZATEN VAR, PUANI VER!
-      }
-    }
-
-    // Özel isim istisnalarına bakıyoruz
-    bool ozelIsimGecerli = _ozelIsimKontrolEt(catId, arananKelime);
-    if (ozelIsimGecerli) {
-      await db.insert('words', {
-        'category_id': catId,
-        'first_letter': arananHarf,
-        'word_value': kelime.trim(),
-      }, conflictAlgorithm: ConflictAlgorithm.ignore);
-      return true;
-    }
-
-    // 2. AŞAMA: KESİN RET (Sadece Şehir ve Ülke için geçerli)
-    if (catId == 2 || catId == 6) {
-      return false;
-    }
-
-    // 3. AŞAMA: GEMİNİ YAPAY ZEKA HAKEMİNE BAŞVURU
-    try {
-      bool geminiOnayi = await GeminiService.kelimeyiGeminiyeSor(catId, arananKelime);
-
-      if (geminiOnayi) {
-        // 1. Kullanıcının telefonundaki lokal SQL'e ekle (Bir daha internete çıkmasın)
-        await db.insert('words', {
-          'category_id': catId,
-          'first_letter': arananHarf,
-          'word_value': kelime.trim(),
-        }, conflictAlgorithm: ConflictAlgorithm.ignore);
-
-        // 2. 🚀 FİREBASE'E GÖNDER: Global kelime kütüphanesi büyüsün!
-        try {
-          await FirebaseFirestore.instance.collection('onaylanmis_yeni_kelimeler').add({
-            'kelime': arananKelime,
-            'kategori_id': catId,
-            'harf': arananHarf,
-            'eklenme_tarihi': FieldValue.serverTimestamp(),
-          });
-          print("🌐 Yeni kelime Firebase'e eklendi: $arananKelime");
-        } catch (fbError) {
-          print("Firebase kelime ekleme hatası: $fbError");
-        }
-
         return true;
       }
-    } catch (e) {
-      print("Yapay Zeka Servis Kontrol Hatası: $e");
     }
+
+    if (_ozelIsimKontrolEt(catId, arananKelime)) return true;
 
     return false;
   }
 
   bool _ozelIsimKontrolEt(int catId, String kelime) {
+    // 🚀 DÜZELTME 3: İngilizce hatalı yazımlar ("isparta", "igdir") silindi.
     List<String> yedekOzelIsimler = [
-      "irlanda", "italya", "isvec", "isvicre", "ingiltere", "ispanya", "israil", "izlanda",
-      "istanbul", "izmir", "isparta", "igdir", "icel", "iskenderun"
+      "ısparta", "ığdır", "içel", "iskenderun",
+      "izmir", "istanbul", "isveç", "isviçre", "ispanya", "italya",
+      "irlanda", "israil", "izlanda", "ingiltere"
     ];
     return yedekOzelIsimler.contains(kelime);
+  }
+
+  Future<List<int>> topluDegerlendirmeMotoru(List<Map<String, dynamic>> sorgular, String secilenHarf) async {
+    final db = await instance.database;
+    List<int> sonuclar = List.filled(sorgular.length, 0);
+    List<Map<String, dynamic>> geminiyeGidecekler = [];
+
+    for (int i = 0; i < sorgular.length; i++) {
+      int catId = sorgular[i]["id"];
+      String kelime = sorgular[i]["cvp"].toString().trim();
+      if (kelime.isEmpty || kelime == "-") continue;
+
+      String girilenIlkharf = trToLowerCase(kelime[0]);
+      String arananHarf = trToLowerCase(secilenHarf);
+
+      // 🚀 DÜZELTME 4: Burada da KATI TÜRKÇE KURALI uygulandı. Eşleşmiyorsa direkt pas geçer.
+      if (girilenIlkharf != arananHarf) continue;
+
+      bool tdkOnayi = await _checkWordInDb(catId, secilenHarf, kelime);
+
+      if (tdkOnayi) {
+        sonuclar[i] = 1;
+      } else if (catId != 2 && catId != 6) {
+        geminiyeGidecekler.add({"index": i, "catId": catId, "kelime": trToLowerCase(kelime)});
+      }
+    }
+
+    if (geminiyeGidecekler.isNotEmpty) {
+      List<Map<int, String>> paketler = [];
+      Set<String> eklenenAnahtarlar = {};
+
+      for (var item in geminiyeGidecekler) {
+        int catId = item["catId"];
+        String kelime = item["kelime"];
+        String anahtar = "${catId}_$kelime";
+
+        if (eklenenAnahtarlar.contains(anahtar)) continue;
+
+        bool eklendi = false;
+        for (var paket in paketler) {
+          if (!paket.containsKey(catId)) {
+            paket[catId] = kelime;
+            eklendi = true;
+            break;
+          }
+        }
+        if (!eklendi) {
+          paketler.add({catId: kelime});
+        }
+        eklenenAnahtarlar.add(anahtar);
+      }
+
+      for (var paket in paketler) {
+        Map<int, bool> geminiCevaplari = await GeminiService.topluKelimeKontrol(paket);
+
+        for (var entry in paket.entries) {
+          int catId = entry.key;
+          String kelime = entry.value;
+          bool onaylandi = geminiCevaplari[catId] ?? false;
+
+          if (onaylandi) {
+            for (var gItem in geminiyeGidecekler) {
+              if (gItem["catId"] == catId && gItem["kelime"] == kelime) {
+                sonuclar[gItem["index"]] = 1;
+              }
+            }
+
+            await db.insert('words', {
+              'category_id': catId,
+              'first_letter': trToLowerCase(secilenHarf[0]),
+              'word_value': kelime,
+            }, conflictAlgorithm: ConflictAlgorithm.ignore);
+
+            try {
+              await FirebaseFirestore.instance.collection('onaylanmis_yeni_kelimeler').add({
+                'kelime': kelime,
+                'kategori_id': catId,
+                'harf': trToLowerCase(secilenHarf[0]),
+                'eklenme_tarihi': FieldValue.serverTimestamp(),
+              });
+            } catch (e) {
+              print("Firebase kelime ekleme hatası: $e");
+            }
+          }
+        }
+      }
+    }
+
+    return sonuclar;
   }
 
   Future<String?> getBotKelime(int catId, String harf) async {
     final db = await instance.database;
     String kucukHarf = trToLowerCase(harf);
 
+    // 🚀 DÜZELTME 5: Botlar için de GERÇEK TÜRKÇE BÜYÜK/KÜÇÜK HARF UYUMU
+    String arananHarfBuyuk = kucukHarf.toUpperCase();
+    if (kucukHarf == 'ı') arananHarfBuyuk = 'I';
+    else if (kucukHarf == 'i') arananHarfBuyuk = 'İ';
+    else if (kucukHarf == 'ğ') arananHarfBuyuk = 'Ğ';
+    else if (kucukHarf == 'ü') arananHarfBuyuk = 'Ü';
+    else if (kucukHarf == 'ş') arananHarfBuyuk = 'Ş';
+    else if (kucukHarf == 'ö') arananHarfBuyuk = 'Ö';
+    else if (kucukHarf == 'ç') arananHarfBuyuk = 'Ç';
+
+    List<String> harfIhtimalleri = [kucukHarf, arananHarfBuyuk];
+    String placeholders = List.filled(harfIhtimalleri.length, '?').join(', ');
+
     List<Map<String, dynamic>> res = await db.query(
       'words',
-      where: 'category_id = ? AND (first_letter = ? OR LOWER(first_letter) = ?)',
-      whereArgs: [catId, kucukHarf, kucukHarf],
+      where: 'category_id = ? AND first_letter IN ($placeholders)',
+      whereArgs: [catId, ...harfIhtimalleri],
     );
 
     if (res.isNotEmpty) {
@@ -337,28 +391,20 @@ class DatabaseHelper {
     }
   }
 
-  // 🚀 İŞTE GÜVENLİK DUVARI ÖRÜLEN YENİ BOT KAYDETME FONKSİYONUMUZ
   Future<void> saveBotSkor(String botAdi, int eklenecekSkor) async {
     final db = await instance.database;
 
-    // 1. KİMLİK KONTROLÜ: Gelen isim gerçekten 'botlar' tablosunda var mı?
     List<Map<String, dynamic>> res = await db.query(
       'botlar',
       where: 'bot_adi = ?',
       whereArgs: [botAdi],
     );
 
-    // 🚨 GÜVENLİK DUVARI: Eğer bu isim botlar tablosunda yoksa, bu GERÇEK BİR OYUNCUDUR!
-    if (res.isEmpty) {
-      print("🚨 KORUMA AKTİF: \$botAdi gerçek bir oyuncu. Arka planda bot gibi puan eklenmesi engellendi!");
-      return; // Gerçek oyuncunun skorunu bozmamak için işlemi hemen durdur!
-    }
+    if (res.isEmpty) return;
 
-    // İsim gerçekten bot ise skorunu hesapla
     int mevcut = res.first['skor'] as int;
     int yeniBotSkor = mevcut + eklenecekSkor;
 
-    // 2. Insert (Ekleme) yerine UPDATE (Güncelleme) kullanıyoruz
     await db.update(
       'botlar',
       {'skor': yeniBotSkor},
@@ -366,13 +412,12 @@ class DatabaseHelper {
       whereArgs: [botAdi],
     );
 
-    // 3. Firebase'i güvenli şekilde güncelle (is_bot: true DEMEDEN!)
     try {
       await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(botAdi).update({
         'skor': yeniBotSkor,
       });
     } catch (e) {
-      print("Firebase bot skor güncelleme hatası: \$e");
+      print("Firebase bot skor güncelleme hatası: $e");
     }
   }
 

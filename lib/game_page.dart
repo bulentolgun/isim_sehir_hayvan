@@ -558,7 +558,7 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
-  // 🚀 İŞTE BEKLENEN O BÜYÜK SİHİR: PARALEL HESAPLAMA! 🚀
+  // 🚀 İŞTE YENİ SİHİR: TDK ve GEMİNİ'Yİ BİRLİKTE ÇALIŞTIRAN TOPLU SORGULAMA!
   Future<void> topluDegerlendir() async {
     _timer?.cancel();
 
@@ -566,23 +566,21 @@ class _GamePageState extends State<GamePage> {
     if (mounted) setState(() { isLoading = true; });
 
     try {
-      List<Future<int>> futures = [];
+      List<Map<String, dynamic>> sorgular = [];
       List<Map<String, dynamic>> futureMeta = [];
 
-      // 1. Tüm kelimeleri (oyuncular * kategoriler) toplayıp listeye ekliyoruz
+      // 1. Ekrandaki tüm kelimeleri tek bir listeye topluyoruz
       for (var kat in kategoriler) {
         int id = kat["id"];
         for (var p in masadakiHerkes) {
           String cvp = tumCevaplar[p]?[id] ?? "-";
-          // Her kelimenin sorgusunu futures listesine ekliyoruz
-          futures.add(DatabaseHelper.instance.checkWordWithToleranceAndTdk(id, secilenHarf, cvp));
-          // Bu sonucun kime ve hangi kategoriye ait olduğunu bilmek için not alıyoruz
+          sorgular.add({"id": id, "cvp": cvp});
           futureMeta.add({"id": id, "player": p, "cvp": cvp});
         }
       }
 
-      // ⚡ 2. BÜYÜK SİHİR: Tüm kontrolleri (örn. 4 oyuncu x 6 kategori = 24 sorgu) AYNI ANDA başlatıp bekliyoruz!
-      var sonuclar = await Future.wait(futures);
+      // ⚡ 2. BÜYÜK SİHİR: TDK ve Gemini motorunu tek hamlede çalıştırıyoruz!
+      List<int> sonuclar = await DatabaseHelper.instance.topluDegerlendirmeMotoru(sorgular, secilenHarf);
 
       Map<int, Map<String, int>> dogruluklar = {};
       Map<int, Map<String, String>> cevaplar = {};
@@ -595,7 +593,7 @@ class _GamePageState extends State<GamePage> {
         enUzunDogruKelime[id] = 0;
       }
 
-      // 3. Yapay zekadan saniyeler içinde gelen tüm sonuçları ayrıştırıp ilgili değişkenlere yazıyoruz
+      // 3. Gelen toplu sonuçları ekran değişkenlerine işliyoruz
       for (int i = 0; i < sonuclar.length; i++) {
         int sonuc = sonuclar[i];
         int id = futureMeta[i]["id"];
@@ -664,6 +662,7 @@ class _GamePageState extends State<GamePage> {
       if (mounted) setState(() { isLoading = false; });
     }
   }
+
 
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
@@ -782,7 +781,7 @@ class _GamePageState extends State<GamePage> {
               CircularProgressIndicator(color: Colors.white, strokeWidth: 5),
               SizedBox(height: 25),
               Text(
-                "Kelimeler Yapay Zeka Tarafından\nHızlıca Değerlendiriliyor... 🚀",
+                "Kelimeler Kontrol Ediliyor... 🚀",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               ),
