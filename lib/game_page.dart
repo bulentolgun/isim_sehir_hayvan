@@ -39,6 +39,10 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
+
+// ==========================================
+// BÖLÜM 1: Temel Değişkenler ve Oyun Durumları
+// ==========================================
   final List<Map<String, dynamic>> kategoriler = const [
     {"id": 1, "isim": "İsim", "icon": Icons.groups},
     {"id": 2, "isim": "Şehir", "icon": Icons.home},
@@ -65,10 +69,7 @@ class _GamePageState extends State<GamePage> {
   bool turBittiMi = false;
   bool erkenBitirmeBonusuKazandiMi = false;
   bool rakipBekleniyor = false;
-
-  // 🚀 EKLENDİ: Yükleme ekranı durumu
   bool isLoading = false;
-
   bool benHazirMiyim = false;
   int hazirOyuncuSayisi = 0;
   bool _isTransitioning = false;
@@ -76,7 +77,6 @@ class _GamePageState extends State<GamePage> {
   int _kalanGuvenlikSaniyesi = 15;
 
   String odadakiErkenBitirenKisi = "";
-
   String secilenHarf = "A";
   Timer? _timer;
   StreamSubscription<DocumentSnapshot>? _odaSubscription;
@@ -89,16 +89,27 @@ class _GamePageState extends State<GamePage> {
     "amk", "sik", "piç", "orospu", "oç", "sg", "yarrak", "göt", "meme", "dalyarak", "pezevenk", "kaltak", "fahişe"
   ];
   List<String> kullanilanHarfler = [];
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: Türkçe Karakterleri Düzeltme Kodları
+// ==========================================
   String trToLowerCase(String text) {
     return text.replaceAll('İ', 'i').replaceAll('I', 'ı').replaceAll('Ğ', 'ğ').replaceAll('Ü', 'ü')
         .replaceAll('Ş', 'ş').replaceAll('Ö', 'ö').replaceAll('Ç', 'ç').toLowerCase();
   }
+
   String trToUpperCase(String text) {
     return text.replaceAll('i', 'İ').replaceAll('ı', 'I').replaceAll('ğ', 'Ğ').replaceAll('ü', 'Ü')
         .replaceAll('ş', 'Ş').replaceAll('ö', 'Ö').replaceAll('ç', 'Ç').toUpperCase();
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Sayfa İlk Açıldığında Çalışan Kurallar (initState)
+// ==========================================
   @override
   void initState() {
     super.initState();
@@ -119,7 +130,6 @@ class _GamePageState extends State<GamePage> {
     }
 
     _gercekSkorlariYukle();
-
     AdService.instance.loadInterstitialAd();
     _canliOdaDinle();
     _yeniTurBaslat(ilkBaslangic: true);
@@ -133,24 +143,52 @@ class _GamePageState extends State<GamePage> {
     _inputController.dispose();
     super.dispose();
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: Rakiplerin ve Sizin Genel Skorunuzu Çeken Kod (YENİ OPTİMİZE VERSİYON)
+// ==========================================
   Future<void> _gercekSkorlariYukle() async {
-    List<Map<String, dynamic>> tablo = await DatabaseHelper.instance.getTumLiderlikTablosu(ben);
-    if (mounted) {
-      setState(() {
-        for (var p in masadakiHerkes) {
-          if (p != ben) {
-            var oyuncuVeri = tablo.firstWhere(
-                    (element) => element['bot_adi'] == p,
-                orElse: () => {'skor': widget.rakip1KumulatifSkor}
-            );
-            genelKumulatifSkorlar[p] = (oyuncuVeri['skor'] as num).toInt();
+    // 1. Kendi güncel puanımızı yerel veritabanından alalım (Maliyet: 0)
+    int benimGuncelSkorum = await DatabaseHelper.instance.getOyuncuSkor();
+    if (mounted) setState(() { genelKumulatifSkorlar[ben] = benimGuncelSkorum; });
+
+    // 2. Rakiplerin puanını tüm tabloyu indirmeden, nokta atışıyla bulalım
+    final db = await DatabaseHelper.instance.database;
+
+    for (var p in masadakiHerkes) {
+      if (p != ben) {
+        int rakipSkor = widget.rakip1KumulatifSkor; // Ana menüden gelen varsayılan değer
+
+        if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
+          // A) CANLI ODA: Rakip gerçek insansa, sadece o kişinin güncel skorunu çek (Maliyet: 1 Okuma)
+          try {
+            var doc = await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(p).get();
+            if (doc.exists) rakipSkor = doc.data()?['skor'] ?? 0;
+          } catch (e) {
+            print("Rakip skoru çekilemedi: $e");
+          }
+        } else {
+          // B) BOT ODASI: Rakip bir botsa, internete hiç bağlanmadan yerel cihazdan bul (Maliyet: 0)
+          var res = await db.query('botlar', where: 'bot_adi = ?', whereArgs: [p]);
+          if (res.isNotEmpty) {
+            rakipSkor = res.first['skor'] as int;
           }
         }
-      });
+
+        if (mounted) {
+          setState(() { genelKumulatifSkorlar[p] = rakipSkor; });
+        }
+      }
     }
   }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 5: Firebase Üzerinden Canlı Odayı Dinleyen Kod (ZAMAN BONUSU EŞİTLEMESİ DÜZELTİLDİ)
+// ==========================================
   void _canliOdaDinle() {
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
@@ -170,6 +208,7 @@ class _GamePageState extends State<GamePage> {
         setState(() {
           odadakiErkenBitirenKisi = dbErkenBitiren;
           erkenBitirmeBonusuKazandiMi = true;
+          // EĞER RAKİP BUTONA BASTIYSA VE SÜRE 20'DEN BÜYÜKSE SÜREYİ 20'YE DÜŞÜR:
           if (_kalanSure > 20) _kalanSure = 20;
         });
       }
@@ -216,6 +255,7 @@ class _GamePageState extends State<GamePage> {
         }
       }
 
+      // 🔥 MİSAFİR OYUNCUNUN (CLIENT) PUANLARI ALIP TOPLADIĞI YER
       if (puanlarMap.isNotEmpty && trToLowerCase(kurucu) != trToLowerCase(ben)) {
         puanlarMap.forEach((kullanici, pMap) {
           String kName = kullanici.toString().trim();
@@ -230,6 +270,11 @@ class _GamePageState extends State<GamePage> {
             tumTurPuanlari[kName] = toplam;
           }
         });
+
+        // 🚀 YENİ EKLENEN KISIM: Misafir telefon kategorileri topladıktan sonra zaman bonusunu da haneye ekliyor!
+        if (odadakiErkenBitirenKisi.isNotEmpty) {
+          tumTurPuanlari[odadakiErkenBitirenKisi] = (tumTurPuanlari[odadakiErkenBitirenKisi] ?? 0) + 10;
+        }
 
         if (mounted && !turBittiMi) {
           setState(() {
@@ -251,7 +296,11 @@ class _GamePageState extends State<GamePage> {
       }
     });
   }
+// ---------------- BÖLÜM 5 SONU ----------------
 
+// ==========================================
+// BÖLÜM 6: Tur Bittiğinde Otomatik İlerlemeyi Sağlayan 15 Saniyelik Güvenlik Kodu
+// ==========================================
   void _guvenlikSayaciniBaslat() {
     _guvenlikTimer?.cancel();
     _kalanGuvenlikSaniyesi = 15;
@@ -267,7 +316,12 @@ class _GamePageState extends State<GamePage> {
       });
     });
   }
+// ---------------- BÖLÜM 6 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 7: Hazır Butonuna Tıklandığında Çalışan Kod
+// ==========================================
   Future<void> _hazirButonunaBasildi() async {
     if (benHazirMiyim) return;
     if (mounted) setState(() { benHazirMiyim = true; });
@@ -280,7 +334,12 @@ class _GamePageState extends State<GamePage> {
       _sonrakiTuraGec();
     }
   }
+// ---------------- BÖLÜM 7 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 8: Yeni Turu Başlatan ve Temizleyen Kod
+// ==========================================
   void _yeniTurBaslat({bool ilkBaslangic = false, String? firebaseHarfi}) {
     _isTransitioning = false;
     _timer?.cancel();
@@ -327,7 +386,12 @@ class _GamePageState extends State<GamePage> {
       _botCevaplariniHazirla();
     }
   }
+// ---------------- BÖLÜM 8 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 9: Ana 90 Saniyelik Geri Sayım Sayacı Kodu
+// ==========================================
   void _zamanlayiciyiBaslat() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -342,7 +406,12 @@ class _GamePageState extends State<GamePage> {
       });
     });
   }
+// ---------------- BÖLÜM 9 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 10: Botların Cevaplarını Arka Planda Hazırlayan Kod
+// ==========================================
   Future<void> _botCevaplariniHazirla() async {
     final random = Random();
     int basariYuzdesi = 90;
@@ -366,7 +435,12 @@ class _GamePageState extends State<GamePage> {
       }
     }
   }
+// ---------------- BÖLÜM 10 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 11: İlk Harfin Doğruluğunu Sınayan Kod
+// ==========================================
   bool _harfDogruMu(String kelime) {
     if (kelime.isEmpty || kelime == "-") return true;
     return trToLowerCase(kelime[0]) == trToLowerCase(secilenHarf);
@@ -377,7 +451,12 @@ class _GamePageState extends State<GamePage> {
       content: Text("Girdiğiniz kelime '$secilenHarf' harfi ile başlamalıdır!"), backgroundColor: Colors.orange.shade800, duration: const Duration(seconds: 2),
     ));
   }
+// ---------------- BÖLÜM 11 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 12: Kelimenin Kurallara Uygunluğunu ve Küfürleri Kontrol Eden Kod
+// ==========================================
   bool _girdiGecerliMi() {
     String metin = trToLowerCase(_inputController.text.trim());
     int currentCatId = kategoriler[aktifKategoriIndex]["id"];
@@ -408,7 +487,12 @@ class _GamePageState extends State<GamePage> {
     }
     return true;
   }
+// ---------------- BÖLÜM 12 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 13: Turu Bitir (20 Saniye) Butonunun Basılabilir Olma Kuralları
+// ==========================================
   bool turuBitirAktifMi() {
     if (erkenBitirmeBonusuKazandiMi || rakipBekleniyor || _kalanSure < 20) return false;
     String anlikKelime = _inputController.text.trim();
@@ -422,7 +506,12 @@ class _GamePageState extends State<GamePage> {
     }
     return bosKutuSayisi <= 1;
   }
+// ---------------- BÖLÜM 13 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 14: Turu Erken Bitir Butonuna Basıldığında Çalışan Kod (20 SN BAŞLATICI)
+// ==========================================
   void turuErkenBitirIstegi() async {
     if (erkenBitirmeBonusuKazandiMi) return;
     if (!_girdiGecerliMi()) return;
@@ -430,7 +519,7 @@ class _GamePageState extends State<GamePage> {
 
     if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
       await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-        'erkenBitiren': ben,
+        'erkenBitiren': ben, // Benim ismimi yazıp diğer cihazları uyar
       });
     } else {
       setState(() {
@@ -448,13 +537,23 @@ class _GamePageState extends State<GamePage> {
       },
     );
   }
+// ---------------- BÖLÜM 14 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 15: Yazılanları Anlık TDK'da Arayan Kod
+// ==========================================
   void _arkaplanTdkKontrol(int catId, String kelime) {
     if (kelime.length >= 2 && kelime != "-") {
       DatabaseHelper.instance.checkWordWithToleranceAndTdk(catId, secilenHarf, kelime);
     }
   }
+// ---------------- BÖLÜM 15 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 16: O Anki Kutudaki Kelimeyi Hafızaya (Diziye) Kaydeden Kod
+// ==========================================
   void _mevcutKelimeyiKaydet() {
     if (!_girdiGecerliMi()) { _inputController.clear(); }
 
@@ -468,7 +567,12 @@ class _GamePageState extends State<GamePage> {
       _arkaplanTdkKontrol(currentCatId, girilenKelime);
     }
   }
+// ---------------- BÖLÜM 16 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 17: İsim, Şehir vs Kategoriler Arası Geçiş Kodu
+// ==========================================
   void kategoriDegistir(int yeniIndex) {
     if (!_girdiGecerliMi()) return;
     _mevcutKelimeyiKaydet();
@@ -479,7 +583,12 @@ class _GamePageState extends State<GamePage> {
       _inputController.text = (eskiCevap == "-") ? "" : eskiCevap;
     });
   }
+// ---------------- BÖLÜM 17 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 18: Süre Bittiğinde Cevapları Firebase'e İleten Kod
+// ==========================================
   Future<void> _cevaplariFirebaseeGonderAndDegerlendir() async {
     _timer?.cancel();
     _mevcutKelimeyiKaydet();
@@ -542,11 +651,30 @@ class _GamePageState extends State<GamePage> {
       await topluDegerlendir();
     }
   }
+// ---------------- BÖLÜM 18 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 19: Odadaki Ana Makinenin (Kurucu) Herkesin Puanını Firebase'e İşlediği Kod
+// ==========================================
   Future<void> _hostPuanlariHesaplaVeKaydet() async {
-    await topluDegerlendir();
-    Map<String, dynamic> tumPuanlarFirebase = {};
+    // DÜZELTME: Rakiplerin cevaplarını dinamik çektik.
+    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+    var anlikCevaplar = doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
 
+    anlikCevaplar.forEach((kullanici, cevaplar) {
+      String kName = kullanici.toString().trim();
+      if (trToLowerCase(kName) != trToLowerCase(ben) && masadakiHerkes.contains(kName)) {
+        Map<dynamic, dynamic> rawCevap = cevaplar as Map<dynamic, dynamic>;
+        rawCevap.forEach((k, v) {
+          tumCevaplar.putIfAbsent(kName, () => {})[int.parse(k.toString())] = v.toString();
+        });
+      }
+    });
+
+    await topluDegerlendir();
+
+    Map<String, dynamic> tumPuanlarFirebase = {};
     for (var p in masadakiHerkes) {
       Map<String, int> pPuan = {};
       tumKategoriPuanlari[p]?.forEach((k, v) => pPuan[k.toString()] = v);
@@ -557,19 +685,21 @@ class _GamePageState extends State<GamePage> {
       'puanlar': tumPuanlarFirebase,
     });
   }
+// ---------------- BÖLÜM 19 SONU ----------------
 
-  // 🚀 İŞTE YENİ SİHİR: TDK ve GEMİNİ'Yİ BİRLİKTE ÇALIŞTIRAN TOPLU SORGULAMA!
+
+// ==========================================
+// ==========================================
+// BÖLÜM 20: GEMİNİ VE TDK KULLANILARAK PUAN HESAPLAMA (Zaman ve Tek Bilene 20 Puan Bonusu)
+// ==========================================
   Future<void> topluDegerlendir() async {
     _timer?.cancel();
-
-    // Ekranı "Hesaplanıyor" durumuna al
     if (mounted) setState(() { isLoading = true; });
 
     try {
       List<Map<String, dynamic>> sorgular = [];
       List<Map<String, dynamic>> futureMeta = [];
 
-      // 1. Ekrandaki tüm kelimeleri tek bir listeye topluyoruz
       for (var kat in kategoriler) {
         int id = kat["id"];
         for (var p in masadakiHerkes) {
@@ -579,7 +709,6 @@ class _GamePageState extends State<GamePage> {
         }
       }
 
-      // ⚡ 2. BÜYÜK SİHİR: TDK ve Gemini motorunu tek hamlede çalıştırıyoruz!
       List<int> sonuclar = await DatabaseHelper.instance.topluDegerlendirmeMotoru(sorgular, secilenHarf);
 
       Map<int, Map<String, int>> dogruluklar = {};
@@ -593,7 +722,6 @@ class _GamePageState extends State<GamePage> {
         enUzunDogruKelime[id] = 0;
       }
 
-      // 3. Gelen toplu sonuçları ekran değişkenlerine işliyoruz
       for (int i = 0; i < sonuclar.length; i++) {
         int sonuc = sonuclar[i];
         int id = futureMeta[i]["id"];
@@ -610,27 +738,46 @@ class _GamePageState extends State<GamePage> {
 
       for (var p in masadakiHerkes) { tumTurPuanlari[p] = 0; }
 
-      // 4. Mükemmel "Pişti" kuralları ve puan hesaplama
       for (var kat in kategoriler) {
         int id = kat["id"];
+
+        // 1. YENİ KURAL: O kategoride toplam kaç kişinin DOĞRU bildiğini sayalım
+        int dogruBilenSayisi = 0;
+        for (var p in masadakiHerkes) {
+          if (dogruluklar[id]![p]! > 0) {
+            dogruBilenSayisi++;
+          }
+        }
+
+        // 2. Şimdi puanları dağıtalım
         for (var p in masadakiHerkes) {
           int puan = 0;
-          if (dogruluklar[id]![p]! > 0) {
-            String benimCevap = trToLowerCase(cevaplar[id]![p]!);
-            bool pistiOlduMu = false;
 
-            for (var diger in masadakiHerkes) {
-              if (diger != p && dogruluklar[id]![diger]! > 0) {
-                if (trToLowerCase(cevaplar[id]![diger]!) == benimCevap) {
-                  pistiOlduMu = true; break;
+          if (dogruluklar[id]![p]! > 0) {
+
+            // 🔥 YENİ KURAL: Eğer bu kategoride sadece 1 kişi doğru bildiyse (Yani sadece o yazmışsa) -> 20 Puan!
+            if (dogruBilenSayisi == 1) {
+              puan = 20;
+            }
+            // Birden fazla kişi bildiyse, normal 10 veya 5 (Pişti) hesabı
+            else {
+              String benimCevap = trToLowerCase(cevaplar[id]![p]!);
+              bool pistiOlduMu = false;
+
+              for (var diger in masadakiHerkes) {
+                if (diger != p && dogruluklar[id]![diger]! > 0) {
+                  if (trToLowerCase(cevaplar[id]![diger]!) == benimCevap) {
+                    pistiOlduMu = true; break;
+                  }
                 }
               }
+              puan = pistiOlduMu ? 5 : 10;
             }
 
-            // Pişti ise 5, değilse 10 puan!
-            puan = pistiOlduMu ? 5 : 10;
-            // En uzun kelime bonusu!
-            if (cevaplar[id]![p]!.length == enUzunDogruKelime[id]! && enUzunDogruKelime[id]! > 0) puan += 2;
+            // En uzun kelime bonusu (+2) her koşulda (20 puan alsa da) eklenir
+            if (cevaplar[id]![p]!.length == enUzunDogruKelime[id]! && enUzunDogruKelime[id]! > 0) {
+              puan += 2;
+            }
           }
 
           tumKategoriPuanlari.putIfAbsent(p, () => {})[id] = puan;
@@ -638,12 +785,11 @@ class _GamePageState extends State<GamePage> {
         }
       }
 
-      // 5. Erken bitirene ekstra puan
+      // DÜZELTME: Erken bitiren kişinin (+10 Zaman Bonusu) herkese adil dağıtılmasını sağlayan kod
       if (odadakiErkenBitirenKisi.isNotEmpty) {
         tumTurPuanlari[odadakiErkenBitirenKisi] = (tumTurPuanlari[odadakiErkenBitirenKisi] ?? 0) + 10;
       }
 
-      // 6. Sonuçları ekrana yansıt
       if (mounted) {
         setState(() {
           turBittiMi = true;
@@ -658,12 +804,14 @@ class _GamePageState extends State<GamePage> {
     } catch (e) {
       print("🚨 Toplu Değerlendirme Hatası: $e");
     } finally {
-      // İşlem bitince yükleme ekranını kapat
       if (mounted) setState(() { isLoading = false; });
     }
   }
+// ---------------- BÖLÜM 20 SONU ----------------
 
-
+// ==========================================
+// BÖLÜM 21: Sonraki Tura Yönlendirme ve Maç Bitişi Veritabanı Kayıtları
+// ==========================================
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
     _isTransitioning = true;
@@ -705,6 +853,9 @@ class _GamePageState extends State<GamePage> {
         });
       }
     } else {
+      // ==========================================
+      // 🚀 YENİ MOTOR ENTEGRASYONU: MAÇ BİTİŞİ
+      // ==========================================
       for(var p in masadakiHerkes) {
         macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
         genelKumulatifSkorlar[p] = (genelKumulatifSkorlar[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
@@ -719,8 +870,15 @@ class _GamePageState extends State<GamePage> {
         }
       }
 
-      int yazilacakDBPuan = (genelKumulatifSkorlar[ben] ?? 0) + (birinciMiyim ? 100 : 0);
-      await DatabaseHelper.instance.saveOyuncuSkor(ben, yazilacakDBPuan);
+      int buMactaKazanilanPuan = (genelKumulatifSkorlar[ben] ?? 0) + (birinciMiyim ? 100 : 0);
+
+      // 1. ESKİ PUAN VE SIRALAMAYI AL (Kayıt yapmadan önce yeni motorumuza soruyoruz)
+      int eskiGenelPuan = await DatabaseHelper.instance.getOyuncuSkor();
+      Map<String, int> eskiSiraVerisi = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(eskiGenelPuan);
+      int gercekEskiSiralama = eskiSiraVerisi['sira'] ?? 1000;
+
+      // 2. PUANI VERİTABANINA KAYDET VE BOTLARI GÜNCELLE
+      await DatabaseHelper.instance.saveOyuncuSkor(ben, buMactaKazanilanPuan);
 
       if (widget.odaKodu == null || widget.odaKodu!.isEmpty) {
         for (var rakipAdi in masadakiHerkes) {
@@ -736,20 +894,12 @@ class _GamePageState extends State<GamePage> {
         }
       }
 
-      List<Map<String, dynamic>> yeniTablo = await DatabaseHelper.instance.getTumLiderlikTablosu(ben);
-      int yeniSiralama = max(1000, yeniTablo.length);
-      int yeniGenelPuan = 0;
+      // 3. YENİ PUAN VE YENİ SIRALAMAYI AL (Kayıttan sonra tekrar yeni motorumuza soruyoruz)
+      int yeniGenelPuan = await DatabaseHelper.instance.getOyuncuSkor();
+      Map<String, int> yeniSiraVerisi = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(yeniGenelPuan);
+      int gercekYeniSiralama = yeniSiraVerisi['sira'] ?? 1000;
 
-      for (int i = 0; i < yeniTablo.length; i++) {
-        if (yeniTablo[i]['bot_adi'] == ben) {
-          yeniSiralama = i + 1;
-          yeniGenelPuan = (yeniTablo[i]['skor'] as num).toInt();
-          break;
-        }
-      }
-
-      int eskiGenelPuan = max(0, yeniGenelPuan - yazilacakDBPuan);
-
+      // 4. BÜTÜN DOĞRU VERİLERİ RESULT SAYFASINA FIRLAT
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
@@ -759,18 +909,23 @@ class _GamePageState extends State<GamePage> {
               tumMacSkorlari: macSkorlari,
               eskiGenelPuan: eskiGenelPuan,
               yeniGenelPuan: yeniGenelPuan,
-              eskiSiralama: 1000,
-              yeniSiralama: yeniSiralama,
+              eskiSiralama: gercekEskiSiralama,
+              yeniSiralama: gercekYeniSiralama,
             ),
           ),
         );
       }
     }
   }
+// ---------------- BÖLÜM 21 SONU ----------------
 
+
+// ==========================================
+// ==========================================
+// BÖLÜM 22: GÖRSEL TASARIM VE KULLANICI ARAYÜZÜ (UI) (Yazma ve Geçiş Kilidi Düzeltildi)
+// ==========================================
   @override
   Widget build(BuildContext context) {
-    // 🚀 YÜKLEME EKRANI (Paralel sorgular yaparken çalışır)
     if (isLoading) {
       return Scaffold(
         backgroundColor: Colors.purple.shade900,
@@ -823,7 +978,6 @@ class _GamePageState extends State<GamePage> {
         body: SafeArea(
           child: Column(
             children: [
-              // ÜST HEADER: SEN vs RAKİP PANOLARI
               Container(
                 height: 90,
                 decoration: const BoxDecoration(
@@ -907,7 +1061,6 @@ class _GamePageState extends State<GamePage> {
 
               const SizedBox(height: 10),
 
-              // KELİMELERİN KARŞILAŞTIRILMASI LISTESİ (ORTA İKONLU, SİMETRİK)
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1102,7 +1255,8 @@ class _GamePageState extends State<GamePage> {
                   String cevap = tumCevaplar[ben]?[kategoriler[index]["id"]] ?? "";
                   bool dolumu = (cevap.isNotEmpty && cevap != "-" && cevap.length >= 2);
                   return InkWell(
-                    onTap: () { if (!erkenBitirmeBonusuKazandiMi) kategoriDegistir(index); },
+                    // YENİ DÜZELTME: Kategori ikonlarına tıklamak, "süre 0'dan büyük olduğu sürece" serbest!
+                    onTap: () { if (_kalanSure > 0) kategoriDegistir(index); },
                     borderRadius: BorderRadius.circular(10),
                     child: Padding(padding: const EdgeInsets.all(6.0), child: Icon(kategoriler[index]["icon"], size: 24, color: index == aktifKategoriIndex ? Colors.purple : (dolumu ? Colors.blue : Colors.grey.shade400))),
                   );
@@ -1112,13 +1266,17 @@ class _GamePageState extends State<GamePage> {
             const SizedBox(height: 16),
             Text("${mevcutKategori["isim"]} Kategorisi", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
             const SizedBox(height: 10),
+
             TextField(
-              controller: _inputController, autocorrect: false, enableSuggestions: false, textCapitalization: TextCapitalization.words, keyboardType: TextInputType.text, enabled: !erkenBitirmeBonusuKazandiMi,
+              controller: _inputController, autocorrect: false, enableSuggestions: false, textCapitalization: TextCapitalization.words, keyboardType: TextInputType.text,
+              enabled: _kalanSure > 0,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(labelText: "Kelimenizi buraya yazın...", border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: Icon(mevcutKategori["icon"], color: Colors.purple)),
             ),
             const SizedBox(height: 16),
 
+            // SADECE TURU BİTİR BUTONU VE ANİMASYON YER DEĞİŞTİRİYOR.
+            // "ÖNCEKİ/SONRAKİ" BUTONLARINI AŞAĞIYA, HER ZAMAN GÖRÜNECEK ŞEKİLDE ALDIK!
             if (erkenBitirmeBonusuKazandiMi)
               Container(
                 width: double.infinity, padding: const EdgeInsets.all(16),
@@ -1134,44 +1292,35 @@ class _GamePageState extends State<GamePage> {
                         Text("$_kalanSure", style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity, alignment: Alignment.center, padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                      child: const ClipRRect(borderRadius: BorderRadius.all(Radius.circular(12)), child: MediumRectangleAdWidget()),
-                    ),
                   ],
                 ),
               )
             else
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity, height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: turuBitirBtnAktif ? () => turuErkenBitirIstegi() : null,
-                        icon: const Icon(Icons.flag_rounded, color: Colors.white),
-                        label: Text(
-                          erkenBitirmeBonusuKazandiMi ? "Sürenin Bitmesi Bekleniyor..." : (_kalanSure < 20 ? "SON 20 SANİYE (BONUS KAPANDI)" : (turuBitirBtnAktif ? "TURU BİTİR (+10 ZAMAN BONUSU)" : "TURU BİTİR (EN AZ 5 KELİME YAZIN)")),
-                          style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(backgroundColor: turuBitirBtnAktif ? Colors.redAccent.shade200 : Colors.grey.shade400, disabledBackgroundColor: Colors.grey.shade400, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                      ),
+                child: SizedBox(
+                  width: double.infinity, height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: turuBitirBtnAktif ? () => turuErkenBitirIstegi() : null,
+                    icon: const Icon(Icons.flag_rounded, color: Colors.white),
+                    label: Text(
+                      erkenBitirmeBonusuKazandiMi ? "Sürenin Bitmesi Bekleniyor..." : (_kalanSure < 20 ? "SON 20 SANİYE (BONUS KAPANDI)" : (turuBitirBtnAktif ? "TURU BİTİR (+10 ZAMAN BONUSU)" : "TURU BİTİR (EN AZ 5 KELİME YAZIN)")),
+                      style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex > 0 && !erkenBitirmeBonusuKazandiMi) ? () => kategoriDegistir(aktifKategoriIndex - 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade300, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text("◄ Önceki", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)))),
-                        const SizedBox(width: 10),
-                        Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex < kategoriler.length - 1 && !erkenBitirmeBonusuKazandiMi) ? () => kategoriDegistir(aktifKategoriIndex + 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text("Sonraki ►", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
-                      ],
-                    ),
-                  ],
-
+                    style: ElevatedButton.styleFrom(backgroundColor: turuBitirBtnAktif ? Colors.redAccent.shade200 : Colors.grey.shade400, disabledBackgroundColor: Colors.grey.shade400, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  ),
                 ),
               ),
+
+            // YENİ DÜZELTME: İleri ve Geri Butonları if/else dışına alındı. Artık süre bitene kadar hep oradalar!
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex > 0 && _kalanSure > 0) ? () => kategoriDegistir(aktifKategoriIndex - 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade300, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text("◄ Önceki", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)))),
+                const SizedBox(width: 10),
+                Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex < kategoriler.length - 1 && _kalanSure > 0) ? () => kategoriDegistir(aktifKategoriIndex + 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: const Text("Sonraki ►", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
+              ],
+            ),
           ],
         ),
       ),
@@ -1179,3 +1328,4 @@ class _GamePageState extends State<GamePage> {
     );
   }
 }
+// ---------------- BÖLÜM 22 SONU ----------------

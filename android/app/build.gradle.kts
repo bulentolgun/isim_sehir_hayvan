@@ -2,7 +2,6 @@ import java.util.Properties
 import java.io.FileInputStream
 
 plugins {
-
     id("com.android.application")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
@@ -10,10 +9,11 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.firebase.crashlytics")
-
 }
 
+// ==========================================
 // 🎯 1. ŞİFRE DOSYASINI OKUMA BÖLÜMÜ
+// ==========================================
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -39,7 +39,9 @@ android {
         multiDexEnabled = true
     }
 
+    // ==========================================
     // 🎯 2. İMZA YAPILANDIRMASI (SigningConfigs)
+    // ==========================================
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
@@ -51,10 +53,16 @@ android {
 
     buildTypes {
         release {
-            // 🎯 3. ÜRETİM SÜRÜMÜNÜ İMZAYA BAĞLAMA (Bu kısım kalıyor)
+            // ==========================================
+            // 🎯 3. ÜRETİM SÜRÜMÜNÜ İMZAYA BAĞLAMA
+            // ==========================================
             signingConfig = signingConfigs.getByName("release")
 
-            // 🟢 YENİ EKLENEN KISIM (Bu satırı ekliyoruz)
+            // ==========================================
+            // 🟢 4. KOD SIKIŞTIRMA VE GÜVENLİK (Google Play Optimizasyonu)
+            // ==========================================
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

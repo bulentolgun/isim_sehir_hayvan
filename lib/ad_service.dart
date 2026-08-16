@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; // Web çökmesini önlemek için eklendi
 
+// ==========================================
+// BÖLÜM 1: Temel Kurulum ve Reklam Kimlikleri (Ad Unit IDs)
+// ==========================================
 class AdService {
   static final AdService instance = AdService._init();
   AdService._init();
@@ -10,39 +14,41 @@ class AdService {
   InterstitialAd? _interstitialAd;
   bool _isInterstitialLoading = false;
 
+  // 🛡️ DÜZELTME: Desteklenmeyen platformlarda (Web, Desktop) çökmeyi önleyen güvenli ID çekimi
   String get bannerAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-1815802672526148/6431616325';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716';
-    }
-    throw UnsupportedError('Desteklenmeyen platform');
+    if (kIsWeb) return '';
+    if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/6431616325';
+    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/2934735716';
+    return '';
   }
 
   String get mediumRectangleAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-1815802672526148/4022103076';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716';
-    }
-    throw UnsupportedError('Desteklenmeyen platform');
+    if (kIsWeb) return '';
+    if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/4022103076';
+    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/2934735716';
+    return '';
   }
 
   String get interstitialAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-1815802672526148/2648283988';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/4452514319';
-    }
-    throw UnsupportedError('Desteklenmeyen platform');
+    if (kIsWeb) return '';
+    if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/2648283988';
+    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/4452514319';
+    return '';
   }
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: Geçiş Reklamı (Interstitial) Yükleme ve Gösterme
+// ==========================================
   void loadInterstitialAd() {
-    if (_interstitialAd != null || _isInterstitialLoading) return;
+    String adId = interstitialAdUnitId;
+    if (adId.isEmpty || _interstitialAd != null || _isInterstitialLoading) return;
+
     _isInterstitialLoading = true;
 
     InterstitialAd.load(
-      adUnitId: interstitialAdUnitId,
+      adUnitId: adId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -50,6 +56,7 @@ class AdService {
           _isInterstitialLoading = false;
         },
         onAdFailedToLoad: (error) {
+          debugPrint('Geçiş Reklamı Hatası: ${error.message}');
           _interstitialAd = null;
           _isInterstitialLoading = false;
         },
@@ -74,66 +81,78 @@ class AdService {
         emniyetTimer?.cancel();
         _interstitialAd?.dispose();
         _interstitialAd = null;
-        loadInterstitialAd();
+        loadInterstitialAd(); // Sonraki kullanım için arkadan yenisini yükle
         onReklamBitti();
       }
     }
 
-    // 🚨 MAX 6 SANİYE EMNİYET SAYACI
     emniyetTimer = Timer(const Duration(seconds: 6), () {
       tetikleVeTemizle();
     });
 
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        tetikleVeTemizle();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        tetikleVeTemizle();
-      },
+      onAdDismissedFullScreenContent: (ad) => tetikleVeTemizle(),
+      onAdFailedToShowFullScreenContent: (ad, error) => tetikleVeTemizle(),
     );
 
     _interstitialAd!.show();
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
-  BannerAd createBannerAd({
+
+// ==========================================
+// BÖLÜM 3: Banner ve Kutu Reklam Motorları (Yükleme Öncelikli)
+// ==========================================
+  BannerAd? createBannerAd({
     required Function() onAdLoaded,
     required Function(LoadAdError) onAdFailedToLoad,
   }) {
+    String adId = bannerAdUnitId;
+    if (adId.isEmpty) return null; // Platform desteklenmiyorsa boş dön
+
     return BannerAd(
-      adUnitId: bannerAdUnitId,
+      adUnitId: adId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) => onAdLoaded(),
         onAdFailedToLoad: (ad, error) {
-          ad.dispose();
+          debugPrint('Banner Hatası: ${error.message}');
+          ad.dispose(); // 🛡️ Bellek Sızıntısı Kalkanı
           onAdFailedToLoad(error);
         },
       ),
-    );
+    )..load();
   }
 
-  BannerAd createMediumRectangleAd({
+  BannerAd? createMediumRectangleAd({
     required Function() onAdLoaded,
     required Function(LoadAdError) onAdFailedToLoad,
   }) {
+    String adId = mediumRectangleAdUnitId;
+    if (adId.isEmpty) return null;
+
     return BannerAd(
-      adUnitId: mediumRectangleAdUnitId,
+      adUnitId: adId,
       size: AdSize.mediumRectangle,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) => onAdLoaded(),
         onAdFailedToLoad: (ad, error) {
-          ad.dispose();
+          debugPrint('Kutu Reklam Hatası: ${error.message}');
+          ad.dispose(); // 🛡️ Bellek Sızıntısı Kalkanı
           onAdFailedToLoad(error);
         },
       ),
-    );
+    )..load();
   }
 }
+// ---------------- BÖLÜM 3 SONU ----------------
 
-// 🎯 KESİNTİSİZ, EKRAN GENİŞLİĞİNİ %100 KAPLAYAN ŞIK BANNER WIDGET'I
+
+// ==========================================
+// BÖLÜM 4: Kesintisiz Alt Banner Widget'ı (Kullanıcı Arayüzü)
+// ==========================================
 class BottomBannerAdWidget extends StatefulWidget {
   const BottomBannerAdWidget({super.key});
 
@@ -154,11 +173,19 @@ class _BottomBannerAdWidgetState extends State<BottomBannerAdWidget> {
   void _loadAd() {
     _bannerAd = AdService.instance.createBannerAd(
       onAdLoaded: () {
-        if (mounted) setState(() => _isAdLoaded = true);
+        if (mounted) {
+          setState(() => _isAdLoaded = true);
+        } else {
+          // 🛡️ KRİTİK DÜZELTME: Reklam yüklendiğinde kullanıcı sayfadan çoktan çıkmışsa reklamı öldür!
+          _bannerAd?.dispose();
+          _bannerAd = null;
+        }
       },
-      onAdFailedToLoad: (error) {},
+      onAdFailedToLoad: (error) {
+        if (mounted) setState(() => _isAdLoaded = false);
+        _bannerAd = null;
+      },
     );
-    _bannerAd?.load();
   }
 
   @override
@@ -169,19 +196,20 @@ class _BottomBannerAdWidgetState extends State<BottomBannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // 🛡️ Hata Kalkanı: Widget klavye açıkken, henüz yüklenmemişken veya null ise çizilmez
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     if (keyboardHeight > 0 || !_isAdLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }
 
     return Container(
-      width: double.infinity, // 🎯 Ekran kenarlarına sıfırlanıp bütünlük sağlar
+      width: double.infinity,
       height: _bannerAd!.size.height.toDouble() + 6,
       decoration: BoxDecoration(
-        color: Colors.black, // 🎯 Şık ve göz yormayan siyah zemin
+        color: Colors.black,
         border: Border(
           top: BorderSide(
-            color: Colors.purple.shade200.withOpacity(0.3), // İnce estetik geçiş çizgisi
+            color: Colors.purple.shade200.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -191,7 +219,12 @@ class _BottomBannerAdWidgetState extends State<BottomBannerAdWidget> {
     );
   }
 }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 5: Orta Boy Kutu Reklam Widget'ı (Kullanıcı Arayüzü)
+// ==========================================
 class MediumRectangleAdWidget extends StatefulWidget {
   const MediumRectangleAdWidget({super.key});
 
@@ -212,11 +245,19 @@ class _MediumRectangleAdWidgetState extends State<MediumRectangleAdWidget> {
   void _loadAd() {
     _mediumAd = AdService.instance.createMediumRectangleAd(
       onAdLoaded: () {
-        if (mounted) setState(() => _isAdLoaded = true);
+        if (mounted) {
+          setState(() => _isAdLoaded = true);
+        } else {
+          // 🛡️ KRİTİK DÜZELTME: Bellek Sızıntısı Koruması
+          _mediumAd?.dispose();
+          _mediumAd = null;
+        }
       },
-      onAdFailedToLoad: (error) {},
+      onAdFailedToLoad: (error) {
+        if (mounted) setState(() => _isAdLoaded = false);
+        _mediumAd = null;
+      },
     );
-    _mediumAd?.load();
   }
 
   @override
@@ -257,3 +298,4 @@ class _MediumRectangleAdWidgetState extends State<MediumRectangleAdWidget> {
     );
   }
 }
+// ---------------- BÖLÜM 5 SONU ----------------

@@ -1,6 +1,9 @@
+// ==========================================
+// BÖLÜM 1: Kütüphaneler, Sınıf Tanımlaması ve Parametreler
+// ==========================================
 import 'package:flutter/material.dart';
 import 'lobby_page.dart';
-import 'ad_service.dart'; // 🎯 Reklam Servisimiz (Artık Aktif!)
+import 'ad_service.dart';
 
 class GameModePage extends StatelessWidget {
   final String oyuncuAdi;
@@ -9,13 +12,18 @@ class GameModePage extends StatelessWidget {
   final int renkIndex;
 
   const GameModePage({
-    super.key, // Modern super parametre kullanımı
+    super.key,
     required this.oyuncuAdi,
     required this.yuzIndex,
     required this.aksesuarIndex,
     required this.renkIndex,
   });
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: Ana Sayfa İskeleti, Başlık ve Karşılama Alanı
+// ==========================================
   @override
   Widget build(BuildContext context) {
     final String mevcutOyuncu = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
@@ -30,7 +38,6 @@ class GameModePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 30),
-              // Yanlışlıkla LoginPage'in yapıştırıldığı yer temizlendi ve ikon eski haline döndürüldü
               const Icon(
                 Icons.sports_esports_rounded,
                 size: 90,
@@ -57,7 +64,12 @@ class GameModePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Oyun Modu Seçim Butonları (Arkadaş Odası & Hızlı Eşleşme)
+// ==========================================
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
@@ -125,7 +137,12 @@ class GameModePage extends StatelessWidget {
               ),
 
               const SizedBox(height: 40),
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: Geri Dön Butonu ve Alt Banner Reklam
+// ==========================================
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
@@ -149,11 +166,10 @@ class GameModePage extends StatelessWidget {
           ),
         ),
       ),
-
-      // 🎯 SAYFA ALTINA SABİT BANNER REKLAMI EKLENDİ
       bottomNavigationBar: const SafeArea(
         child: BottomBannerAdWidget(),
       ),
     );
   }
 }
+// ---------------- BÖLÜM 4 SONU ----------------

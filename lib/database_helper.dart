@@ -1,3 +1,6 @@
+// ==========================================
+// BÖLÜM 1: Kütüphaneler ve Sınıf Tanımlaması (Singleton Yapısı)
+// ==========================================
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
@@ -11,7 +14,12 @@ class DatabaseHelper {
   static Database? _database;
 
   DatabaseHelper._init();
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: Veritabanı Oluşturma ve Bağlantı
+// ==========================================
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('isim_sehir.db');
@@ -29,7 +37,12 @@ class DatabaseHelper {
       onUpgrade: _onUpgrade,
     );
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Tabloların Kurulumu ve Güncellenmesi (Create & Upgrade)
+// ==========================================
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE oyuncu (
@@ -77,7 +90,12 @@ class DatabaseHelper {
       await _1000BotuVeritabaninaEkle(db);
     }
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: SQL Dosyasından Başlangıç Kelimelerini Yükleme
+// ==========================================
   static Future<void> _sqlDosyasindanKelimeleriYukle(Database db) async {
     try {
       String sqlContent = await rootBundle.loadString('assets/game_data.sql');
@@ -96,7 +114,12 @@ class DatabaseHelper {
       print("game_data.sql yüklenirken hata oluştu: $e");
     }
   }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 5: 1000 Adet Botun Oluşturulması ve Firebase'e Aktarılması
+// ==========================================
   static Future<void> _1000BotuVeritabaninaEkle(Database db) async {
     List<String> sehirKodlari = ["34", "06", "35", "16", "07", "01", "60", "61", "55", "42", "22", "10", "20", "26", "27", "33", "41", "45", "54"];
     List<String> unvanlar = ["Pro", "Star", "Master", "Kral", "Efsane", "Gamer", "Kaptan", "TR", "X", "Uzman", "Atak", "Zeki", "Hizli", "Guc", "Lider"];
@@ -161,7 +184,12 @@ class DatabaseHelper {
       }
     }));
   }
+// ---------------- BÖLÜM 5 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 6: Türkçe Karakter Dönüştürme (Küçük Harf)
+// ==========================================
   String trToLowerCase(String text) {
     if (text.isEmpty) return "";
     return text
@@ -175,7 +203,12 @@ class DatabaseHelper {
         .replaceAll('Ç', 'ç')
         .toLowerCase();
   }
+// ---------------- BÖLÜM 6 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 7: Kelime Doğruluk Kontrolü (İlk Harf ve Veritabanı Araması)
+// ==========================================
   Future<int> checkWordWithToleranceAndTdk(int catId, String harf, String kelime) async {
     String temizKelime = kelime.trim();
     if (temizKelime.isEmpty || temizKelime == "-") return 0;
@@ -183,7 +216,6 @@ class DatabaseHelper {
     String girilenIlkharf = trToLowerCase(temizKelime[0]);
     String secilenHarf = trToLowerCase(harf);
 
-    // 🚀 DÜZELTME 1: KATI TÜRKÇE KURALI - Artık İ ve I tamamen ayrı değerlendirilir. Eşleşme yoksa 0 puan!
     if (girilenIlkharf != secilenHarf) {
       return 0;
     }
@@ -197,7 +229,6 @@ class DatabaseHelper {
     String arananKelime = trToLowerCase(kelime.trim());
     String arananHarf = trToLowerCase(harf.trim()[0]);
 
-    // 🚀 DÜZELTME 2: GERÇEK TÜRKÇE BÜYÜK/KÜÇÜK HARF UYUMU
     String arananHarfBuyuk = arananHarf.toUpperCase();
     if (arananHarf == 'ı') arananHarfBuyuk = 'I';
     else if (arananHarf == 'i') arananHarfBuyuk = 'İ';
@@ -229,7 +260,6 @@ class DatabaseHelper {
   }
 
   bool _ozelIsimKontrolEt(int catId, String kelime) {
-    // 🚀 DÜZELTME 3: İngilizce hatalı yazımlar ("isparta", "igdir") silindi.
     List<String> yedekOzelIsimler = [
       "ısparta", "ığdır", "içel", "iskenderun",
       "izmir", "istanbul", "isveç", "isviçre", "ispanya", "italya",
@@ -237,7 +267,12 @@ class DatabaseHelper {
     ];
     return yedekOzelIsimler.contains(kelime);
   }
+// ---------------- BÖLÜM 7 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 8: Toplu Değerlendirme ve Gemini Yapay Zeka Entegrasyonu
+// ==========================================
   Future<List<int>> topluDegerlendirmeMotoru(List<Map<String, dynamic>> sorgular, String secilenHarf) async {
     final db = await instance.database;
     List<int> sonuclar = List.filled(sorgular.length, 0);
@@ -251,7 +286,6 @@ class DatabaseHelper {
       String girilenIlkharf = trToLowerCase(kelime[0]);
       String arananHarf = trToLowerCase(secilenHarf);
 
-      // 🚀 DÜZELTME 4: Burada da KATI TÜRKÇE KURALI uygulandı. Eşleşmiyorsa direkt pas geçer.
       if (girilenIlkharf != arananHarf) continue;
 
       bool tdkOnayi = await _checkWordInDb(catId, secilenHarf, kelime);
@@ -326,12 +360,16 @@ class DatabaseHelper {
 
     return sonuclar;
   }
+// ---------------- BÖLÜM 8 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 9: Botlar İçin Rastgele Kelime Seçme Motoru
+// ==========================================
   Future<String?> getBotKelime(int catId, String harf) async {
     final db = await instance.database;
     String kucukHarf = trToLowerCase(harf);
 
-    // 🚀 DÜZELTME 5: Botlar için de GERÇEK TÜRKÇE BÜYÜK/KÜÇÜK HARF UYUMU
     String arananHarfBuyuk = kucukHarf.toUpperCase();
     if (kucukHarf == 'ı') arananHarfBuyuk = 'I';
     else if (kucukHarf == 'i') arananHarfBuyuk = 'İ';
@@ -357,7 +395,12 @@ class DatabaseHelper {
     }
     return null;
   }
+// ---------------- BÖLÜM 9 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 10: Oyuncu ve Bot Skorlarını Kaydetme ve Çekme İşlemleri
+// ==========================================
   Future<int> getOyuncuSkor() async {
     final db = await instance.database;
     List<Map<String, dynamic>> res = await db.query('oyuncu');
@@ -420,8 +463,13 @@ class DatabaseHelper {
       print("Firebase bot skor güncelleme hatası: $e");
     }
   }
+// ---------------- BÖLÜM 10 SONU ----------------
 
-  Future<List<Map<String, dynamic>>> getTumLiderlikTablosu(String oyuncuAdi) async {
+
+// ==========================================
+// BÖLÜM 11: Liderlik Tablosunu (Sıralamayı) Oluşturma
+// ==========================================
+/*Future<List<Map<String, dynamic>>> getTumLiderlikTablosu(String oyuncuAdi) async {
     final db = await instance.database;
     int oyuncuSkor = await getOyuncuSkor();
     String isim = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
@@ -438,7 +486,12 @@ class DatabaseHelper {
 
     return hepsi;
   }
+// ---------------- BÖLÜM 11 SONU ----------------*/
 
+
+// ==========================================
+// BÖLÜM 12: Eşleştirme İçin Rastgele Bot Seçme
+// ==========================================
   Future<Map<String, dynamic>> getRandomBot({List<String>? haricTutulacakBotlar}) async {
     final db = await instance.database;
     List<Map<String, dynamic>> botlar = await db.query('botlar');
@@ -459,4 +512,58 @@ class DatabaseHelper {
     }
     return {'bot_adi': 'Ahmet_34', 'skor': 3000};
   }
+
+// ---------------- BÖLÜM 12 SONU ----------------
+// ==========================================
+
+
+// BÖLÜM 13: Hızlı ve Sıfır Maliyetli Sıralama / Toplam Oyuncu Sayacı
+// ==========================================
+Future<Map<String, int>> getHizliSiralamaVeToplamOyuncu(int benimSkorum) async {
+  final db = await instance.database;
+
+  // 1. Üstümdeki Botları Say (Yerel SQLite - 0 Maliyet)
+  var botResult = await db.rawQuery('SELECT COUNT(*) FROM botlar WHERE skor > ?', [benimSkorum]);
+  int ustumdekiBotSayisi = Sqflite.firstIntValue(botResult) ?? 0;
+
+  int ustumdekiGercekOyuncuSayisi = 0;
+  int toplamGercekOyuncuSayisi = 0;
+
+  try {
+    // 2. Firebase: Benden yüksek puanlı gerçek oyuncuları SAY (Sıralamam için)
+    var ustumdekilerSnapshot = await FirebaseFirestore.instance
+        .collection('liderlik_tablosu')
+        .where('is_bot', isEqualTo: false)
+        .where('skor', isGreaterThan: benimSkorum)
+        .count()
+        .get()
+        .timeout(const Duration(seconds: 5));
+    ustumdekiGercekOyuncuSayisi = ustumdekilerSnapshot.count ?? 0;
+
+    // 3. Firebase: Toplam gerçek oyuncu sayısını SAY (Payda için)
+    var toplamGercekSnapshot = await FirebaseFirestore.instance
+        .collection('liderlik_tablosu')
+        .where('is_bot', isEqualTo: false)
+        .count()
+        .get()
+        .timeout(const Duration(seconds: 5));
+    toplamGercekOyuncuSayisi = toplamGercekSnapshot.count ?? 0;
+
+  } catch (e) {
+    print("🚨 Sıralama sayılırken Firebase hatası (İndeks eksik veya İnternet yok olabilir): $e");
+  }
+
+  // 4. Matematiksel Hesaplama
+  int benimSiralamam = ustumdekiBotSayisi + ustumdekiGercekOyuncuSayisi + 1;
+  int gercekKisiSayisi = max(1, toplamGercekOyuncuSayisi);
+  int toplamOyuncu = 1000 + gercekKisiSayisi;
+
+  // Sonuçları küçük bir paket olarak sayfaya yolla
+  return {
+    'sira': benimSiralamam,
+    'toplam': toplamOyuncu,
+  };
 }
+// ---------------- BÖLÜM 13 SONU ----------------
+
+} // <--- DOSYANIN EN SONUNDAKİ KAPANIŞ PARANTEZİ

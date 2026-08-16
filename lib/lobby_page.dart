@@ -1,3 +1,6 @@
+// ==========================================
+// BÖLÜM 1: Kütüphaneler, Sınıf Tanımlaması ve Değişkenler
+// ==========================================
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +25,12 @@ class LobbyPage extends StatelessWidget {
     required this.renkIndex,
     this.isFriendMode = false,
   });
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: UI Yardımcı Widget'ları (Butonlar vb.)
+// ==========================================
   Widget _buildTurButonu(BuildContext context, int turSayisi, String turAciklamasi) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -44,7 +52,12 @@ class LobbyPage extends StatelessWidget {
       ),
     );
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Ana Ekran Arayüzü (Build Metodu)
+// ==========================================
   @override
   Widget build(BuildContext context) {
     final String mevcutOyuncu = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
@@ -193,41 +206,32 @@ class LobbyPage extends StatelessWidget {
       ),
     );
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: Oyuncu Bilgilerini ve Sıralamayı Çekme Motoru (SIFIR MALİYETLİ YENİ SİSTEM)
+// ==========================================
   Future<Map<String, dynamic>> _oyuncuBilgileriniGetir(String oyuncuAdi) async {
+    // 1. Kendi yerel puanımızı alıyoruz (Maliyet: 0)
     int dbSkor = await DatabaseHelper.instance.getOyuncuSkor();
-    String ben = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
 
-    List<Map<String, dynamic>> tablo = await DatabaseHelper.instance.getTumLiderlikTablosu(ben);
+    // 2. Az önce veritabanında yazdığımız ZIRHLI ve UCUZ motoru (Bölüm 13) çağırıyoruz
+    Map<String, int> hizliVeri = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(dbSkor);
 
-    int siralama = -1;
-    for (int i = 0; i < tablo.length; i++) {
-      if (tablo[i]['bot_adi'].toString().toLowerCase() == ben.toLowerCase()) {
-        siralama = i + 1;
-        break;
-      }
-    }
-
-    if (siralama == -1) {
-      for (int i = 0; i < tablo.length; i++) {
-        if (dbSkor >= (tablo[i]['skor'] as int)) {
-          siralama = i + 1;
-          break;
-        }
-      }
-    }
-
-    if (siralama == -1) {
-      siralama = tablo.length;
-    }
-
+    // 3. Gelen hazır rakamları alıp ekrana gönderiyoruz
     return {
       'puan': dbSkor,
-      'siralama': siralama,
-      'toplamYarismaci': tablo.length,
+      'siralama': hizliVeri['sira'] ?? 1000,
+      'toplamYarismaci': hizliVeri['toplam'] ?? 1000,
     };
   }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 5: Arkadaş Odası Kurulumu ve Diyalogları
+// ==========================================
   Future<void> _canliOdaOlustur(BuildContext context, String mevcutOyuncu) async {
     final String kod = (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
 
@@ -498,8 +502,12 @@ class LobbyPage extends StatelessWidget {
       },
     );
   }
+// ---------------- BÖLÜM 5 SONU ----------------
 
-  // 🚀 KUSURSUZLAŞTIRILMIŞ EŞLEŞTİRME VE BAŞLATMA MANTIĞI
+
+// ==========================================
+// BÖLÜM 6: Rastgele Eşleştirme Motoru ve Oyuna Geçiş
+// ==========================================
   void _eslesmeVeBaslat(BuildContext context, int turSayisi) {
     int kalanSaniye = 5;
     bool rakipBulundu = false;
@@ -625,7 +633,6 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
-  // 🚀 SAYFA GEÇİŞİNİ TEMİZLEMEK İÇİN YARDIMCI FONKSİYON
   void _oyunaGit(BuildContext context, String ben, String secilenRakip, int turSayisi, String odaKodu, String? harf) {
     Navigator.push(
       context,
@@ -647,7 +654,6 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
-  // 🚀 GÜNCELLENDİ: FİREBASE BEKLEME ODASI YÖNETİMİ
   Future<Map<String, dynamic>> _rastgeleEslesmeOdasinaGir(String ben, int turSayisi) async {
     try {
       var mevcutOda = await FirebaseFirestore.instance
@@ -695,3 +701,4 @@ class LobbyPage extends StatelessWidget {
     }
   }
 }
+// ---------------- BÖLÜM 6 SONU ----------------

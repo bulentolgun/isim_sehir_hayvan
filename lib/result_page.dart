@@ -1,9 +1,11 @@
+// ==========================================
+// BÖLÜM 1: Kütüphaneler, Sınıf Tanımlaması ve Dışarıdan Gelen Veriler
+// ==========================================
 import 'package:flutter/material.dart';
 import 'ad_service.dart';
 
 class ResultPage extends StatelessWidget {
   final String oyuncuAdi;
-  // 🟢 DÜZELTME 1: Tek rakip yerine tüm oyuncuların skor haritası geliyor
   final Map<String, int> tumMacSkorlari;
   final int eskiGenelPuan;
   final int yeniGenelPuan;
@@ -19,10 +21,15 @@ class ResultPage extends StatelessWidget {
     required this.eskiSiralama,
     required this.yeniSiralama,
   });
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: Kazananı Belirleme ve Matematiksel Hesaplamalar
+// ==========================================
   @override
   Widget build(BuildContext context) {
-    // 🟢 DÜZELTME 2: Gelen haritayı puanlara göre büyükten küçüğe sıralıyoruz
+    // Gelen haritayı puanlara göre büyükten küçüğe sıralıyoruz
     List<MapEntry<String, int>> siraliSkorlar = tumMacSkorlari.entries.toList();
     siraliSkorlar.sort((a, b) => b.value.compareTo(a.value));
 
@@ -35,7 +42,12 @@ class ResultPage extends StatelessWidget {
     bool berabere = kazandi && siraliSkorlar.where((e) => e.value == enYuksekSkor).length > 1;
 
     int siralamaFarki = eskiSiralama - yeniSiralama;
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Ana Sayfa İskeleti ve Durum İkonu (Kupa/Üzgün Yüz)
+// ==========================================
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -61,8 +73,13 @@ class ResultPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 25),
+// ---------------- BÖLÜM 3 SONU ----------------
 
-              // ⚔️ YENİ: DİNAMİK LİDERLİK TABLOSU KARTI
+
+// ==========================================
+// BÖLÜM 4: Maç Sıralaması (Kutu İçindeki Liste)
+// ==========================================
+              // ⚔️ DİNAMİK LİDERLİK TABLOSU KARTI
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -135,10 +152,14 @@ class ResultPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 25),
+// ---------------- BÖLÜM 4 SONU ----------------
 
-              // 📊 GENEL PUAN VE SIRALAMA KARTI (Aynı kaldı)
+
+// ==========================================
+// BÖLÜM 5: Genel İstatistik (Puan ve Sıralama Gösterimi)
+// ==========================================
+              // 📊 GENEL PUAN VE SIRALAMA KARTI
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -226,9 +247,13 @@ class ResultPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 35),
+// ---------------- BÖLÜM 5 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 6: Ana Sayfaya Dön Butonu ve Reklam Alanı
+// ==========================================
               // 🚀 ANA SAYFAYA DÖN BUTONU
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -253,3 +278,4 @@ class ResultPage extends StatelessWidget {
     );
   }
 }
+// ---------------- BÖLÜM 6 SONU ----------------

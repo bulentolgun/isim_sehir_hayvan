@@ -38,7 +38,8 @@ class RulesPage extends StatelessWidget {
               "• İki oyuncu aynı doğru kelimeyi yazarsa: 5 Puan\n"
                   "• İki oyuncu farklı doğru kelimeler yazarsa: 10 Puan\n"
                   "• Sadece tek oyuncu doğru kelime yazarsa: 20 Puan\n"
-                  "• Doğru bilinen en uzun kelimeye: +2 Puan Bonus",
+                  "• Doğru bilinen en uzun kelimeye: +2 Puan Bonus"
+                  "• Maçı kazanan oyuncu +100 Puan alır.",
             ),
             _buildRuleCard(
               icon: Icons.timer_rounded,
