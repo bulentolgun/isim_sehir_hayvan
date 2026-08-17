@@ -14,8 +14,8 @@ class DatabaseHelper {
   static Database? _database;
 
   DatabaseHelper._init();
-// ---------------- BÖLÜM 1 SONU ----------------
 
+// ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: Veritabanı Oluşturma ve Bağlantı
@@ -37,8 +37,8 @@ class DatabaseHelper {
       onUpgrade: _onUpgrade,
     );
   }
-// ---------------- BÖLÜM 2 SONU ----------------
 
+// ---------------- BÖLÜM 2 SONU ----------------
 
 // ==========================================
 // BÖLÜM 3: Tabloların Kurulumu ve Güncellenmesi (Create & Upgrade)
@@ -68,7 +68,8 @@ class DatabaseHelper {
       )
     ''');
 
-    await db.insert('oyuncu', {'id': 1, 'skor': 0}, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await db.insert('oyuncu', {'id': 1, 'skor': 0},
+        conflictAlgorithm: ConflictAlgorithm.ignore);
     await _1000BotuVeritabaninaEkle(db);
     await _sqlDosyasindanKelimeleriYukle(db);
   }
@@ -90,8 +91,8 @@ class DatabaseHelper {
       await _1000BotuVeritabaninaEkle(db);
     }
   }
-// ---------------- BÖLÜM 3 SONU ----------------
 
+// ---------------- BÖLÜM 3 SONU ----------------
 
 // ==========================================
 // BÖLÜM 4: SQL Dosyasından Başlangıç Kelimelerini Yükleme
@@ -114,20 +115,93 @@ class DatabaseHelper {
       print("game_data.sql yüklenirken hata oluştu: $e");
     }
   }
+
 // ---------------- BÖLÜM 4 SONU ----------------
 
-
 // ==========================================
-// BÖLÜM 5: 1000 Adet Botun Oluşturulması ve Firebase'e Aktarılması
+// ==========================================
+// BÖLÜM 5: 1000 Adet Botun Oluşturulması (SADECE YEREL SQLITE)
 // ==========================================
   static Future<void> _1000BotuVeritabaninaEkle(Database db) async {
-    List<String> sehirKodlari = ["34", "06", "35", "16", "07", "01", "60", "61", "55", "42", "22", "10", "20", "26", "27", "33", "41", "45", "54"];
-    List<String> unvanlar = ["Pro", "Star", "Master", "Kral", "Efsane", "Gamer", "Kaptan", "TR", "X", "Uzman", "Atak", "Zeki", "Hizli", "Guc", "Lider"];
+    List<String> sehirKodlari = [
+      "34",
+      "06",
+      "35",
+      "16",
+      "07",
+      "01",
+      "60",
+      "61",
+      "55",
+      "42",
+      "22",
+      "10",
+      "20",
+      "26",
+      "27",
+      "33",
+      "41",
+      "45",
+      "54"
+    ];
+    List<String> unvanlar = [
+      "Pro",
+      "Star",
+      "Master",
+      "Kral",
+      "Efsane",
+      "Gamer",
+      "Kaptan",
+      "TR",
+      "X",
+      "Uzman",
+      "Atak",
+      "Zeki",
+      "Hizli",
+      "Guc",
+      "Lider"
+    ];
     List<String> temelIsimler = [
-      "Ahmet", "Mehmet", "Ayse", "Fatma", "Mustafa", "Emre", "Can", "Zeynep", "Elif", "Burak",
-      "Deniz", "Ece", "Serkan", "Gamze", "Kaan", "Merve", "Omer", "Selin", "Murat", "Buse",
-      "Onur", "Gokhan", "Hande", "Kadir", "Tugba", "Yasin", "Hakan", "Dilara", "Doruk", "Bora",
-      "Tolga", "Sibel", "Koray", "Pinar", "Eren", "Derya", "Volkan", "Ezgi", "Kerem", "Gizem"
+      "Ahmet",
+      "Mehmet",
+      "Ayse",
+      "Fatma",
+      "Mustafa",
+      "Emre",
+      "Can",
+      "Zeynep",
+      "Elif",
+      "Burak",
+      "Deniz",
+      "Ece",
+      "Serkan",
+      "Gamze",
+      "Kaan",
+      "Merve",
+      "Omer",
+      "Selin",
+      "Murat",
+      "Buse",
+      "Onur",
+      "Gokhan",
+      "Hande",
+      "Kadir",
+      "Tugba",
+      "Yasin",
+      "Hakan",
+      "Dilara",
+      "Doruk",
+      "Bora",
+      "Tolga",
+      "Sibel",
+      "Koray",
+      "Pinar",
+      "Eren",
+      "Derya",
+      "Volkan",
+      "Ezgi",
+      "Kerem",
+      "Gizem"
     ];
 
     Random random = Random(42);
@@ -156,36 +230,11 @@ class DatabaseHelper {
     }
     await batch.commit(noResult: true);
 
-    unawaited(Future(() async {
-      try {
-        var collectionRef = FirebaseFirestore.instance.collection('liderlik_tablosu');
-        WriteBatch fbBatch = FirebaseFirestore.instance.batch();
-        int count = 0;
-
-        for (var bot in botListesi) {
-          DocumentReference docRef = collectionRef.doc(bot['bot_adi']);
-          fbBatch.set(docRef, {
-            'kullanici_adi': bot['bot_adi'],
-            'skor': bot['skor'],
-            'is_bot': true,
-          }, SetOptions(merge: true));
-
-          count++;
-          if (count % 400 == 0) {
-            await fbBatch.commit();
-            fbBatch = FirebaseFirestore.instance.batch();
-          }
-        }
-        if (count % 400 != 0) {
-          await fbBatch.commit();
-        }
-      } catch (e) {
-        print("Firebase 1000 bot senkronizasyon hatası: $e");
-      }
-    }));
+    print(
+        "🤖 1000 Bot yerel veritabanına eklendi (Firebase'e yazma kapatıldı).");
   }
-// ---------------- BÖLÜM 5 SONU ----------------
 
+// ---------------- BÖLÜM 5 SONU ----------------
 
 // ==========================================
 // BÖLÜM 6: Türkçe Karakter Dönüştürme (Küçük Harf)
@@ -203,13 +252,14 @@ class DatabaseHelper {
         .replaceAll('Ç', 'ç')
         .toLowerCase();
   }
-// ---------------- BÖLÜM 6 SONU ----------------
 
+// ---------------- BÖLÜM 6 SONU ----------------
 
 // ==========================================
 // BÖLÜM 7: Kelime Doğruluk Kontrolü (İlk Harf ve Veritabanı Araması)
 // ==========================================
-  Future<int> checkWordWithToleranceAndTdk(int catId, String harf, String kelime) async {
+  Future<int> checkWordWithToleranceAndTdk(
+      int catId, String harf, String kelime) async {
     String temizKelime = kelime.trim();
     if (temizKelime.isEmpty || temizKelime == "-") return 0;
 
@@ -230,12 +280,18 @@ class DatabaseHelper {
     String arananHarf = trToLowerCase(harf.trim()[0]);
 
     String arananHarfBuyuk = arananHarf.toUpperCase();
-    if (arananHarf == 'ı') arananHarfBuyuk = 'I';
-    else if (arananHarf == 'i') arananHarfBuyuk = 'İ';
-    else if (arananHarf == 'ğ') arananHarfBuyuk = 'Ğ';
-    else if (arananHarf == 'ü') arananHarfBuyuk = 'Ü';
-    else if (arananHarf == 'ş') arananHarfBuyuk = 'Ş';
-    else if (arananHarf == 'ö') arananHarfBuyuk = 'Ö';
+    if (arananHarf == 'ı')
+      arananHarfBuyuk = 'I';
+    else if (arananHarf == 'i')
+      arananHarfBuyuk = 'İ';
+    else if (arananHarf == 'ğ')
+      arananHarfBuyuk = 'Ğ';
+    else if (arananHarf == 'ü')
+      arananHarfBuyuk = 'Ü';
+    else if (arananHarf == 'ş')
+      arananHarfBuyuk = 'Ş';
+    else if (arananHarf == 'ö')
+      arananHarfBuyuk = 'Ö';
     else if (arananHarf == 'ç') arananHarfBuyuk = 'Ç';
 
     List<String> harfIhtimalleri = [arananHarf, arananHarfBuyuk];
@@ -249,7 +305,8 @@ class DatabaseHelper {
 
     for (var row in res) {
       String dbKelime = trToLowerCase(row['word_value'].toString().trim());
-      if (dbKelime == arananKelime || dbKelime.replaceAll(' ', '') == arananKelime.replaceAll(' ', '')) {
+      if (dbKelime == arananKelime ||
+          dbKelime.replaceAll(' ', '') == arananKelime.replaceAll(' ', '')) {
         return true;
       }
     }
@@ -261,19 +318,31 @@ class DatabaseHelper {
 
   bool _ozelIsimKontrolEt(int catId, String kelime) {
     List<String> yedekOzelIsimler = [
-      "ısparta", "ığdır", "içel", "iskenderun",
-      "izmir", "istanbul", "isveç", "isviçre", "ispanya", "italya",
-      "irlanda", "israil", "izlanda", "ingiltere"
+      "ısparta",
+      "ığdır",
+      "içel",
+      "iskenderun",
+      "izmir",
+      "istanbul",
+      "isveç",
+      "isviçre",
+      "ispanya",
+      "italya",
+      "irlanda",
+      "israil",
+      "izlanda",
+      "ingiltere"
     ];
     return yedekOzelIsimler.contains(kelime);
   }
-// ---------------- BÖLÜM 7 SONU ----------------
 
+// ---------------- BÖLÜM 7 SONU ----------------
 
 // ==========================================
 // BÖLÜM 8: Toplu Değerlendirme ve Gemini Yapay Zeka Entegrasyonu
 // ==========================================
-  Future<List<int>> topluDegerlendirmeMotoru(List<Map<String, dynamic>> sorgular, String secilenHarf) async {
+  Future<List<int>> topluDegerlendirmeMotoru(
+      List<Map<String, dynamic>> sorgular, String secilenHarf) async {
     final db = await instance.database;
     List<int> sonuclar = List.filled(sorgular.length, 0);
     List<Map<String, dynamic>> geminiyeGidecekler = [];
@@ -293,7 +362,8 @@ class DatabaseHelper {
       if (tdkOnayi) {
         sonuclar[i] = 1;
       } else if (catId != 2 && catId != 6) {
-        geminiyeGidecekler.add({"index": i, "catId": catId, "kelime": trToLowerCase(kelime)});
+        geminiyeGidecekler
+            .add({"index": i, "catId": catId, "kelime": trToLowerCase(kelime)});
       }
     }
 
@@ -323,7 +393,8 @@ class DatabaseHelper {
       }
 
       for (var paket in paketler) {
-        Map<int, bool> geminiCevaplari = await GeminiService.topluKelimeKontrol(paket);
+        Map<int, bool> geminiCevaplari =
+            await GeminiService.topluKelimeKontrol(paket);
 
         for (var entry in paket.entries) {
           int catId = entry.key;
@@ -337,14 +408,19 @@ class DatabaseHelper {
               }
             }
 
-            await db.insert('words', {
-              'category_id': catId,
-              'first_letter': trToLowerCase(secilenHarf[0]),
-              'word_value': kelime,
-            }, conflictAlgorithm: ConflictAlgorithm.ignore);
+            await db.insert(
+                'words',
+                {
+                  'category_id': catId,
+                  'first_letter': trToLowerCase(secilenHarf[0]),
+                  'word_value': kelime,
+                },
+                conflictAlgorithm: ConflictAlgorithm.ignore);
 
             try {
-              await FirebaseFirestore.instance.collection('onaylanmis_yeni_kelimeler').add({
+              await FirebaseFirestore.instance
+                  .collection('onaylanmis_yeni_kelimeler')
+                  .add({
                 'kelime': kelime,
                 'kategori_id': catId,
                 'harf': trToLowerCase(secilenHarf[0]),
@@ -360,8 +436,8 @@ class DatabaseHelper {
 
     return sonuclar;
   }
-// ---------------- BÖLÜM 8 SONU ----------------
 
+// ---------------- BÖLÜM 8 SONU ----------------
 
 // ==========================================
 // BÖLÜM 9: Botlar İçin Rastgele Kelime Seçme Motoru
@@ -371,12 +447,18 @@ class DatabaseHelper {
     String kucukHarf = trToLowerCase(harf);
 
     String arananHarfBuyuk = kucukHarf.toUpperCase();
-    if (kucukHarf == 'ı') arananHarfBuyuk = 'I';
-    else if (kucukHarf == 'i') arananHarfBuyuk = 'İ';
-    else if (kucukHarf == 'ğ') arananHarfBuyuk = 'Ğ';
-    else if (kucukHarf == 'ü') arananHarfBuyuk = 'Ü';
-    else if (kucukHarf == 'ş') arananHarfBuyuk = 'Ş';
-    else if (kucukHarf == 'ö') arananHarfBuyuk = 'Ö';
+    if (kucukHarf == 'ı')
+      arananHarfBuyuk = 'I';
+    else if (kucukHarf == 'i')
+      arananHarfBuyuk = 'İ';
+    else if (kucukHarf == 'ğ')
+      arananHarfBuyuk = 'Ğ';
+    else if (kucukHarf == 'ü')
+      arananHarfBuyuk = 'Ü';
+    else if (kucukHarf == 'ş')
+      arananHarfBuyuk = 'Ş';
+    else if (kucukHarf == 'ö')
+      arananHarfBuyuk = 'Ö';
     else if (kucukHarf == 'ç') arananHarfBuyuk = 'Ç';
 
     List<String> harfIhtimalleri = [kucukHarf, arananHarfBuyuk];
@@ -395,8 +477,8 @@ class DatabaseHelper {
     }
     return null;
   }
-// ---------------- BÖLÜM 9 SONU ----------------
 
+// ---------------- BÖLÜM 9 SONU ----------------
 
 // ==========================================
 // BÖLÜM 10: Oyuncu ve Bot Skorlarını Kaydetme ve Çekme İşlemleri
@@ -423,7 +505,10 @@ class DatabaseHelper {
 
     try {
       String isim = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
-      await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(isim).set({
+      await FirebaseFirestore.instance
+          .collection('liderlik_tablosu')
+          .doc(isim)
+          .set({
         'kullanici_adi': isim,
         'skor': yeniToplamSkor,
         'is_bot': false,
@@ -456,15 +541,20 @@ class DatabaseHelper {
     );
 
     try {
-      await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(botAdi).update({
+      await FirebaseFirestore.instance
+          .collection('liderlik_tablosu')
+          .doc(botAdi)
+          .set({
+        'kullanici_adi': botAdi,
         'skor': yeniBotSkor,
-      });
+        'is_bot': true,
+      }, SetOptions(merge: true));
     } catch (e) {
       print("Firebase bot skor güncelleme hatası: $e");
     }
   }
-// ---------------- BÖLÜM 10 SONU ----------------
 
+// ---------------- BÖLÜM 10 SONU ----------------
 
 // ==========================================
 // BÖLÜM 11: Liderlik Tablosunu (Sıralamayı) Oluşturma
@@ -488,11 +578,11 @@ class DatabaseHelper {
   }
 // ---------------- BÖLÜM 11 SONU ----------------*/
 
-
 // ==========================================
 // BÖLÜM 12: Eşleştirme İçin Rastgele Bot Seçme
 // ==========================================
-  Future<Map<String, dynamic>> getRandomBot({List<String>? haricTutulacakBotlar}) async {
+  Future<Map<String, dynamic>> getRandomBot(
+      {List<String>? haricTutulacakBotlar}) async {
     final db = await instance.database;
     List<Map<String, dynamic>> botlar = await db.query('botlar');
 
@@ -500,7 +590,8 @@ class DatabaseHelper {
       List<Map<String, dynamic>> secilebilirBotlar = List.from(botlar);
 
       if (haricTutulacakBotlar != null && haricTutulacakBotlar.isNotEmpty) {
-        secilebilirBotlar.removeWhere((b) => haricTutulacakBotlar.contains(b['bot_adi']));
+        secilebilirBotlar
+            .removeWhere((b) => haricTutulacakBotlar.contains(b['bot_adi']));
       }
 
       if (secilebilirBotlar.isEmpty) {
@@ -516,54 +607,54 @@ class DatabaseHelper {
 // ---------------- BÖLÜM 12 SONU ----------------
 // ==========================================
 
-
 // BÖLÜM 13: Hızlı ve Sıfır Maliyetli Sıralama / Toplam Oyuncu Sayacı
 // ==========================================
-Future<Map<String, int>> getHizliSiralamaVeToplamOyuncu(int benimSkorum) async {
-  final db = await instance.database;
+  Future<Map<String, int>> getHizliSiralamaVeToplamOyuncu(
+      int benimSkorum) async {
+    final db = await instance.database;
 
-  // 1. Üstümdeki Botları Say (Yerel SQLite - 0 Maliyet)
-  var botResult = await db.rawQuery('SELECT COUNT(*) FROM botlar WHERE skor > ?', [benimSkorum]);
-  int ustumdekiBotSayisi = Sqflite.firstIntValue(botResult) ?? 0;
+    // 1. Üstümdeki Botları Say (Yerel SQLite - 0 Maliyet)
+    var botResult = await db
+        .rawQuery('SELECT COUNT(*) FROM botlar WHERE skor > ?', [benimSkorum]);
+    int ustumdekiBotSayisi = Sqflite.firstIntValue(botResult) ?? 0;
 
-  int ustumdekiGercekOyuncuSayisi = 0;
-  int toplamGercekOyuncuSayisi = 0;
+    int ustumdekiGercekOyuncuSayisi = 0;
+    int toplamGercekOyuncuSayisi = 0;
 
-  try {
-    // 2. Firebase: Benden yüksek puanlı gerçek oyuncuları SAY (Sıralamam için)
-    var ustumdekilerSnapshot = await FirebaseFirestore.instance
-        .collection('liderlik_tablosu')
-        .where('is_bot', isEqualTo: false)
-        .where('skor', isGreaterThan: benimSkorum)
-        .count()
-        .get()
-        .timeout(const Duration(seconds: 5));
-    ustumdekiGercekOyuncuSayisi = ustumdekilerSnapshot.count ?? 0;
+    try {
+      // 2. Firebase: Benden yüksek puanlı gerçek oyuncuları SAY (Sıralamam için)
+      var ustumdekilerSnapshot = await FirebaseFirestore.instance
+          .collection('liderlik_tablosu')
+          .where('is_bot', isEqualTo: false)
+          .where('skor', isGreaterThan: benimSkorum)
+          .count()
+          .get()
+          .timeout(const Duration(seconds: 5));
+      ustumdekiGercekOyuncuSayisi = ustumdekilerSnapshot.count ?? 0;
 
-    // 3. Firebase: Toplam gerçek oyuncu sayısını SAY (Payda için)
-    var toplamGercekSnapshot = await FirebaseFirestore.instance
-        .collection('liderlik_tablosu')
-        .where('is_bot', isEqualTo: false)
-        .count()
-        .get()
-        .timeout(const Duration(seconds: 5));
-    toplamGercekOyuncuSayisi = toplamGercekSnapshot.count ?? 0;
+      // 3. Firebase: Toplam gerçek oyuncu sayısını SAY (Payda için)
+      var toplamGercekSnapshot = await FirebaseFirestore.instance
+          .collection('liderlik_tablosu')
+          .where('is_bot', isEqualTo: false)
+          .count()
+          .get()
+          .timeout(const Duration(seconds: 5));
+      toplamGercekOyuncuSayisi = toplamGercekSnapshot.count ?? 0;
+    } catch (e) {
+      print(
+          "🚨 Sıralama sayılırken Firebase hatası (İndeks eksik veya İnternet yok olabilir): $e");
+    }
 
-  } catch (e) {
-    print("🚨 Sıralama sayılırken Firebase hatası (İndeks eksik veya İnternet yok olabilir): $e");
+    // 4. Matematiksel Hesaplama
+    int benimSiralamam = ustumdekiBotSayisi + ustumdekiGercekOyuncuSayisi + 1;
+    int gercekKisiSayisi = max(1, toplamGercekOyuncuSayisi);
+    int toplamOyuncu = 1000 + gercekKisiSayisi;
+
+    // Sonuçları küçük bir paket olarak sayfaya yolla
+    return {
+      'sira': benimSiralamam,
+      'toplam': toplamOyuncu,
+    };
   }
-
-  // 4. Matematiksel Hesaplama
-  int benimSiralamam = ustumdekiBotSayisi + ustumdekiGercekOyuncuSayisi + 1;
-  int gercekKisiSayisi = max(1, toplamGercekOyuncuSayisi);
-  int toplamOyuncu = 1000 + gercekKisiSayisi;
-
-  // Sonuçları küçük bir paket olarak sayfaya yolla
-  return {
-    'sira': benimSiralamam,
-    'toplam': toplamOyuncu,
-  };
-}
 // ---------------- BÖLÜM 13 SONU ----------------
-
 } // <--- DOSYANIN EN SONUNDAKİ KAPANIŞ PARANTEZİ

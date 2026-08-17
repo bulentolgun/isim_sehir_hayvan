@@ -21,8 +21,8 @@ class ResultPage extends StatelessWidget {
     required this.eskiSiralama,
     required this.yeniSiralama,
   });
-// ---------------- BÖLÜM 1 SONU ----------------
 
+// ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: Kazananı Belirleme ve Matematiksel Hesaplamalar
@@ -34,16 +34,18 @@ class ResultPage extends StatelessWidget {
     siraliSkorlar.sort((a, b) => b.value.compareTo(a.value));
 
     // Sıralamadaki yerimizi buluyoruz
-    int benimSiram = siraliSkorlar.indexWhere((element) => element.key == oyuncuAdi) + 1;
+    int benimSiram =
+        siraliSkorlar.indexWhere((element) => element.key == oyuncuAdi) + 1;
     int enYuksekSkor = siraliSkorlar.isNotEmpty ? siraliSkorlar.first.value : 0;
 
     // Kazanma durumu: Eğer 1. sıradaysak (veya 1. ile aynı puandaysak) kazandık demektir
-    bool kazandi = (tumMacSkorlari[oyuncuAdi] == enYuksekSkor && enYuksekSkor > 0);
-    bool berabere = kazandi && siraliSkorlar.where((e) => e.value == enYuksekSkor).length > 1;
+    bool kazandi =
+        (tumMacSkorlari[oyuncuAdi] == enYuksekSkor && enYuksekSkor > 0);
+    bool berabere = kazandi &&
+        siraliSkorlar.where((e) => e.value == enYuksekSkor).length > 1;
 
     int siralamaFarki = eskiSiralama - yeniSiralama;
 // ---------------- BÖLÜM 2 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 3: Ana Sayfa İskeleti ve Durum İkonu (Kupa/Üzgün Yüz)
@@ -59,22 +61,33 @@ class ResultPage extends StatelessWidget {
 
               // 🏆 DURUM İKONU VE BAŞLIK
               Icon(
-                kazandi && !berabere ? Icons.emoji_events : (berabere ? Icons.handshake : Icons.sentiment_dissatisfied),
+                kazandi && !berabere
+                    ? Icons.emoji_events
+                    : (berabere
+                        ? Icons.handshake
+                        : Icons.sentiment_dissatisfied),
                 size: 90,
-                color: kazandi && !berabere ? Colors.amber.shade700 : (berabere ? Colors.orange : Colors.red),
+                color: kazandi && !berabere
+                    ? Colors.amber.shade700
+                    : (berabere ? Colors.orange : Colors.red),
               ),
               const SizedBox(height: 15),
               Text(
-                kazandi && !berabere ? "MAÇIN GALİBİSİN! 🎉" : (berabere ? "LİDERLİĞİ PAYLAŞTIN!" : "MAÇI KAYBETTİN!"),
+                kazandi && !berabere
+                    ? "MAÇIN GALİBİSİN! 🎉"
+                    : (berabere ? "LİDERLİĞİ PAYLAŞTIN!" : "MAÇI KAYBETTİN!"),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: kazandi && !berabere ? Colors.green.shade700 : (berabere ? Colors.orange.shade800 : Colors.red.shade700),
+                  color: kazandi && !berabere
+                      ? Colors.green.shade700
+                      : (berabere
+                          ? Colors.orange.shade800
+                          : Colors.red.shade700),
                 ),
               ),
               const SizedBox(height: 25),
 // ---------------- BÖLÜM 3 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 4: Maç Sıralaması (Kutu İçindeki Liste)
@@ -89,7 +102,12 @@ class ResultPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text("MAÇ SIRALAMASI", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple, fontSize: 13, letterSpacing: 1.2)),
+                    const Text("MAÇ SIRALAMASI",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                            fontSize: 13,
+                            letterSpacing: 1.2)),
                     const SizedBox(height: 15),
 
                     // Oyuncuları sırayla ekrana çizdiriyoruz
@@ -101,11 +119,16 @@ class ResultPage extends StatelessWidget {
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: benMiyim ? Colors.purple.shade100 : Colors.white,
+                          color:
+                              benMiyim ? Colors.purple.shade100 : Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: benMiyim ? Colors.purple.shade300 : Colors.grey.shade200),
+                          border: Border.all(
+                              color: benMiyim
+                                  ? Colors.purple.shade300
+                                  : Colors.grey.shade200),
                         ),
                         child: Row(
                           children: [
@@ -114,13 +137,24 @@ class ResultPage extends StatelessWidget {
                               width: 28,
                               height: 28,
                               decoration: BoxDecoration(
-                                color: index == 0 ? Colors.amber : (index == 1 ? Colors.grey.shade400 : (index == 2 ? Colors.brown.shade300 : Colors.grey.shade200)),
+                                color: index == 0
+                                    ? Colors.amber
+                                    : (index == 1
+                                        ? Colors.grey.shade400
+                                        : (index == 2
+                                            ? Colors.brown.shade300
+                                            : Colors.grey.shade200)),
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
                               child: Text(
                                 "${index + 1}",
-                                style: TextStyle(color: index < 3 ? Colors.white : Colors.black54, fontWeight: FontWeight.bold, fontSize: 14),
+                                style: TextStyle(
+                                    color: index < 3
+                                        ? Colors.white
+                                        : Colors.black54,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -129,8 +163,12 @@ class ResultPage extends StatelessWidget {
                               child: Text(
                                 benMiyim ? "$isim (Sen)" : isim,
                                 style: TextStyle(
-                                  fontWeight: benMiyim ? FontWeight.w900 : FontWeight.bold,
-                                  color: benMiyim ? Colors.purple.shade900 : Colors.black87,
+                                  fontWeight: benMiyim
+                                      ? FontWeight.w900
+                                      : FontWeight.bold,
+                                  color: benMiyim
+                                      ? Colors.purple.shade900
+                                      : Colors.black87,
                                   fontSize: 15,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -142,7 +180,9 @@ class ResultPage extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
-                                color: benMiyim ? Colors.purple.shade900 : Colors.purple.shade400,
+                                color: benMiyim
+                                    ? Colors.purple.shade900
+                                    : Colors.purple.shade400,
                               ),
                             ),
                           ],
@@ -154,7 +194,6 @@ class ResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 25),
 // ---------------- BÖLÜM 4 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 5: Genel İstatistik (Puan ve Sıralama Gösterimi)
@@ -169,9 +208,12 @@ class ResultPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text("GENEL İSTATİSTİK DURUMUN", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple, fontSize: 13)),
+                    const Text("GENEL İSTATİSTİK DURUMUN",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                            fontSize: 13)),
                     const SizedBox(height: 15),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -179,7 +221,9 @@ class ResultPage extends StatelessWidget {
                           children: [
                             Icon(Icons.stars, color: Colors.amber, size: 20),
                             SizedBox(width: 8),
-                            Text("Genel Puanın:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            Text("Genel Puanın:",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
                         Expanded(
@@ -190,14 +234,21 @@ class ResultPage extends StatelessWidget {
                               alignment: Alignment.centerRight,
                               child: Row(
                                 children: [
-                                  Text("$yeniGenelPuan P", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.blue)),
+                                  Text("$yeniGenelPuan P",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: Colors.blue)),
                                   const SizedBox(width: 6),
                                   Text(
                                     (yeniGenelPuan - eskiGenelPuan) >= 0
                                         ? "(+${yeniGenelPuan - eskiGenelPuan})"
                                         : "(${yeniGenelPuan - eskiGenelPuan})",
                                     style: TextStyle(
-                                      color: (yeniGenelPuan - eskiGenelPuan) >= 0 ? Colors.green.shade700 : Colors.red.shade700,
+                                      color:
+                                          (yeniGenelPuan - eskiGenelPuan) >= 0
+                                              ? Colors.green.shade700
+                                              : Colors.red.shade700,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -210,15 +261,17 @@ class ResultPage extends StatelessWidget {
                       ],
                     ),
                     const Divider(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.leaderboard, color: Colors.purple, size: 20),
+                            Icon(Icons.leaderboard,
+                                color: Colors.purple, size: 20),
                             SizedBox(width: 8),
-                            Text("Sıralaman:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            Text("Sıralaman:",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
                         Expanded(
@@ -229,14 +282,29 @@ class ResultPage extends StatelessWidget {
                               alignment: Alignment.centerRight,
                               child: Row(
                                 children: [
-                                  Text("#$yeniSiralama", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                  Text("#$yeniSiralama",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15)),
                                   const SizedBox(width: 6),
                                   if (siralamaFarki > 0)
-                                    Text("(▲ $siralamaFarki Yükseldin)", style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 12))
+                                    Text("(▲ $siralamaFarki Yükseldin)",
+                                        style: TextStyle(
+                                            color: Colors.green.shade800,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12))
                                   else if (siralamaFarki < 0)
-                                    Text("(▼ ${siralamaFarki.abs()} Geriledin)", style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.bold, fontSize: 12))
+                                    Text("(▼ ${siralamaFarki.abs()} Geriledin)",
+                                        style: TextStyle(
+                                            color: Colors.red.shade800,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12))
                                   else
-                                    const Text("(- Değişmedi)", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 12)),
+                                    const Text("(- Değişmedi)",
+                                        style: TextStyle(
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -250,7 +318,6 @@ class ResultPage extends StatelessWidget {
               const SizedBox(height: 35),
 // ---------------- BÖLÜM 5 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 6: Ana Sayfaya Dön Butonu ve Reklam Alanı
 // ==========================================
@@ -260,10 +327,13 @@ class ResultPage extends StatelessWidget {
                   backgroundColor: Colors.purple,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
                 ),
                 icon: const Icon(Icons.home, size: 22),
-                label: const Text("Ana Sayfaya Dön", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                label: const Text("Ana Sayfaya Dön",
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },

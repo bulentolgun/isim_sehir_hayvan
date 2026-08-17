@@ -20,8 +20,7 @@ class AuthService {
         return _auth.currentUser;
       }
 
-      final UserCredential credential =
-      await _auth.signInAnonymously();
+      final UserCredential credential = await _auth.signInAnonymously();
 
       return credential.user;
     } catch (e) {
@@ -54,10 +53,10 @@ class AuthService {
       }
 
       final DocumentReference<Map<String, dynamic>> userDocument =
-      _firestore.collection('users').doc(user.uid);
+          _firestore.collection('users').doc(user.uid);
 
       final DocumentSnapshot<Map<String, dynamic>> existingDocument =
-      await userDocument.get();
+          await userDocument.get();
 
       if (existingDocument.exists) {
         await userDocument.set(
@@ -88,8 +87,7 @@ class AuthService {
         );
       }
 
-      final SharedPreferences prefs =
-      await SharedPreferences.getInstance();
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
 
       await prefs.setString(
         _nicknameKey,
@@ -122,17 +120,13 @@ class AuthService {
   ///
   /// Yeni kodda mümkün olduğunca saveProfile kullan.
   Future<bool> saveNickname(String nickname) async {
-    final SharedPreferences prefs =
-    await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final int yuzIndex =
-        prefs.getInt(_faceKey) ?? 0;
+    final int yuzIndex = prefs.getInt(_faceKey) ?? 0;
 
-    final int aksesuarIndex =
-        prefs.getInt(_accessoryKey) ?? 0;
+    final int aksesuarIndex = prefs.getInt(_accessoryKey) ?? 0;
 
-    final int renkIndex =
-        prefs.getInt(_colorKey) ?? 0;
+    final int renkIndex = prefs.getInt(_colorKey) ?? 0;
 
     return saveProfile(
       nickname: nickname,
@@ -144,8 +138,7 @@ class AuthService {
 
   /// Cihazda kayıtlı oyuncu adını getirir.
   Future<String?> getSavedNickname() async {
-    final SharedPreferences prefs =
-    await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     return prefs.getString(_nicknameKey);
   }
@@ -153,11 +146,9 @@ class AuthService {
   /// Cihazda kayıtlı oyuncu profilini getirir.
   Future<Map<String, dynamic>?> getSavedProfile() async {
     try {
-      final SharedPreferences prefs =
-      await SharedPreferences.getInstance();
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      final String? nickname =
-      prefs.getString(_nicknameKey);
+      final String? nickname = prefs.getString(_nicknameKey);
 
       if (nickname == null || nickname.trim().isEmpty) {
         return null;
@@ -187,10 +178,7 @@ class AuthService {
       }
 
       final DocumentSnapshot<Map<String, dynamic>> document =
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .get();
+          await _firestore.collection('users').doc(user.uid).get();
 
       if (!document.exists) {
         return null;
@@ -212,10 +200,7 @@ class AuthService {
         return false;
       }
 
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .set(
+      await _firestore.collection('users').doc(user.uid).set(
         {
           'score': newScore,
           'lastUpdated': FieldValue.serverTimestamp(),

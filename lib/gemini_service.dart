@@ -10,12 +10,14 @@ class GeminiService {
 
   // 🧠 YENİ: TOPLU KELİME KONTROLÜ (MALİYET VE HIZ OPTİMİZASYONU)
   // Map<int, String> girilenKelimeler -> Örnek: {1: "ahmet", 3: "comba", 5: "masa"}
-  static Future<Map<int, bool>> topluKelimeKontrol(Map<int, String> girilenKelimeler) async {
+  static Future<Map<int, bool>> topluKelimeKontrol(
+      Map<int, String> girilenKelimeler) async {
     Map<int, bool> sonuclar = {};
     Map<int, String> geminiyeSorulacaklar = {};
 
     if (_apiKey.trim().isEmpty) {
-      print("🚨 DİKKAT: Gemini API anahtarı eksik veya .env dosyası okunamadı!");
+      print(
+          "🚨 DİKKAT: Gemini API anahtarı eksik veya .env dosyası okunamadı!");
       girilenKelimeler.forEach((key, value) => sonuclar[key] = false);
       return sonuclar;
     }
@@ -34,7 +36,10 @@ class GeminiService {
       String docId = "${catId}_$kelime";
 
       try {
-        final hafizaDoc = await FirebaseFirestore.instance.collection('kelime_hafizasi').doc(docId).get();
+        final hafizaDoc = await FirebaseFirestore.instance
+            .collection('kelime_hafizasi')
+            .doc(docId)
+            .get();
 
         if (hafizaDoc.exists) {
           bool onayDurumu = hafizaDoc.data()?['onaylandiMi'] ?? false;
@@ -48,25 +53,29 @@ class GeminiService {
         }
       } catch (e) {
         print("🚨 Firebase hafıza okuma hatası ($kelime):$e");
-        geminiyeSorulacaklar[catId] = kelime; // Hata olursa riske atma, Gemini'ye sor
+        geminiyeSorulacaklar[catId] =
+            kelime; // Hata olursa riske atma, Gemini'ye sor
       }
     }
 
     // Eğer tüm kelimeler hafızada bulunduysa (sepet boşsa), Gemini'ye hiç gitme!
     if (geminiyeSorulacaklar.isEmpty) {
-      print("🎯 Tüm kelimeler hafızadan veya boşluk kontrolünden geçti, Gemini'ye TEK KURUŞ ödenmedi!");
+      print(
+          "🎯 Tüm kelimeler hafızadan veya boşluk kontrolünden geçti, Gemini'ye TEK KURUŞ ödenmedi!");
       return sonuclar;
     }
 
     // 2. ADIM: FİREBASE'DE OLMAYANLARI GEMİNİ'YE "TEK SEFERDE" SOR
     try {
-      final model = GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
+      final model =
+          GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
 
       // Gemini'ye göndereceğimiz kelimeleri hazırlayalım
       String jsonSoru = "";
       geminiyeSorulacaklar.forEach((catId, kelime) {
         String kategoriAdi = _getKategoriAdi(catId);
-        jsonSoru += '"$catId": { "kategori": "$kategoriAdi", "kelime": "$kelime" },\n';
+        jsonSoru +=
+            '"$catId": { "kategori": "$kategoriAdi", "kelime": "$kelime" },\n';
       });
 
       final prompt = '''
@@ -88,7 +97,8 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
 }
 ''';
 
-      final response = await model.generateContent([Content.text(prompt)]).timeout(const Duration(seconds: 12));
+      final response = await model.generateContent(
+          [Content.text(prompt)]).timeout(const Duration(seconds: 12));
       String cevap = response.text?.trim() ?? "{}";
 
       // Gemini bazen cevabın başına ve sonuna ```json tagları ekler, onları temizleyelim
@@ -113,23 +123,28 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
         bool geminiOnayi = geminiKararlari[catId.toString()] ?? false;
         sonuclar[catId] = geminiOnayi;
 
-        print(geminiOnayi ? "✅ Gemini Onayladı: $kucukHarfKelime" : "❌ Gemini Reddetti: $kucukHarfKelime");
+        print(geminiOnayi
+            ? "✅ Gemini Onayladı: $kucukHarfKelime"
+            : "❌ Gemini Reddetti: $kucukHarfKelime");
 
         // Hafızayı Güncelle
         try {
-          await FirebaseFirestore.instance.collection('kelime_hafizasi').doc(docId).set({
+          await FirebaseFirestore.instance
+              .collection('kelime_hafizasi')
+              .doc(docId)
+              .set({
             'kelime': kucukHarfKelime,
             'kategoriId': catId,
             'onaylandiMi': geminiOnayi,
             'eklenmeTarihi': FieldValue.serverTimestamp(),
             'kaynak': 'Gemini Toplu Analiz'
           });
-          print("💾 Yeni kelime Firebase hafızasına eklendi: $kucukHarfKelime -> $geminiOnayi");
+          print(
+              "💾 Yeni kelime Firebase hafızasına eklendi: $kucukHarfKelime -> $geminiOnayi");
         } catch (e) {
           print("🚨 Firebase hafıza kaydetme hatası: $e");
         }
       }
-
     } on TimeoutException catch (_) {
       print("⏳ Gemini API Yanıt Vermedi (Zaman Aşımı)");
       // Zaman aşımı olursa yeni kelimeleri reddedilmiş sayıyoruz ama Firebase'e KAYDETMİYORUZ.
@@ -144,12 +159,18 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
 
   static String _getKategoriAdi(int catId) {
     switch (catId) {
-      case 1: return "İnsan İsmi (Sadece gerçek bir insan ismi mi?)";
-      case 2: return "Şehir veya Ülke İsmi"; // Eklenmemişse diye ekledim
-      case 3: return "Hayvan türü";
-      case 4: return "Bitki (Meyve, sebze, ağaç, çiçek vb.)";
-      case 5: return "Eşya (Gerçek hayatta kullanılan bir nesne veya araç gereç mi?)";
-      default: return "Bilinmeyen Kategori";
+      case 1:
+        return "İnsan İsmi (Sadece gerçek bir insan ismi mi?)";
+      case 2:
+        return "Şehir veya Ülke İsmi"; // Eklenmemişse diye ekledim
+      case 3:
+        return "Hayvan türü";
+      case 4:
+        return "Bitki (Meyve, sebze, ağaç, çiçek vb.)";
+      case 5:
+        return "Eşya (Gerçek hayatta kullanılan bir nesne veya araç gereç mi?)";
+      default:
+        return "Bilinmeyen Kategori";
     }
   }
 
@@ -166,7 +187,8 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
           .get();
 
       if (karaListeDoc.exists) {
-        print("🛑 Veritabanından Hızlı Engelleme (Gemini'ye sorulmadı): $oyuncuAdi");
+        print(
+            "🛑 Veritabanından Hızlı Engelleme (Gemini'ye sorulmadı): $oyuncuAdi");
         return false;
       }
     } catch (e) {
@@ -174,7 +196,8 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
     }
 
     try {
-      final model = GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
+      final model =
+          GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
 
       final prompt = '''
       Sen bir mobil oyun güvenlik ve ahlak filtresisin.
@@ -188,27 +211,31 @@ SADECE VE SADECE aşağıdaki gibi JSON formatında cevap ver, hiçbir açıklam
       Başka hiçbir açıklama veya noktalama işareti kullanma.
       ''';
 
-      final response = await model.generateContent([Content.text(prompt)]).timeout(const Duration(seconds: 5));
+      final response = await model.generateContent(
+          [Content.text(prompt)]).timeout(const Duration(seconds: 5));
       final cevap = response.text?.trim().toLowerCase() ?? "true";
 
       if (cevap.contains("false")) {
         print("❌ Gemini İsmi Engelledi: $oyuncuAdi");
 
         try {
-          await FirebaseFirestore.instance.collection('yasakli_isimler').doc(kucukHarfIsim).set({
+          await FirebaseFirestore.instance
+              .collection('yasakli_isimler')
+              .doc(kucukHarfIsim)
+              .set({
             'isim': kucukHarfIsim,
             'orijinalGiris': oyuncuAdi,
             'eklenmeTarihi': FieldValue.serverTimestamp(),
             'kaynak': 'Gemini Otomatik Engel'
           });
-          print("💾 Yeni uygunsuz kelime Firebase kara listesine eklendi: $kucukHarfIsim");
+          print(
+              "💾 Yeni uygunsuz kelime Firebase kara listesine eklendi: $kucukHarfIsim");
         } catch (e) {
           print("🚨 Firebase kara liste kaydetme hatası: $e");
         }
         return false;
       }
       return true;
-
     } catch (e) {
       print("🚨 İsim kontrolü hatası: $e");
       return true;

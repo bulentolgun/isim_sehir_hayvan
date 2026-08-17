@@ -45,32 +45,36 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
 
   void _animasyonlariBaslat() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    if(mounted) setState(() => _ucuncuGoster = true);
+    if (mounted) setState(() => _ucuncuGoster = true);
 
     await Future.delayed(const Duration(milliseconds: 1200));
-    if(mounted) setState(() => _ikinciGoster = true);
+    if (mounted) setState(() => _ikinciGoster = true);
 
     await Future.delayed(const Duration(milliseconds: 1500));
-    if(mounted) setState(() {
-      _birinciGoster = true;
-      _konfetiGoster = true;
-    });
+    if (mounted)
+      setState(() {
+        _birinciGoster = true;
+        _konfetiGoster = true;
+      });
   }
+
   void _anaMenuyeDon() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => LobbyPage(
-        // Lobi sayfasının bizden zorunlu olarak istediği parametreleri buraya ekliyoruz:
-        oyuncuAdi: widget.oyuncuAdi,
-        aksesuarIndex: 0,
-        renkIndex: 0,
-        yuzIndex: 0,
-      )),
-          (route) => false,
+      MaterialPageRoute(
+          builder: (context) => LobbyPage(
+                // Lobi sayfasının bizden zorunlu olarak istediği parametreleri buraya ekliyoruz:
+                oyuncuAdi: widget.oyuncuAdi,
+                aksesuarIndex: 0,
+                renkIndex: 0,
+                yuzIndex: 0,
+              )),
+      (route) => false,
     );
   }
 
-  Widget _kursuSutunu(Map<String, dynamic> kisi, int sira, double yukseklik, Color renk, bool goster) {
+  Widget _kursuSutunu(Map<String, dynamic> kisi, int sira, double yukseklik,
+      Color renk, bool goster) {
     return AnimatedOpacity(
       opacity: goster ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 800),
@@ -81,26 +85,53 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            if (goster && sira == 1) const Text("👑", style: TextStyle(fontSize: 45)),
+            if (goster && sira == 1)
+              const Text("👑", style: TextStyle(fontSize: 45)),
             Text(
               kisi['ad'] + (kisi['benMi'] ? "\n(Sen)" : ""),
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, color: kisi['benMi'] ? const Color(0xFF5E17EB) : Colors.black87, fontSize: sira == 1 ? 16 : 14),
-              maxLines: 2, overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color:
+                      kisi['benMi'] ? const Color(0xFF5E17EB) : Colors.black87,
+                  fontSize: sira == 1 ? 16 : 14),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Text("${kisi['puan']} Puan", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 13)),
+            Text("${kisi['puan']} Puan",
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                    fontSize: 13)),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
               height: yukseklik,
               decoration: BoxDecoration(
                 color: renk,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, -5))],
+                borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16)),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5))
+                ],
               ),
               child: Center(
-                child: Text("$sira", style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold, color: Colors.white, shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2))])),
+                child: Text("$sira",
+                    style: const TextStyle(
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black26,
+                              blurRadius: 4,
+                              offset: Offset(2, 2))
+                        ])),
               ),
             ),
           ],
@@ -119,10 +150,17 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
             child: Column(
               children: [
                 const SizedBox(height: 50),
-                const Text("🏆 TURNUVA BİTTİ 🏆", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF5E17EB))),
+                const Text("🏆 TURNUVA BİTTİ 🏆",
+                    style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF5E17EB))),
                 const SizedBox(height: 10),
-                const Text("İşte Şampiyonlar!", style: TextStyle(fontSize: 18, color: Colors.black54, fontWeight: FontWeight.w500)),
-
+                const Text("İşte Şampiyonlar!",
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500)),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -130,16 +168,21 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(child: _kursuSutunu(_siralamalar[1], 2, 170, Colors.blueGrey.shade400, _ikinciGoster)),
+                        Expanded(
+                            child: _kursuSutunu(_siralamalar[1], 2, 170,
+                                Colors.blueGrey.shade400, _ikinciGoster)),
                         const SizedBox(width: 10),
-                        Expanded(child: _kursuSutunu(_siralamalar[0], 1, 240, const Color(0xFFFFC107), _birinciGoster)),
+                        Expanded(
+                            child: _kursuSutunu(_siralamalar[0], 1, 240,
+                                const Color(0xFFFFC107), _birinciGoster)),
                         const SizedBox(width: 10),
-                        Expanded(child: _kursuSutunu(_siralamalar[2], 3, 130, const Color(0xFFCD7F32), _ucuncuGoster)),
+                        Expanded(
+                            child: _kursuSutunu(_siralamalar[2], 3, 130,
+                                const Color(0xFFCD7F32), _ucuncuGoster)),
                       ],
                     ),
                   ),
                 ),
-
                 AnimatedOpacity(
                   opacity: _birinciGoster ? 1.0 : 0.0,
                   duration: const Duration(seconds: 1),
@@ -150,18 +193,22 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
                         backgroundColor: const Color(0xFF5E17EB),
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         elevation: 4,
                       ),
                       onPressed: _birinciGoster ? _anaMenuyeDon : null,
-                      child: const Text("ANA MENÜYE DÖN ↩️", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                      child: const Text("ANA MENÜYE DÖN ↩️",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-
           if (_konfetiGoster)
             IgnorePointer(
               child: Align(
@@ -174,7 +221,8 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
                     builder: (context, val, child) {
                       return Transform.scale(
                         scale: val,
-                        child: const Text("🎊 🎉 🏆 🎉 🎊", style: TextStyle(fontSize: 45)),
+                        child: const Text("🎊 🎉 🏆 🎉 🎊",
+                            style: TextStyle(fontSize: 45)),
                       );
                     },
                   ),

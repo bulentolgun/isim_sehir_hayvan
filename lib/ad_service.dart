@@ -2,17 +2,37 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter/foundation.dart' show kIsWeb; // Web çökmesini önlemek için eklendi
+import 'package:flutter/foundation.dart'
+    show kIsWeb; // Web çökmesini önlemek için eklendi
+import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // 🔴 EKLENDİ: Apple İzin Paketi
 
 // ==========================================
-// BÖLÜM 1: Temel Kurulum ve Reklam Kimlikleri (Ad Unit IDs)
+// BÖLÜM 1: Temel Kurulum, Reklam Kimlikleri ve İzinler
 // ==========================================
 class AdService {
   static final AdService instance = AdService._init();
+
   AdService._init();
 
   InterstitialAd? _interstitialAd;
   bool _isInterstitialLoading = false;
+
+  // 🔴 YENİ EKLENEN METOT: Reklamları ve iOS İzinlerini Başlatma
+  Future<void> initializeAds() async {
+    // Sadece web değilse ve cihaz iOS ise izin sor
+    if (!kIsWeb && Platform.isIOS) {
+      // iOS için ATT (Takip İzni) durumunu kontrol et
+      var status = await AppTrackingTransparency.trackingAuthorizationStatus;
+      if (status == TrackingStatus.notDetermined) {
+        // Kullanıcıya izin penceresini göster
+        // Yarım saniye beklemek Apple'ın pencereyi yutmasını/bug'a girmesini önler
+        await Future.delayed(const Duration(milliseconds: 500));
+        await AppTrackingTransparency.requestTrackingAuthorization();
+      }
+    }
+    // İzin penceresi gösterildikten (veya zaten izin verildikten) sonra AdMob'u başlat
+    await MobileAds.instance.initialize();
+  }
 
   // 🛡️ DÜZELTME: Desteklenmeyen platformlarda (Web, Desktop) çökmeyi önleyen güvenli ID çekimi
   String get bannerAdUnitId {
@@ -35,15 +55,16 @@ class AdService {
     if (Platform.isIOS) return 'ca-app-pub-3940256099942544/4452514319';
     return '';
   }
-// ---------------- BÖLÜM 1 SONU ----------------
 
+// ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: Geçiş Reklamı (Interstitial) Yükleme ve Gösterme
 // ==========================================
   void loadInterstitialAd() {
     String adId = interstitialAdUnitId;
-    if (adId.isEmpty || _interstitialAd != null || _isInterstitialLoading) return;
+    if (adId.isEmpty || _interstitialAd != null || _isInterstitialLoading)
+      return;
 
     _isInterstitialLoading = true;
 
@@ -97,8 +118,8 @@ class AdService {
 
     _interstitialAd!.show();
   }
-// ---------------- BÖLÜM 2 SONU ----------------
 
+// ---------------- BÖLÜM 2 SONU ----------------
 
 // ==========================================
 // BÖLÜM 3: Banner ve Kutu Reklam Motorları (Yükleme Öncelikli)
@@ -148,7 +169,6 @@ class AdService {
   }
 }
 // ---------------- BÖLÜM 3 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 4: Kesintisiz Alt Banner Widget'ı (Kullanıcı Arayüzü)
@@ -221,7 +241,6 @@ class _BottomBannerAdWidgetState extends State<BottomBannerAdWidget> {
 }
 // ---------------- BÖLÜM 4 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 5: Orta Boy Kutu Reklam Widget'ı (Kullanıcı Arayüzü)
 // ==========================================
@@ -229,7 +248,8 @@ class MediumRectangleAdWidget extends StatefulWidget {
   const MediumRectangleAdWidget({super.key});
 
   @override
-  State<MediumRectangleAdWidget> createState() => _MediumRectangleAdWidgetState();
+  State<MediumRectangleAdWidget> createState() =>
+      _MediumRectangleAdWidgetState();
 }
 
 class _MediumRectangleAdWidgetState extends State<MediumRectangleAdWidget> {

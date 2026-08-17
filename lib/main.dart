@@ -1,3 +1,6 @@
+// ==========================================
+// BÖLÜM 1: KÜTÜPHANELER VE İÇE AKTARMALAR (IMPORTS)
+// ==========================================
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // 🎯 Google AdMob Kütüphanesi
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +13,12 @@ import 'database_helper.dart';
 import 'login_page.dart';
 import 'deep_link_service.dart';
 import 'firebase_options.dart';
+import 'ad_service.dart'; // 🔴 YENİ EKLENDİ: Reklam ve İzin Servisimizi Tanıması İçin
+// ---------------- BÖLÜM 1 SONU ----------------
 
+// ==========================================
+// BÖLÜM 2: TEMEL BAŞLATMA VE ÇEVRE DEĞİŞKENLERİ (.env)
+// ==========================================
 // 🟢 void main yerine Future<void> main kullanıldı (Asenkron işlemler için)
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,11 +30,14 @@ Future<void> main() async {
     // 🔍 DEDEKTİF KODU BURADA: Şifre gerçekten okunuyor mu bakıyoruz!
     String testSifre = dotenv.env['GEMINI_API_KEY'] ?? "BOS";
     debugPrint("🕵️ .env KONTROLÜ -> Şifre uzunluğu: ${testSifre.length}");
-
   } catch (e) {
     debugPrint("🚨 .env dosyası bulunamadı veya yüklenemedi: $e");
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
+// ==========================================
+// BÖLÜM 3: FIREBASE, CRASHLYTICS VE KİMLİK DOĞRULAMA (AUTH)
+// ==========================================
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -44,16 +55,22 @@ Future<void> main() async {
   // 🟢 ÇÖZÜM NOKTASI: Veritabanı işlemlerinden ÖNCE Anonim Giriş yapıyoruz!
   try {
     await FirebaseAuth.instance.signInAnonymously();
-    debugPrint("✅ Firebase Anonim Giriş Başarılı! Artık Firestore veri izni verecek.");
+    debugPrint(
+        "✅ Firebase Anonim Giriş Başarılı! Artık Firestore veri izni verecek.");
   } catch (e) {
     debugPrint("🚨 Firebase Anonim Giriş Hatası: $e");
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
-  // EMÜLATÖR TESTİ İÇİN ADMOB GEÇİCİ OLARAK KAPATILDI
+// ==========================================
+// BÖLÜM 4: REKLAM MOTORU, YEREL VERİTABANI VE UYGULAMA BAŞLATMA
+// ==========================================
+  // 🔴 YENİ YAPI: Önce Apple ATT İzinlerini sorar, sonra AdMob'u başlatır
   try {
-    await MobileAds.instance.initialize();
+    await AdService.instance.initializeAds();
   } catch (e) {
-    debugPrint("AdMob Web üzerinde çalışmadığı için atlandı.");
+    debugPrint(
+        "AdMob veya İzin Sistemi Web üzerinde çalışmadığı için atlandı: $e");
   }
 
   try {
@@ -67,7 +84,11 @@ Future<void> main() async {
   // 🎯 İŞTE EKSİK OLAN VE OYUNU BAŞLATAN O SİHİRLİ SATIR:
   runApp(const MyApp());
 }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+// ==========================================
+// BÖLÜM 5: UYGULAMA KÖK SINIFI (MYAPP) VE ARAYÜZ YAPILANDIRMASI
+// ==========================================
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -104,3 +125,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+// ---------------- BÖLÜM 5 SONU ----------------

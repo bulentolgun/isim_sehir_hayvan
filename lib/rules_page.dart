@@ -28,14 +28,13 @@ class RulesPage extends StatelessWidget {
               iconColor: Colors.orange,
               title: "1. Harf Kuralı",
               description:
-              "Her turun başında rastgele bir harf seçilir. Yazacağınız tüm kelimeler bu harf ile başlamalıdır.",
+                  "Her turun başında rastgele bir harf seçilir. Yazacağınız tüm kelimeler bu harf ile başlamalıdır.",
             ),
             _buildRuleCard(
               icon: Icons.score_rounded,
               iconColor: Colors.blue,
               title: "2. Kategori Puanlaması",
-              description:
-              "• İki oyuncu aynı doğru kelimeyi yazarsa: 5 Puan\n"
+              description: "• İki oyuncu aynı doğru kelimeyi yazarsa: 5 Puan\n"
                   "• İki oyuncu farklı doğru kelimeler yazarsa: 10 Puan\n"
                   "• Sadece tek oyuncu doğru kelime yazarsa: 20 Puan\n"
                   "• Doğru bilinen en uzun kelimeye: +2 Puan Bonus"
@@ -46,7 +45,7 @@ class RulesPage extends StatelessWidget {
               iconColor: Colors.redAccent,
               title: "3. Turu Erken Bitirme & 20 Sn Kuralı",
               description:
-              "En az 5 kategoriyi doldurduğunuzda 'TURU BİTİR' butonuna basabilirsiniz. "
+                  "En az 5 kategoriyi doldurduğunuzda 'TURU BİTİR' butonuna basabilirsiniz. "
                   "Sayaç anında 20 saniyeye düşer ve tur sonunda +10 Zaman Bonusu kazanırsınız.",
             ),
             _buildRuleCard(
@@ -54,7 +53,7 @@ class RulesPage extends StatelessWidget {
               iconColor: Colors.amber,
               title: "4. 🏆 Maç Sonu Galibiyet Bonusu",
               description:
-              "• Maç bittiğinde, maçı kim kazandıysa genel puanına ve liderlik tablosuna kaydedilmek üzere +100 Galibiyet Bonusu eklenir.\n"
+                  "• Maç bittiğinde, maçı kim kazandıysa genel puanına ve liderlik tablosuna kaydedilmek üzere +100 Galibiyet Bonusu eklenir.\n"
                   "• Beraberlik durumunda kimseye ekstra +100 eklenmez, sadece maçta toplanan ham puanlar genel skora yansır.",
             ),
             _buildRuleCard(
@@ -62,7 +61,7 @@ class RulesPage extends StatelessWidget {
               iconColor: Colors.green,
               title: "5. Geçerli Kelimeler",
               description:
-              "Eşya, Hayvan, Bitki ve Ülke kategorilerinde sadece gerçek ve somut kelimeler kabul edilir. "
+                  "Eşya, Hayvan, Bitki ve Ülke kategorilerinde sadece gerçek ve somut kelimeler kabul edilir. "
                   "TDK'deki soyut veya kural dışı kelimeler puan almaz.",
             ),
             const SizedBox(height: 10),

@@ -37,7 +37,8 @@ class _ContactUsPageState extends State<ContactUsPage> {
     });
 
     try {
-      String oyuncu = widget.oyuncuAdi.isEmpty ? "Anonim Oyuncu" : widget.oyuncuAdi;
+      String oyuncu =
+          widget.oyuncuAdi.isEmpty ? "Anonim Oyuncu" : widget.oyuncuAdi;
 
       // 🎯 Firebase Firestore'a Geri Bildirim Kaydı
       await FirebaseFirestore.instance.collection('geri_bildirimler').add({
@@ -51,7 +52,8 @@ class _ContactUsPageState extends State<ContactUsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz! 🎉"),
+            content: Text(
+                "Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz! 🎉"),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
@@ -90,12 +92,15 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
   @override
   Widget build(BuildContext context) {
-    String aktifOyuncu = widget.oyuncuAdi.isEmpty ? "Tokatlı60" : widget.oyuncuAdi;
+    String aktifOyuncu =
+        widget.oyuncuAdi.isEmpty ? "Tokatlı60" : widget.oyuncuAdi;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Bize Ulaşın", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+        title: const Text("Bize Ulaşın",
+            style:
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -141,17 +146,21 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   decoration: InputDecoration(
                     labelText: "Konu / Bildirim Türü",
                     labelStyle: const TextStyle(color: Colors.purple),
-                    prefixIcon: const Icon(Icons.category_rounded, color: Colors.purple),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    prefixIcon: const Icon(Icons.category_rounded,
+                        color: Colors.purple),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: Colors.purple, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
                   items: _bildirimTurleri.map((String tur) {
                     return DropdownMenuItem<String>(
                       value: tur,
-                      child: Text(tur, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      child: Text(tur,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -172,11 +181,14 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   decoration: InputDecoration(
                     labelText: "E-Posta Adresiniz (Geri dönüş için)",
                     labelStyle: TextStyle(color: Colors.grey.shade700),
-                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.purple),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    prefixIcon:
+                        const Icon(Icons.email_outlined, color: Colors.purple),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: Colors.purple, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -198,16 +210,20 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   maxLength: 500,
                   decoration: InputDecoration(
                     labelText: "Mesajınız",
-                    hintText: "Düşüncelerinizi veya karşılaştığınız sorunu detaylıca yazabilirsiniz...",
+                    hintText:
+                        "Düşüncelerinizi veya karşılaştığınız sorunu detaylıca yazabilirsiniz...",
                     alignLabelWithHint: true,
                     prefixIcon: const Padding(
                       padding: EdgeInsets.only(bottom: 60),
-                      child: Icon(Icons.chat_bubble_outline, color: Colors.purple),
+                      child:
+                          Icon(Icons.chat_bubble_outline, color: Colors.purple),
                     ),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(color: Colors.purple, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -229,20 +245,23 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     backgroundColor: Colors.purple,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
                     elevation: 2,
                   ),
                   onPressed: _isSending ? null : _mesajGonder,
                   icon: _isSending
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
                       : const Icon(Icons.send_rounded, size: 20),
                   label: Text(
                     _isSending ? "Gönderiliyor..." : "Mesajı Gönder",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
 

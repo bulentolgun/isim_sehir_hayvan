@@ -18,8 +18,8 @@ class GameModePage extends StatelessWidget {
     required this.aksesuarIndex,
     required this.renkIndex,
   });
-// ---------------- BÖLÜM 1 SONU ----------------
 
+// ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: Ana Sayfa İskeleti, Başlık ve Karşılama Alanı
@@ -66,7 +66,6 @@ class GameModePage extends StatelessWidget {
               const SizedBox(height: 40),
 // ---------------- BÖLÜM 2 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 3: Oyun Modu Seçim Butonları (Arkadaş Odası & Hızlı Eşleşme)
 // ==========================================
@@ -111,7 +110,8 @@ class GameModePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                icon: const Icon(Icons.flash_on_rounded, color: Colors.purple, size: 28),
+                icon: const Icon(Icons.flash_on_rounded,
+                    color: Colors.purple, size: 28),
                 label: const Text(
                   "Rakip Bul (Hızlı Kapışma)",
                   style: TextStyle(
@@ -139,7 +139,6 @@ class GameModePage extends StatelessWidget {
               const SizedBox(height: 40),
 // ---------------- BÖLÜM 3 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 4: Geri Dön Butonu ve Alt Banner Reklam
 // ==========================================
@@ -150,9 +149,11 @@ class GameModePage extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.grey.shade400, width: 1.2),
                   minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
                 ),
-                icon: Icon(Icons.arrow_back, color: Colors.grey.shade700, size: 20),
+                icon: Icon(Icons.arrow_back,
+                    color: Colors.grey.shade700, size: 20),
                 label: Text(
                   "Giriş Sayfasına Dön",
                   style: TextStyle(

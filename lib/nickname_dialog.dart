@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-Future<void> showNicknameDialog(BuildContext context, Function(String) onSaved) async {
+Future<void> showNicknameDialog(
+    BuildContext context, Function(String) onSaved) async {
   TextEditingController controller = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
@@ -22,7 +23,8 @@ Future<void> showNicknameDialog(BuildContext context, Function(String) onSaved) 
             maxLength: 15,
             decoration: InputDecoration(
               hintText: "Örn: Oyuncu123",
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               prefixIcon: const Icon(Icons.person),
             ),
             validator: (value) {
@@ -40,7 +42,8 @@ Future<void> showNicknameDialog(BuildContext context, Function(String) onSaved) 
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               minimumSize: const Size.fromHeight(45),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               if (formKey.currentState!.validate()) {

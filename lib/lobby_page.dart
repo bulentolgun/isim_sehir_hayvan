@@ -25,13 +25,14 @@ class LobbyPage extends StatelessWidget {
     required this.renkIndex,
     this.isFriendMode = false,
   });
-// ---------------- BÖLÜM 1 SONU ----------------
 
+// ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: UI Yardımcı Widget'ları (Butonlar vb.)
 // ==========================================
-  Widget _buildTurButonu(BuildContext context, int turSayisi, String turAciklamasi) {
+  Widget _buildTurButonu(
+      BuildContext context, int turSayisi, String turAciklamasi) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: OutlinedButton(
@@ -39,7 +40,8 @@ class LobbyPage extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.purple, width: 1.5),
           minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         ),
         child: Text(
           "$turSayisi TUR ($turAciklamasi)",
@@ -52,8 +54,8 @@ class LobbyPage extends StatelessWidget {
       ),
     );
   }
-// ---------------- BÖLÜM 2 SONU ----------------
 
+// ---------------- BÖLÜM 2 SONU ----------------
 
 // ==========================================
 // BÖLÜM 3: Ana Ekran Arayüzü (Build Metodu)
@@ -67,7 +69,7 @@ class LobbyPage extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // 🎯 SOL ÜSTTE CANLI DİNAMİK PUAN VE SIRALAMA BİLGİSİ
+// 🎯 SOL ÜSTTE CANLI DİNAMİK PUAN VE SIRALAMA BİLGİSİ
             Positioned(
               top: 12,
               left: 16,
@@ -76,7 +78,8 @@ class LobbyPage extends StatelessWidget {
                 builder: (context, snapshot) {
                   int puan = snapshot.data?['puan'] ?? 0;
                   int siralama = snapshot.data?['siralama'] ?? 1000;
-                  int toplamYarismaci = snapshot.data?['toplamYarismaci'] ?? 1000;
+                  int toplamYarismaci =
+                      snapshot.data?['toplamYarismaci'] ?? 1000;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +108,8 @@ class LobbyPage extends StatelessWidget {
             ),
 
             SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 15.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 15.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,7 +121,6 @@ class LobbyPage extends StatelessWidget {
                     color: Colors.purple,
                   ),
                   const SizedBox(height: 12),
-
                   Text(
                     isFriendMode ? "ARKADAŞ ODASI" : "TURNUVA TUR SAYISI",
                     style: const TextStyle(
@@ -139,51 +142,64 @@ class LobbyPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   if (isFriendMode) ...[
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
                       ),
                       icon: const Icon(Icons.add_circle_outline, size: 22),
-                      label: const Text("Oda Oluştur (2-4 Kişi)", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+// YENİ DÜZELTME: Buton metni (2-10 Kişi) olarak güncellendi.
+                      label: const Text("Oda Oluştur (2-10 Kişi)",
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold)),
                       onPressed: () => _canliOdaOlustur(context, mevcutOyuncu),
                     ),
                     const SizedBox(height: 10),
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.purple, width: 1.5),
+                        side:
+                            const BorderSide(color: Colors.purple, width: 1.5),
                         minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
                       ),
-                      icon: const Icon(Icons.login_rounded, color: Colors.purple, size: 22),
-                      label: const Text("Oda Kodu ile Katıl", style: TextStyle(color: Colors.purple, fontSize: 15, fontWeight: FontWeight.bold)),
-                      onPressed: () => _odaKoduGirDiyalogu(context, mevcutOyuncu),
+                      icon: const Icon(Icons.login_rounded,
+                          color: Colors.purple, size: 22),
+                      label: const Text("Oda Kodu ile Katıl",
+                          style: TextStyle(
+                              color: Colors.purple,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
+                      onPressed: () =>
+                          _odaKoduGirDiyalogu(context, mevcutOyuncu),
                     ),
                   ] else ...[
                     _buildTurButonu(context, 1, "Hızlı Kapışma"),
                     _buildTurButonu(context, 3, "Standart Lig"),
                     _buildTurButonu(context, 5, "Maraton Devleri"),
                   ],
-
                   const SizedBox(height: 12),
-
                   OutlinedButton.icon(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.grey.shade400, width: 1.2),
                       minimumSize: const Size(double.infinity, 45),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                     ),
-                    icon: Icon(Icons.arrow_back, color: Colors.grey.shade700, size: 18),
-                    label: const Text("Geri Dön", style: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.arrow_back,
+                        color: Colors.grey.shade700, size: 18),
+                    label: const Text("Geri Dön",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold)),
                   ),
-
                   const SizedBox(height: 20),
-
                   Container(
                     width: 300,
                     height: 250,
@@ -206,8 +222,8 @@ class LobbyPage extends StatelessWidget {
       ),
     );
   }
-// ---------------- BÖLÜM 3 SONU ----------------
 
+// ---------------- BÖLÜM 3 SONU ----------------
 
 // ==========================================
 // BÖLÜM 4: Oyuncu Bilgilerini ve Sıralamayı Çekme Motoru (SIFIR MALİYETLİ YENİ SİSTEM)
@@ -217,7 +233,8 @@ class LobbyPage extends StatelessWidget {
     int dbSkor = await DatabaseHelper.instance.getOyuncuSkor();
 
     // 2. Az önce veritabanında yazdığımız ZIRHLI ve UCUZ motoru (Bölüm 13) çağırıyoruz
-    Map<String, int> hizliVeri = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(dbSkor);
+    Map<String, int> hizliVeri =
+        await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(dbSkor);
 
     // 3. Gelen hazır rakamları alıp ekrana gönderiyoruz
     return {
@@ -226,14 +243,16 @@ class LobbyPage extends StatelessWidget {
       'toplamYarismaci': hizliVeri['toplam'] ?? 1000,
     };
   }
-// ---------------- BÖLÜM 4 SONU ----------------
 
+// ---------------- BÖLÜM 4 SONU ----------------
 
 // ==========================================
 // BÖLÜM 5: Arkadaş Odası Kurulumu ve Diyalogları
 // ==========================================
-  Future<void> _canliOdaOlustur(BuildContext context, String mevcutOyuncu) async {
-    final String kod = (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
+  Future<void> _canliOdaOlustur(
+      BuildContext context, String mevcutOyuncu) async {
+    final String kod =
+        (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
 
     await FirebaseFirestore.instance.collection('odalar').doc(kod).set({
       'odaKodu': kod,
@@ -248,16 +267,22 @@ class LobbyPage extends StatelessWidget {
     }
   }
 
-  void _canliOdaLobiEkraniGoster(BuildContext context, String mevcutOyuncu, String kod, {required bool isHost}) {
+  void _canliOdaLobiEkraniGoster(
+      BuildContext context, String mevcutOyuncu, String kod,
+      {required bool isHost}) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance.collection('odalar').doc(kod).snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('odalar')
+              .doc(kod)
+              .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || !snapshot.data!.exists) {
-              return const AlertDialog(content: Text("Oda kapatıldı veya bulunamadı."));
+              return const AlertDialog(
+                  content: Text("Oda kapatıldı veya bulunamadı."));
             }
 
             var odaData = snapshot.data!.data() as Map<String, dynamic>;
@@ -274,7 +299,8 @@ class LobbyPage extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (context) => GamePage(
                       oyuncuAdi: mevcutOyuncu,
-                      rakipAdi: oyuncular.where((p) => p != mevcutOyuncu).join(", "),
+                      rakipAdi:
+                          oyuncular.where((p) => p != mevcutOyuncu).join(", "),
                       yuzIndex: yuzIndex,
                       aksesuarIndex: aksesuarIndex,
                       renkIndex: renkIndex,
@@ -291,16 +317,20 @@ class LobbyPage extends StatelessWidget {
             }
 
             return AlertDialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              insetPadding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
               title: Column(
                 children: [
-                  const Text("🎮 Oyun Odası", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                  const Text("🎮 Oyun Odası",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                   const SizedBox(height: 14),
-
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.purple.shade50,
                       borderRadius: BorderRadius.circular(16),
@@ -312,8 +342,16 @@ class LobbyPage extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("ODA KODU", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-                            Text(kod, style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 26)),
+                            const Text("ODA KODU",
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold)),
+                            Text(kod,
+                                style: const TextStyle(
+                                    color: Colors.purple,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 26)),
                           ],
                         ),
                         ElevatedButton.icon(
@@ -321,129 +359,205 @@ class LobbyPage extends StatelessWidget {
                             backgroundColor: Colors.purple.shade100,
                             foregroundColor: Colors.purple,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                           icon: const Icon(Icons.copy, size: 18),
-                          label: const Text("Kopyala", style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: const Text("Kopyala",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: kod));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Oda kodu panoya kopyalandı!"), duration: Duration(seconds: 1)),
+                              const SnackBar(
+                                  content: Text("Oda kodu panoya kopyalandı!"),
+                                  duration: Duration(seconds: 1)),
                             );
                           },
                         ),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   InkWell(
                     onTap: () {
                       String deepLink = "https://isimsehir.app/join?code=$kod";
-                      String storeLink = "https://play.google.com/store/apps/details?id=com.tamam.isim_sehir_hayvan";
+                      String storeLink =
+                          "https://play.google.com/store/apps/details?id=com.tamam.isim_sehir_hayvan";
 
-                      String mesaj = "İsim Şehir Hayvan oynamaya davet edildin! 🎮\n\n"
+                      String mesaj =
+                          "İsim Şehir Hayvan oynamaya davet edildin! 🎮\n\n"
                           "Sen de gel, yarışalım!\n"
                           "📌 Oda Kodun: $kod\n\n"
                           "🔗 Doğrudan Odaya Katılmak İçin Tıkla:\n$deepLink\n\n"
                           "📲 Uygulama yüklü değilse hemen indir:\n$storeLink";
 
-                      Share.share(mesaj, subject: 'İsim Şehir Hayvan Oyunu Oda Daveti');
+                      Share.share(mesaj,
+                          subject: 'İsim Şehir Hayvan Oyunu Oda Daveti');
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [Colors.purple, Colors.purple.shade700]),
+                        gradient: LinearGradient(
+                            colors: [Colors.purple, Colors.purple.shade700]),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.purple.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                          BoxShadow(
+                              color: Colors.purple.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3)),
                         ],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                          Icon(Icons.share_rounded,
+                              color: Colors.white, size: 20),
                           SizedBox(width: 8),
-                          Text("Arkadaşını Davet Et 🚀", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text("Arkadaşını Davet Et 🚀",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
+              // YENİ DÜZELTME: 10 Kişiye Uyumlu ve Kaydırılabilir Lobi Ekranı
               content: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Katılan Oyuncular (${oyuncular.length}/4):", style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text("Katılan Oyuncular (${oyuncular.length}/10):",
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
-                    ...oyuncular.map((p) => Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.person, color: Colors.purple),
-                        title: Text(p.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                        trailing: p == mevcutOyuncu ? const Text("Sen", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)) : null,
+                    Flexible(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: oyuncular
+                              .map((p) => Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    child: ListTile(
+                                      dense: true,
+                                      leading: const Icon(Icons.person,
+                                          color: Colors.purple),
+                                      title: Text(p.toString(),
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      trailing: p == mevcutOyuncu
+                                          ? const Text("Sen",
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontWeight: FontWeight.bold))
+                                          : null,
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
                       ),
-                    )),
+                    ),
                   ],
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () async {
-                    await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
+                    await FirebaseFirestore.instance
+                        .collection('odalar')
+                        .doc(kod)
+                        .update({
                       'oyuncular': FieldValue.arrayRemove([mevcutOyuncu])
                     });
                     if (context.mounted) Navigator.pop(context);
                   },
-                  child: const Text("Ayrıl", style: TextStyle(color: Colors.red)),
+                  child:
+                      const Text("Ayrıl", style: TextStyle(color: Colors.red)),
                 ),
                 if (isHost)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: oyuncular.length >= 2
                         ? () async {
-                      List<String> harfler = ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
-                      harfler.shuffle();
-                      String ortakHarf = harfler.first;
+                            List<String> harfler = [
+                              "A",
+                              "B",
+                              "C",
+                              "Ç",
+                              "D",
+                              "E",
+                              "F",
+                              "G",
+                              "H",
+                              "I",
+                              "İ",
+                              "J",
+                              "K",
+                              "L",
+                              "M",
+                              "N",
+                              "O",
+                              "Ö",
+                              "P",
+                              "R",
+                              "S",
+                              "Ş",
+                              "T",
+                              "U",
+                              "Ü",
+                              "V",
+                              "Y",
+                              "Z"
+                            ];
+                            harfler.shuffle();
+                            String ortakHarf = harfler.first;
 
-                      await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
-                        'durum': 'BASLADI',
-                        'secilenHarf': ortakHarf,
-                      });
+                            await FirebaseFirestore.instance
+                                .collection('odalar')
+                                .doc(kod)
+                                .update({
+                              'durum': 'BASLADI',
+                              'secilenHarf': ortakHarf,
+                            });
 
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GamePage(
-                              oyuncuAdi: mevcutOyuncu,
-                              rakipAdi: oyuncular.where((p) => p != mevcutOyuncu).join(", "),
-                              yuzIndex: yuzIndex,
-                              aksesuarIndex: aksesuarIndex,
-                              renkIndex: renkIndex,
-                              mevcutTur: 1,
-                              toplamTurSayisi: 3,
-                              oyuncuKumulatifSkor: 0,
-                              rakip1KumulatifSkor: 0,
-                              secilenHarf: ortakHarf,
-                              odaKodu: kod,
-                            ),
-                          ),
-                        );
-                      }
-                    }
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => GamePage(
+                                    oyuncuAdi: mevcutOyuncu,
+                                    rakipAdi: oyuncular
+                                        .where((p) => p != mevcutOyuncu)
+                                        .join(", "),
+                                    yuzIndex: yuzIndex,
+                                    aksesuarIndex: aksesuarIndex,
+                                    renkIndex: renkIndex,
+                                    mevcutTur: 1,
+                                    toplamTurSayisi: 3,
+                                    oyuncuKumulatifSkor: 0,
+                                    rakip1KumulatifSkor: 0,
+                                    secilenHarf: ortakHarf,
+                                    odaKodu: kod,
+                                  ),
+                                ),
+                              );
+                            }
+                          }
                         : null,
-                    child: Text("Oyunu Başlat (${oyuncular.length} Kişi)", style: const TextStyle(color: Colors.white)),
+                    child: Text("Oyunu Başlat (${oyuncular.length} Kişi)",
+                        style: const TextStyle(color: Colors.white)),
                   ),
               ],
             );
@@ -459,7 +573,8 @@ class LobbyPage extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text("Oda Kodunu Girin"),
           content: TextField(
             controller: controller,
@@ -467,29 +582,59 @@ class LobbyPage extends StatelessWidget {
             maxLength: 4,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            decoration: const InputDecoration(hintText: "", border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+                hintText: "", border: OutlineInputBorder()),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("İptal")),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("İptal")),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
               onPressed: () async {
                 String kod = controller.text.trim();
                 if (kod.isNotEmpty) {
-                  var doc = await FirebaseFirestore.instance.collection('odalar').doc(kod).get();
+                  var doc = await FirebaseFirestore.instance
+                      .collection('odalar')
+                      .doc(kod)
+                      .get();
                   if (doc.exists) {
-                    await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
+                    // ==========================================
+                    // YENİ EKLENEN: ODA KAPASİTE KONTROLÜ (10 KİŞİ)
+                    // ==========================================
+                    List<dynamic> odadakiOyuncular =
+                        doc.data()?['oyuncular'] ?? [];
+                    if (odadakiOyuncular.length >= 10) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  "Oda kapasitesi dolu (Maksimum 10 kişi)!"),
+                              backgroundColor: Colors.red),
+                        );
+                      }
+                      return; // Odaya almadan işlemi iptal et
+                    }
+                    // ==========================================
+
+                    await FirebaseFirestore.instance
+                        .collection('odalar')
+                        .doc(kod)
+                        .update({
                       'oyuncular': FieldValue.arrayUnion([mevcutOyuncu])
                     });
 
                     if (context.mounted) {
                       Navigator.pop(context);
-                      _canliOdaLobiEkraniGoster(context, mevcutOyuncu, kod, isHost: false);
+                      _canliOdaLobiEkraniGoster(context, mevcutOyuncu, kod,
+                          isHost: false);
                     }
                   } else {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Böyle bir oda bulunamadı!"), backgroundColor: Colors.red),
+                        const SnackBar(
+                            content: Text("Böyle bir oda bulunamadı!"),
+                            backgroundColor: Colors.red),
                       );
                     }
                   }
@@ -502,9 +647,8 @@ class LobbyPage extends StatelessWidget {
       },
     );
   }
+
 // ---------------- BÖLÜM 5 SONU ----------------
-
-
 // ==========================================
 // BÖLÜM 6: Rastgele Eşleştirme Motoru ve Oyuna Geçiş
 // ==========================================
@@ -548,18 +692,26 @@ class LobbyPage extends StatelessWidget {
 
                     if (dialogContext.mounted) Navigator.pop(dialogContext);
                     if (context.mounted) {
-                      _oyunaGit(context, ben, secilenRakip, turSayisi, aktifOdaId, ortakHarf);
+                      _oyunaGit(context, ben, secilenRakip, turSayisi,
+                          aktifOdaId, ortakHarf);
                     }
                     return;
                   }
 
                   // 2B. Yeni oda kurduysak, Firebase'i "canlı" dinlemeye başla (Saniyede bir istek atmayı bitirdik)
-                  odaDinleyici = FirebaseFirestore.instance.collection('odalar').doc(aktifOdaId).snapshots().listen((doc) {
+                  odaDinleyici = FirebaseFirestore.instance
+                      .collection('odalar')
+                      .doc(aktifOdaId)
+                      .snapshots()
+                      .listen((doc) {
                     if (doc.exists && doc.data()?['durum'] == 'BASLADI') {
                       List<dynamic> oyuncular = doc.data()?['oyuncular'] ?? [];
                       if (oyuncular.length >= 2) {
                         rakipBulundu = true;
-                        secilenRakip = oyuncular.firstWhere((p) => p != ben, orElse: () => "GizemliOyuncu").toString();
+                        secilenRakip = oyuncular
+                            .firstWhere((p) => p != ben,
+                                orElse: () => "GizemliOyuncu")
+                            .toString();
                         ortakHarf = doc.data()?['secilenHarf'] ?? "A";
 
                         timer?.cancel();
@@ -567,7 +719,8 @@ class LobbyPage extends StatelessWidget {
 
                         if (dialogContext.mounted) Navigator.pop(dialogContext);
                         if (context.mounted) {
-                          _oyunaGit(context, ben, secilenRakip, turSayisi, aktifOdaId, ortakHarf);
+                          _oyunaGit(context, ben, secilenRakip, turSayisi,
+                              aktifOdaId, ortakHarf);
                         }
                       }
                     }
@@ -581,17 +734,22 @@ class LobbyPage extends StatelessWidget {
 
                       // Kimse gelmediyse, sahipsiz odayı Firebase'den temizle
                       if (aktifOdaId.isNotEmpty) {
-                        FirebaseFirestore.instance.collection('odalar').doc(aktifOdaId).delete();
+                        FirebaseFirestore.instance
+                            .collection('odalar')
+                            .doc(aktifOdaId)
+                            .delete();
                       }
 
                       // Bota düşüş
-                      final randomBot = await DatabaseHelper.instance.getRandomBot();
+                      final randomBot =
+                          await DatabaseHelper.instance.getRandomBot();
                       secilenRakip = randomBot['bot_adi'] ?? "Ahmet_34";
 
                       if (dialogContext.mounted) Navigator.pop(dialogContext);
                       if (context.mounted) {
                         // Bota düşerken odaKodu boş gönderilir
-                        _oyunaGit(context, ben, secilenRakip, turSayisi, "", null);
+                        _oyunaGit(
+                            context, ben, secilenRakip, turSayisi, "", null);
                       }
                     } else {
                       setDialogState(() {
@@ -603,25 +761,42 @@ class LobbyPage extends StatelessWidget {
               }
 
               return AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                title: const Text("⚔️ Rakip Aranıyor", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text("⚔️ Rakip Aranıyor",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!rakipBulundu) ...[
                       const CircularProgressIndicator(color: Colors.purple),
                       const SizedBox(height: 15),
-                      const Text("Rakip bekleniyor...", style: TextStyle(fontSize: 15)),
+                      const Text("Rakip bekleniyor...",
+                          style: TextStyle(fontSize: 15)),
                     ] else ...[
-                      const Icon(Icons.check_circle, color: Colors.green, size: 48),
+                      const Icon(Icons.check_circle,
+                          color: Colors.green, size: 48),
                       const SizedBox(height: 10),
-                      Text("Eşleşme Tamam!\n$secilenRakip", textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
+                      Text("Eşleşme Tamam!\n$secilenRakip",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple)),
                     ],
                     const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(10)),
-                      child: Text("Süre: $kalanSaniye", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      decoration: BoxDecoration(
+                          color: Colors.purple.shade50,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Text("Süre: $kalanSaniye",
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple)),
                     ),
                   ],
                 ),
@@ -633,7 +808,8 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
-  void _oyunaGit(BuildContext context, String ben, String secilenRakip, int turSayisi, String odaKodu, String? harf) {
+  void _oyunaGit(BuildContext context, String ben, String secilenRakip,
+      int turSayisi, String odaKodu, String? harf) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -654,7 +830,8 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
-  Future<Map<String, dynamic>> _rastgeleEslesmeOdasinaGir(String ben, int turSayisi) async {
+  Future<Map<String, dynamic>> _rastgeleEslesmeOdasinaGir(
+      String ben, int turSayisi) async {
     try {
       var mevcutOda = await FirebaseFirestore.instance
           .collection('odalar')
@@ -667,18 +844,55 @@ class LobbyPage extends StatelessWidget {
       if (mevcutOda.docs.isNotEmpty) {
         // HAZIR ODA BULUNDU
         String docId = mevcutOda.docs.first.id;
-        List<String> harfler = ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
+        List<String> harfler = [
+          "A",
+          "B",
+          "C",
+          "Ç",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "İ",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "Ö",
+          "P",
+          "R",
+          "S",
+          "Ş",
+          "T",
+          "U",
+          "Ü",
+          "V",
+          "Y",
+          "Z"
+        ];
         harfler.shuffle();
         String ortakHarf = harfler.first;
         String kurucu = mevcutOda.docs.first.data()['kurucu'] ?? "Rakip";
 
-        await FirebaseFirestore.instance.collection('odalar').doc(docId).update({
+        await FirebaseFirestore.instance
+            .collection('odalar')
+            .doc(docId)
+            .update({
           'oyuncular': FieldValue.arrayUnion([ben]),
           'durum': 'BASLADI',
           'secilenHarf': ortakHarf
         });
 
-        return {'docId': docId, 'joined': true, 'harf': ortakHarf, 'rakip': kurucu};
+        return {
+          'docId': docId,
+          'joined': true,
+          'harf': ortakHarf,
+          'rakip': kurucu
+        };
       } else {
         // BEKLEYEN ODA YOK, YENİ KUR
         var yeniOda = FirebaseFirestore.instance.collection('odalar').doc();

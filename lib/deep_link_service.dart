@@ -19,7 +19,8 @@ class DeepLinkService {
     });
   }
 
-  static void _odaKoduAyristir(Uri uri, Function(String odaKodu) onOdaKoduAlindi) {
+  static void _odaKoduAyristir(
+      Uri uri, Function(String odaKodu) onOdaKoduAlindi) {
     // Örnek Bağlantı: https://isimsehir.app/join?code=7582
     if (uri.path == '/join' && uri.queryParameters.containsKey('code')) {
       String? code = uri.queryParameters['code'];
