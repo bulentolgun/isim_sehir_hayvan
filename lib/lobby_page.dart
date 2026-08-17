@@ -69,7 +69,8 @@ class LobbyPage extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-// 🎯 SOL ÜSTTE CANLI DİNAMİK PUAN VE SIRALAMA BİLGİSİ
+
+            // 🎯 SOL ÜSTTE CANLI DİNAMİK PUAN VE SIRALAMA BİLGİSİ
             Positioned(
               top: 12,
               left: 16,
@@ -78,8 +79,15 @@ class LobbyPage extends StatelessWidget {
                 builder: (context, snapshot) {
                   int puan = snapshot.data?['puan'] ?? 0;
                   int siralama = snapshot.data?['siralama'] ?? 1000;
-                  int toplamYarismaci =
-                      snapshot.data?['toplamYarismaci'] ?? 1000;
+                  int toplamYarismaci = snapshot.data?['toplamYarismaci'] ?? 1000;
+
+                  // ==================================================
+                  // 🛡️ SİHİRLİ KALKAN: MANTIK HATASINI GİZLEYEN KOD
+                  // ==================================================
+                  if (siralama > toplamYarismaci) {
+                    toplamYarismaci = siralama;
+                  }
+                  // ==================================================
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

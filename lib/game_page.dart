@@ -658,20 +658,33 @@ class _GamePageState extends State<GamePage> {
       });
     }
 
-    AdService.instance.showEmniyetliGecisReklami(
-      onReklamBitti: () {
-        if (!mounted) return;
-        if (_kalanSure <= 0) {
-          _cevaplariFirebaseeGonderAndDegerlendir();
-        } else {
-          setState(() {});
-        }
-      },
-    );
+    // ==================================================
+    // 🚀 iOS KLAVYE VE REKLAM ÇAKIŞMASINI ÇÖZEN KALKAN
+    // ==================================================
+    // 1. Önce cihazdaki açık klavyeyi zorla kapatıyoruz
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    // 2. Klavyenin tamamen kapanıp ekranın boşa çıkması için yarım saniye (500ms) bekliyoruz
+    Future.delayed(const Duration(milliseconds: 500), () {
+
+      // 3. Ekran temizlendiğine göre artık geçiş reklamını güvenle çağırabiliriz
+      AdService.instance.showEmniyetliGecisReklami(
+        onReklamBitti: () {
+          if (!mounted) return;
+
+          // 🛡️ DÜZELTME BURADA: Eğer süre bittiyse AMA tur arka planda zaten bitirildiyse tekrar hesaplama!
+          if (_kalanSure <= 0 && !turBittiMi && !isLoading) {
+            _cevaplariFirebaseeGonderAndDegerlendir();
+          } else {
+            setState(() {});
+          }
+        },
+      );
+
+    });
+    // ==================================================
   }
-
 // ---------------- BÖLÜM 14 SONU ----------------
-
 // ==========================================
 // BÖLÜM 15: Yazılanları Anlık TDK'da Arayan Kod
 // ==========================================

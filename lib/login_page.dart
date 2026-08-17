@@ -1,3 +1,6 @@
+// ==========================================
+// BÖLÜM 1: KÜTÜPHANELER VE İÇE AKTARMALAR (IMPORTS)
+// ==========================================
 import 'dart:io';
 import 'dart:async'; // 🟢 EKLENDİ: Timeout (Zaman aşımı) yakalamak için
 import 'package:flutter/foundation.dart'; // 🟢 EKLENDİ: kIsWeb (Platform) kontrolü için
@@ -5,12 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'game_mode_page.dart';
 import 'rules_page.dart';
 import 'contact_us_page.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'gemini_service.dart'; // 🚀 1. ÇÖZÜM: Gemini Servisi Sayfaya Dahil Edildi!
+// ---------------- BÖLÜM 1 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 2: SINIF TANIMLAMALARI VE DEĞİŞKENLER (STATE & VARIABLES)
+// ==========================================
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -33,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isLoading = false;
 
+  // 🎨 Avatar ve Tema Seçenekleri
   final List<String> yuzler = ["😀", "😎", "🦊", "🐱", "🦁", "🐻"];
   final List<String> aksesuarlar = ["👑", "🕶️", "🎧", "🎩", "🎀", "⭐"];
   final List<Color> renkler = [
@@ -44,33 +54,19 @@ class _LoginPageState extends State<LoginPage> {
     Colors.red
   ];
 
+  // 🛡️ Filtreleme Listesi
   final List<String> yasakliKelimeler = [
-    "amk",
-    "sik",
-    "piç",
-    "orospu",
-    "oç",
-    "sg",
-    "yarrak",
-    "göt",
-    "meme",
-    "dalyarak",
-    "pezevenk",
-    "kaltak",
-    "fahişe",
-    "amq",
-    "aq",
-    "mk",
-    "sürtük",
-    "yavşak",
-    "ibne",
-    "kahpe",
-    "gay",
-    "porno",
-    "sex",
-    "bok"
+    "amk", "sik", "piç", "orospu", "oç", "sg", "yarrak", "göt",
+    "meme", "dalyarak", "pezevenk", "kaltak", "fahişe", "amq",
+    "aq", "mk", "sürtük", "yavşak", "ibne", "kahpe", "gay",
+    "porno", "sex", "bok"
   ];
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: YARDIMCI FONKSİYONLAR VE KONTROLLER (HELPER METHODS)
+// ==========================================
   String trToLowerCase(String text) {
     return text
         .replaceAll('İ', 'i')
@@ -106,14 +102,13 @@ class _LoginPageState extends State<LoginPage> {
         .replaceAll('5', 's');
 
     String sadeceHarflerVeBosluk =
-        hileCozulmus.replaceAll(RegExp(r'[^a-zçğıöşü\s]'), '');
+    hileCozulmus.replaceAll(RegExp(r'[^a-zçğıöşü\s]'), '');
     String bitisikKelime = sadeceHarflerVeBosluk.replaceAll(RegExp(r'\s+'), '');
 
     if (yasakliKelimeler.contains(bitisikKelime)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text("Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
+            content: Text("Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
             backgroundColor: Colors.red),
       );
       return false;
@@ -124,8 +119,7 @@ class _LoginPageState extends State<LoginPage> {
       if (yasakliKelimeler.contains(kelime)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text(
-                  "Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
+              content: Text("Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
               backgroundColor: Colors.red),
         );
         return false;
@@ -134,7 +128,12 @@ class _LoginPageState extends State<LoginPage> {
 
     return true;
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: CİHAZ, KAYIT VE FİREBASE İŞLEMLERİ (BACKEND & STORAGE)
+// ==========================================
   @override
   void initState() {
     super.initState();
@@ -153,12 +152,9 @@ class _LoginPageState extends State<LoginPage> {
     if (name != null && name.isNotEmpty && mounted) {
       setState(() {
         savedOyuncuAdi = name;
-        savedYuzIndex =
-            (prefs.getInt('saved_yuz_index') ?? 0).clamp(0, yuzler.length - 1);
-        savedAksesuarIndex = (prefs.getInt('saved_aksesuar_index') ?? 0)
-            .clamp(0, aksesuarlar.length - 1);
-        savedRenkIndex = (prefs.getInt('saved_renk_index') ?? 0)
-            .clamp(0, renkler.length - 1);
+        savedYuzIndex = (prefs.getInt('saved_yuz_index') ?? 0).clamp(0, yuzler.length - 1);
+        savedAksesuarIndex = (prefs.getInt('saved_aksesuar_index') ?? 0).clamp(0, aksesuarlar.length - 1);
+        savedRenkIndex = (prefs.getInt('saved_renk_index') ?? 0).clamp(0, renkler.length - 1);
         hasSavedUser = true;
       });
     }
@@ -228,8 +224,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text(
-                  "Bağlantı zaman aşımına uğradı! Lütfen internetinizi kontrol edin."),
+              content: Text("Bağlantı zaman aşımına uğradı! Lütfen internetinizi kontrol edin."),
               backgroundColor: Colors.red),
         );
       }
@@ -243,21 +238,24 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
+      }
     }
   }
+// ---------------- BÖLÜM 4 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 5: KULLANICI ARAYÜZÜ (BUILD METODU VE WIDGET'LAR)
+// ==========================================
   @override
   Widget build(BuildContext context) {
-    final Color activeColor =
-        renkler[(savedRenkIndex ?? 0).clamp(0, renkler.length - 1)];
+    final Color activeColor = renkler[(savedRenkIndex ?? 0).clamp(0, renkler.length - 1)];
     final String mevcutOyuncu = savedOyuncuAdi ??
-        (_nameController.text.trim().isEmpty
-            ? "Oyuncu"
-            : _nameController.text.trim());
+        (_nameController.text.trim().isEmpty ? "Oyuncu" : _nameController.text.trim());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -269,8 +267,7 @@ class _LoginPageState extends State<LoginPage> {
           if (hasSavedUser && savedOyuncuAdi != null)
             Builder(
               builder: (context) => IconButton(
-                icon: const Icon(Icons.menu_rounded,
-                    color: Colors.indigo, size: 32),
+                icon: const Icon(Icons.menu_rounded, color: Colors.indigo, size: 32),
                 tooltip: "Menü",
                 onPressed: () => Scaffold.of(context).openEndDrawer(),
               ),
@@ -285,64 +282,50 @@ class _LoginPageState extends State<LoginPage> {
               decoration: const BoxDecoration(color: Colors.indigo),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
-                child:
-                    Icon(Icons.person, size: 45, color: Colors.indigo.shade700),
+                child: Icon(Icons.person, size: 45, color: Colors.indigo.shade700),
               ),
-              accountName: Text(mevcutOyuncu,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
+              accountName: Text(mevcutOyuncu, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               accountEmail: const Text("Hoş geldin Yarışmacı! 🎮"),
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.menu_book_rounded, color: Colors.indigo),
-              title: const Text("Oyun Kuralları",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              leading: const Icon(Icons.menu_book_rounded, color: Colors.indigo),
+              title: const Text("Oyun Kuralları", style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: const Text("Puanlama ve yarışma rehberi"),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const RulesPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const RulesPage()));
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.privacy_tip_outlined, color: Colors.indigo),
-              title: const Text('İsim Şehir Oyunu Gizlilik Politikası',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              leading: const Icon(Icons.privacy_tip_outlined, color: Colors.indigo),
+              title: const Text('İsim Şehir Oyunu Gizlilik Politikası', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               subtitle: const Text('Veri kullanımı ve gizlilik haklarınız'),
               onTap: () async {
                 Navigator.pop(context);
-                final Uri url = Uri.parse(
-                    'https://bulentolgun.github.io/isim-sehir-gizlilik/');
-                if (!await launchUrl(url,
-                    mode: LaunchMode.externalApplication)) {
+                final Uri url = Uri.parse('https://bulentolgun.github.io/isim-sehir-gizlilik/');
+                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
                   debugPrint('Sayfa açılamadı');
                 }
               },
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.mark_email_unread_rounded,
-                  color: Colors.indigo),
-              title: const Text("Bize Ulaşın",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              leading: const Icon(Icons.mark_email_unread_rounded, color: Colors.indigo),
+              title: const Text("Bize Ulaşın", style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: const Text("Şikayet, öneri ve destek"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            ContactUsPage(oyuncuAdi: mevcutOyuncu)));
+                        builder: (context) => ContactUsPage(oyuncuAdi: mevcutOyuncu)));
               },
             ),
             const Divider(height: 1),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Versiyon 1.0.0",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+              child: Text("Versiyon 1.0.0", style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
             ),
           ],
         ),
@@ -359,10 +342,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 15),
               const Text("İsim Şehir Hayvan Oyunu",
-                  style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple)),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.purple)),
               const SizedBox(height: 8),
               const Text("Zekanı yarıştır, rakibini geride bırak!",
                   style: TextStyle(fontSize: 14, color: Colors.black)),
@@ -370,18 +350,14 @@ class _LoginPageState extends State<LoginPage> {
               if (hasSavedUser && savedOyuncuAdi != null) ...[
                 Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   color: activeColor.withAlpha(25),
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
                         const Text("Son Giriş Yapan Oyuncu",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black)),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
                         const SizedBox(height: 15),
                         Stack(
                           alignment: Alignment.center,
@@ -389,47 +365,36 @@ class _LoginPageState extends State<LoginPage> {
                             CircleAvatar(
                               radius: 45,
                               backgroundColor: activeColor,
-                              child: Text(yuzler[savedYuzIndex!],
-                                  style: const TextStyle(fontSize: 40)),
+                              child: Text(yuzler[savedYuzIndex!], style: const TextStyle(fontSize: 40)),
                             ),
                             Positioned(
                               top: 0,
                               right: 0,
-                              child: Text(aksesuarlar[savedAksesuarIndex!],
-                                  style: const TextStyle(fontSize: 28)),
+                              child: Text(aksesuarlar[savedAksesuarIndex!], style: const TextStyle(fontSize: 28)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 15),
                         Text(savedOyuncuAdi!,
-                            style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: activeColor)),
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: activeColor)),
                         const SizedBox(height: 25),
                         ElevatedButton(
                           onPressed: _isLoading
                               ? null
-                              : () => _girisYap(savedOyuncuAdi!, savedYuzIndex!,
-                                  savedAksesuarIndex!, savedRenkIndex!),
+                              : () => _girisYap(savedOyuncuAdi!, savedYuzIndex!, savedAksesuarIndex!, savedRenkIndex!),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: activeColor,
                             disabledBackgroundColor: Colors.grey.shade400,
                             minimumSize: const Size(double.infinity, 55),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                      color: Colors.white, strokeWidth: 3))
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
                               : const Text("Aynı Oyuncuyla Devam Et",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -448,10 +413,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   icon: const Icon(Icons.swap_horiz, color: Colors.indigo),
                   label: const Text("Farklı bir isimle giriş yap",
-                      style: TextStyle(
-                          color: Colors.indigo,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold)),
+                      style: TextStyle(color: Colors.indigo, fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
               ] else ...[
                 if (savedOyuncuAdi != null) ...[
@@ -461,12 +423,10 @@ class _LoginPageState extends State<LoginPage> {
                     splashColor: Colors.indigo.withAlpha(30),
                     highlightColor: Colors.indigo.withAlpha(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.indigo.withAlpha(15),
-                        border: Border.all(
-                            color: Colors.indigo.withAlpha(40), width: 1.5),
+                        border: Border.all(color: Colors.indigo.withAlpha(40), width: 1.5),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Row(
@@ -476,8 +436,7 @@ class _LoginPageState extends State<LoginPage> {
                             radius: 15,
                             backgroundColor: Colors.white,
                             child: Text(
-                              yuzler[(savedYuzIndex ?? 0)
-                                  .clamp(0, yuzler.length - 1)],
+                              yuzler[(savedYuzIndex ?? 0).clamp(0, yuzler.length - 1)],
                               style: const TextStyle(fontSize: 18),
                             ),
                           ),
@@ -492,8 +451,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_ios_rounded,
-                              color: Colors.indigo, size: 14),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.indigo, size: 14),
                         ],
                       ),
                     ),
@@ -510,11 +468,9 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: InputDecoration(
                     labelText: "Oyuncu Adınız",
                     prefixIcon: const Icon(Icons.person, color: Colors.indigo),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Colors.indigo, width: 2),
+                      borderSide: const BorderSide(color: Colors.indigo, width: 2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
@@ -523,16 +479,12 @@ class _LoginPageState extends State<LoginPage> {
                 const Align(
                     alignment: Alignment.centerLeft,
                     child: Text("Avatarını Özelleştir",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.indigo))),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo))),
                 const SizedBox(height: 15),
 
                 const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("İfade Seç:",
-                        style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text("İfade Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -546,18 +498,12 @@ class _LoginPageState extends State<LoginPage> {
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: secilenYuzIndex == index
-                                ? Colors.indigo.withAlpha(25)
-                                : Colors.transparent,
+                            color: secilenYuzIndex == index ? Colors.indigo.withAlpha(25) : Colors.transparent,
                             border: Border.all(
-                                color: secilenYuzIndex == index
-                                    ? Colors.indigo
-                                    : Colors.grey.shade300,
-                                width: 1.5),
+                                color: secilenYuzIndex == index ? Colors.indigo : Colors.grey.shade300, width: 1.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(yuzler[index],
-                              style: const TextStyle(fontSize: 24)),
+                          child: Text(yuzler[index], style: const TextStyle(fontSize: 24)),
                         ),
                       );
                     },
@@ -567,8 +513,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Aksesuar Seç:",
-                        style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text("Aksesuar Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -577,24 +522,18 @@ class _LoginPageState extends State<LoginPage> {
                     itemBuilder: (context, index) {
                       return InkWell(
                         borderRadius: BorderRadius.circular(12),
-                        onTap: () =>
-                            setState(() => secilenAksesuarIndex = index),
+                        onTap: () => setState(() => secilenAksesuarIndex = index),
                         child: Container(
                           margin: const EdgeInsets.all(5),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: secilenAksesuarIndex == index
-                                ? Colors.indigo.withAlpha(25)
-                                : Colors.transparent,
+                            color: secilenAksesuarIndex == index ? Colors.indigo.withAlpha(25) : Colors.transparent,
                             border: Border.all(
-                                color: secilenAksesuarIndex == index
-                                    ? Colors.indigo
-                                    : Colors.grey.shade300,
+                                color: secilenAksesuarIndex == index ? Colors.indigo : Colors.grey.shade300,
                                 width: 1.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(aksesuarlar[index],
-                              style: const TextStyle(fontSize: 24)),
+                          child: Text(aksesuarlar[index], style: const TextStyle(fontSize: 24)),
                         ),
                       );
                     },
@@ -604,8 +543,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Tema Rengi Seç:",
-                        style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text("Tema Rengi Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 50,
                   child: ListView.builder(
@@ -617,16 +555,12 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: () => setState(() => secilenRenkIndex = index),
                         child: Container(
                           width: 40,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 5),
+                          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                           decoration: BoxDecoration(
                             color: renkler[index],
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: secilenRenkIndex == index
-                                    ? Colors.black87
-                                    : Colors.transparent,
-                                width: 2.5),
+                                color: secilenRenkIndex == index ? Colors.black87 : Colors.transparent, width: 2.5),
                           ),
                         ),
                       );
@@ -640,60 +574,52 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: _isLoading
                       ? null
                       : () async {
-                          final name = _nameController.text.trim();
+                    final name = _nameController.text.trim();
 
-                          // 1. Önce lokal kontrol (Kısa isim vs.)
-                          if (!_isimUygunMu(name)) return;
+                    // 1. Önce lokal kontrol (Kısa isim vs.)
+                    if (!_isimUygunMu(name)) return;
 
-                          // 2. Yükleniyor dairesini aktif et
-                          setState(() {
-                            _isLoading = true;
-                          });
+                    // 2. Yükleniyor dairesini aktif et
+                    setState(() {
+                      _isLoading = true;
+                    });
 
-                          // 3. Gemini Api Kontrolü
-                          bool isimTemizMi =
-                              await GeminiService.isimUygunMu(name);
+                    // 3. Gemini Api Kontrolü
+                    bool isimTemizMi = await GeminiService.isimUygunMu(name);
 
-                          // 4. Flutter Async Gap çözümü (Güvenlik)
-                          if (!mounted) return;
+                    // 4. Flutter Async Gap çözümü (Güvenlik)
+                    if (!mounted) return;
 
-                          if (!isimTemizMi) {
-                            setState(() {
-                              _isLoading = false;
-                            }); // Yükleme animasyonunu durdur
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    "Bu kullanıcı adı uygunsuz ifadeler içeriyor! Lütfen başka bir isim seçin."),
-                                backgroundColor: Colors.redAccent,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                            return; // Geçişi reddet!
-                          }
+                    if (!isimTemizMi) {
+                      setState(() {
+                        _isLoading = false;
+                      }); // Yükleme animasyonunu durdur
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Bu kullanıcı adı uygunsuz ifadeler içeriyor! Lütfen başka bir isim seçin."),
+                          backgroundColor: Colors.redAccent,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      return; // Geçişi reddet!
+                    }
 
-                          // 5. İsim uygunsa, Firebase kayıt ve oyuna giriş işlemlerini başlat
-                          await _girisYap(name, secilenYuzIndex,
-                              secilenAksesuarIndex, secilenRenkIndex);
-                        },
+                    // 5. İsim uygunsa, Firebase kayıt ve oyuna giriş işlemlerini başlat
+                    await _girisYap(name, secilenYuzIndex, secilenAksesuarIndex, secilenRenkIndex);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo,
                     disabledBackgroundColor: Colors.grey.shade400,
                     minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 3))
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
                       : const Text("Giriş Yap ve Başla",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ],
@@ -703,3 +629,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+// ---------------- BÖLÜM 5 SONU ----------------

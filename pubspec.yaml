@@ -2,7 +2,7 @@ name: isim_sehir_hayvan
 description: "İsim Şehir Hayvan - Çok Oyunculu Kelime Oyunu"
 publish_to: 'none'
 
-version: 1.0.0+7
+version: 1.0.0+8
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
