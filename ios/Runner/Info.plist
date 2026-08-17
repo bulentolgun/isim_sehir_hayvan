@@ -147,5 +147,7 @@
             <string>n38lu8286q.skadnetwork</string>
         </dict>
     </array>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    	<false/>
 </dict>
 </plist>

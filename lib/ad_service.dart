@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart'
 import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // 🔴 EKLENDİ: Apple İzin Paketi
 
 // ==========================================
+// ==========================================
 // BÖLÜM 1: Temel Kurulum, Reklam Kimlikleri ve İzinler
 // ==========================================
 class AdService {
@@ -32,6 +33,9 @@ class AdService {
     }
     // İzin penceresi gösterildikten (veya zaten izin verildikten) sonra AdMob'u başlat
     await MobileAds.instance.initialize();
+
+    // 🟢 1. DEĞİŞİKLİK BURADA: AdMob başlar başlamaz geçiş reklamını hafızaya al
+    loadInterstitialAd();
   }
 
   // 🛡️ DÜZELTME: Desteklenmeyen platformlarda (Web, Desktop) çökmeyi önleyen güvenli ID çekimi
@@ -52,7 +56,9 @@ class AdService {
   String get interstitialAdUnitId {
     if (kIsWeb) return '';
     if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/2648283988';
-    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/4452514319';
+
+    // 🟢 2. DEĞİŞİKLİK BURADA: iOS Geçiş (Interstitial) Test ID'si düzeltildi
+    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/4411468910';
     return '';
   }
 
