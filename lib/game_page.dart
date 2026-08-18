@@ -38,7 +38,9 @@ class GamePage extends StatefulWidget {
   State<GamePage> createState() => _GamePageState();
 }
 
-class _GamePageState extends State<GamePage> {
+// 🚀 YENİ: Gözlemcimiz (with WidgetsBindingObserver) buraya eklendi!
+class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
+
 // ==========================================
 // BÖLÜM 1: Temel Değişkenler ve Oyun Durumları
 // ==========================================
@@ -73,7 +75,13 @@ class _GamePageState extends State<GamePage> {
   int hazirOyuncuSayisi = 0;
   bool _isTransitioning = false;
   Timer? _guvenlikTimer;
-  int _kalanGuvenlikSaniyesi = 25;
+  Timer? _kopyaTimer;
+  int _kalanGuvenlikSaniyesi = 30; // 🚀 YENİ: 25'ten 30'a çıkarıldı
+
+  // 🚀 YENİ: Oyuncunun kopya çekmek için oyunu arka plana atıp atmadığını tutan hafıza
+  bool _kopyaIcinArkaPlanaGitti = false;
+  // 🚀 YENİ: Reklam izlerken oyuncunun hile cezası yemesini engelleyen kalkan!
+  bool _reklamAcik = false;
 
   String odadakiErkenBitirenKisi = "";
   String secilenHarf = "A";
@@ -85,19 +93,8 @@ class _GamePageState extends State<GamePage> {
   int _seciliRakipIndex = 1;
 
   final List<String> yasakliKelimeler = const [
-    "amk",
-    "sik",
-    "piç",
-    "orospu",
-    "oç",
-    "sg",
-    "yarrak",
-    "göt",
-    "meme",
-    "dalyarak",
-    "pezevenk",
-    "kaltak",
-    "fahişe"
+    "amk", "sik", "piç", "orospu", "oç", "sg", "yarrak",
+    "göt", "meme", "dalyarak", "pezevenk", "kaltak", "fahişe"
   ];
   List<String> kullanilanHarfler = [];
 
@@ -138,10 +135,12 @@ class _GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
+    // 🚀 YENİ: Kopya Gözlemcisi (App Lifecycle) Başlatılıyor
+    WidgetsBinding.instance.addObserver(this);
+
     _guncelMevcutTur = widget.mevcutTur;
 
-    ben =
-        widget.oyuncuAdi.trim().isEmpty ? "Tokatlı60" : widget.oyuncuAdi.trim();
+    ben = widget.oyuncuAdi.trim().isEmpty ? "Tokatlı60" : widget.oyuncuAdi.trim();
     List<String> rakipler = widget.rakipAdi
         .split(',')
         .map((e) => e.trim())
@@ -157,7 +156,7 @@ class _GamePageState extends State<GamePage> {
       tumTurPuanlari[p] = 0;
       macSkorlari[p] = 0;
       genelKumulatifSkorlar[p] =
-          (p == ben) ? widget.oyuncuKumulatifSkor : widget.rakip1KumulatifSkor;
+      (p == ben) ? widget.oyuncuKumulatifSkor : widget.rakip1KumulatifSkor;
     }
 
     _gercekSkorlariYukle();
@@ -168,6 +167,9 @@ class _GamePageState extends State<GamePage> {
 
   @override
   void dispose() {
+    // 🚀 YENİ: Kopya Gözlemcisi temizleniyor
+    WidgetsBinding.instance.removeObserver(this);
+
     _timer?.cancel();
     _guvenlikTimer?.cancel();
     _odaSubscription?.cancel();
@@ -176,6 +178,66 @@ class _GamePageState extends State<GamePage> {
   }
 
 // ---------------- BÖLÜM 3 SONU ----------------
+
+
+  // ==========================================
+// BÖLÜM 3.5 (YENİ EKLENDİ): Uygulama Yaşam Döngüsü (Gizli Kopya Koruması)
+// ==========================================
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // 1. OYUNCU UYGULAMAYI TAMAMEN ALTA ALIRSA
+    if (state == AppLifecycleState.paused &&
+        _kalanSure > 0 &&
+        !turBittiMi &&
+        !isLoading &&
+        !rakipBekleniyor &&
+        !_reklamAcik) {
+
+      // 🚀 YENİ MANTIK: Hemen ceza kesmiyoruz! 7 saniyelik bir saatli bomba kuruyoruz.
+      _kopyaTimer?.cancel();
+      _kopyaTimer = Timer(const Duration(seconds: 7), () {
+        // Eğer 7 saniye geçti ve oyuncu geri dönmediyse cezayı kes!
+        if (!mounted) return;
+
+        setState(() {
+          _kopyaIcinArkaPlanaGitti = true;
+
+          // Tüm kelimelerini acımasızca "-" yapıp sıfırlıyoruz.
+          for (var kat in kategoriler) {
+            tumCevaplar.putIfAbsent(ben, () => {})[kat["id"]] = "-";
+          }
+          _inputController.clear();
+          _timer?.cancel();
+        });
+
+        // Rakiplere hiçbir uyarı gitmeden sessizce Firebase'e turu bitirdiğini söylüyoruz
+        _cevaplariFirebaseeGonderAndDegerlendir();
+      });
+    }
+
+    // 2. OYUNCU UYGULAMAYA GERİ DÖNERSE (Ekranı açtığında)
+    else if (state == AppLifecycleState.resumed) {
+
+      // DURUM A: 7 Saniye dolmadan geri geldi! (AFFEDİLDİ)
+      if (_kopyaTimer != null && _kopyaTimer!.isActive) {
+        _kopyaTimer!.cancel(); // Bombanın kablosunu kes! Ceza alma.
+      }
+
+      // DURUM B: 7 Saniye çoktan dolmuş ve ceza kesilmiş! (YAKALANDI)
+      else if (_kopyaIcinArkaPlanaGitti) {
+        _kopyaIcinArkaPlanaGitti = false;
+
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Oyun ekranından 7 saniyeden fazla ayrıldığınız için bu turu erken tamamlamış sayıldınız."),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 15),
+        ));
+      }
+    }
+  }
+// ---------------- BÖLÜM 3.5 SONU ----------------
 
 // ==========================================
 // BÖLÜM 4: Rakiplerin ve Sizin Genel Skorunuzu Çeken Kod (YENİ OPTİMİZE VERSİYON)
@@ -357,11 +419,11 @@ class _GamePageState extends State<GamePage> {
 // ---------------- BÖLÜM 5 SONU ----------------
 
 // ==========================================
-// BÖLÜM 6: Tur Bittiğinde Otomatik İlerlemeyi Sağlayan 15 Saniyelik Güvenlik Kodu
+// BÖLÜM 6: Tur Bittiğinde Otomatik İlerlemeyi Sağlayan 30 Saniyelik Zombi Koruması
 // ==========================================
   void _guvenlikSayaciniBaslat() {
     _guvenlikTimer?.cancel();
-    _kalanGuvenlikSaniyesi = 25;
+    _kalanGuvenlikSaniyesi = 30;
     _guvenlikTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -372,15 +434,44 @@ class _GamePageState extends State<GamePage> {
           _kalanGuvenlikSaniyesi--;
         } else {
           timer.cancel();
-          _hazirButonunaBasildi();
+          // 🚀 KRİTİK DÜZELTME: Çarpışmayı önlemek için özel kurtarma fonksiyonu çağrıldı
+          _zamanAsimiKurtarmaOperasyonu();
         }
       });
     });
   }
 
+  // 🚀 YENİ: Firebase'in veri kaybetmesini önleyen sıralı (async) işlem yöneticisi
+  Future<void> _zamanAsimiKurtarmaOperasyonu() async {
+    // Önce kendini hazır yap
+    if (!benHazirMiyim) {
+      await _hazirButonunaBasildi();
+    }
+
+    // Firebase'in veriyi işlemesi için yarım saniye nefes alma molası ver
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // 🛡️ ZIRH EKLENDİ: O yarım saniyede adam sayfadan tamamen çıktıysa kod burada dursun, çökmeyi engellesin!
+    if (!mounted) return;
+
+    // Sonra turu zorla atlat
+    await _zorlaTuruAtlatKontrolu();
+  }
+
+  Future<void> _zorlaTuruAtlatKontrolu() async {
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+
+    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+    String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+
+    if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
+      _sonrakiTuraGec();
+    }
+  }
 // ---------------- BÖLÜM 6 SONU ----------------
 
-// ==========================================
+
+
 // BÖLÜM 7: Hazır Butonuna Tıklandığında Çalışan Kod
 // ==========================================
   Future<void> _hazirButonunaBasildi() async {
@@ -411,6 +502,7 @@ class _GamePageState extends State<GamePage> {
     _isTransitioning = false;
     _timer?.cancel();
     _guvenlikTimer?.cancel();
+    _kopyaTimer?.cancel(); // 🚀 MUAZZAM DÜZELTME: Eski turdan sarkan "Kopya/Tolerans" saatli bombasını imha et!
     _inputController.clear();
 
     if (ilkBaslangic) kullanilanHarfler.clear();
@@ -427,37 +519,10 @@ class _GamePageState extends State<GamePage> {
         kullanilanHarfler.add(secilenHarf);
     } else {
       final tumHarfler = [
-        "A",
-        "B",
-        "C",
-        "Ç",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "İ",
-        "J",
-        "K",
-        "L",
-        "M",
-        "N",
-        "O",
-        "Ö",
-        "P",
-        "R",
-        "S",
-        "Ş",
-        "T",
-        "U",
-        "Ü",
-        "V",
-        "Y",
-        "Z"
+        "A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"
       ];
       List<String> kullanilabilirHarfler =
-          tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
+      tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
       if (kullanilabilirHarfler.isEmpty) {
         kullanilabilirHarfler = List.from(tumHarfler);
         kullanilanHarfler.clear();
@@ -469,7 +534,7 @@ class _GamePageState extends State<GamePage> {
 
     if (ilkBaslangic || botTurBasariOranlari.isEmpty) {
       botTurBasariOranlari =
-          List<int>.filled(widget.toplamTurSayisi, 90, growable: true);
+      List<int>.filled(widget.toplamTurSayisi, 90, growable: true);
     }
 
     for (var p in masadakiHerkes) {
@@ -485,13 +550,15 @@ class _GamePageState extends State<GamePage> {
     hazirOyuncuSayisi = 0;
     _kalanSure = 90;
 
+    // Eski turlardan kalan zaman bonusu hafızasını tamamen sil!
+    odadakiErkenBitirenKisi = "";
+
     _zamanlayiciyiBaslat();
 
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) {
       _botCevaplariniHazirla();
     }
   }
-
 // ---------------- BÖLÜM 8 SONU ----------------
 
 // ==========================================
@@ -667,10 +734,19 @@ class _GamePageState extends State<GamePage> {
     // 2. Klavyenin tamamen kapanıp ekranın boşa çıkması için yarım saniye (500ms) bekliyoruz
     Future.delayed(const Duration(milliseconds: 500), () {
 
+      // 🛡️ ZIRH EKLENDİ: Oyuncu butona basıp o 500ms içinde aniden geri çıkarsa çökmeyi ve reklam patlamasını engeller!
+      if (!mounted) return;
+
+      // 🚀 YENİ: Reklam açılmadan kalkanı KALDIR (Gözlemci ceza yazmasın)
+      setState(() => _reklamAcik = true);
+
       // 3. Ekran temizlendiğine göre artık geçiş reklamını güvenle çağırabiliriz
       AdService.instance.showEmniyetliGecisReklami(
         onReklamBitti: () {
           if (!mounted) return;
+
+          // 🚀 YENİ: Reklam bitince kalkanı İNDİR
+          setState(() => _reklamAcik = false);
 
           // 🛡️ DÜZELTME BURADA: Eğer süre bittiyse AMA tur arka planda zaten bitirildiyse tekrar hesaplama!
           if (_kalanSure <= 0 && !turBittiMi && !isLoading) {
@@ -685,7 +761,8 @@ class _GamePageState extends State<GamePage> {
     // ==================================================
   }
 // ---------------- BÖLÜM 14 SONU ----------------
-// ==========================================
+
+
 // BÖLÜM 15: Yazılanları Anlık TDK'da Arayan Kod
 // ==========================================
   void _arkaplanTdkKontrol(int catId, String kelime) {
@@ -742,87 +819,153 @@ class _GamePageState extends State<GamePage> {
     _mevcutKelimeyiKaydet();
 
     if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-      Map<String, String> stringMap = {};
-      for (var kat in kategoriler) {
-        int id = kat["id"];
-        String cevap = tumCevaplar[ben]?[id] ?? "-";
-        stringMap[id.toString()] = cevap.trim().isEmpty ? "-" : cevap;
-      }
-
-      await FirebaseFirestore.instance
-          .collection('odalar')
-          .doc(widget.odaKodu)
-          .update({
-        'cevaplar.$ben': stringMap,
-      });
-
-      var doc = await FirebaseFirestore.instance
-          .collection('odalar')
-          .doc(widget.odaKodu)
-          .get();
-      var anlikCevaplar =
-          doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
-
-      if (anlikCevaplar.length < masadakiHerkes.length) {
-        if (mounted)
-          setState(() {
-            rakipBekleniyor = true;
-          });
-
-        String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-        if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
-          Future.delayed(const Duration(seconds: 7), () async {
-            if (mounted && rakipBekleniyor && !turBittiMi) {
-              var guncelDoc = await FirebaseFirestore.instance
-                  .collection('odalar')
-                  .doc(widget.odaKodu)
-                  .get();
-              var guncelCevaplar =
-                  guncelDoc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
-
-              bool eksikVarMi = false;
-              Map<String, dynamic> tamamlanmisCevaplar =
-                  Map.from(guncelCevaplar);
-
-              for (var p in masadakiHerkes) {
-                if (!tamamlanmisCevaplar.containsKey(p)) {
-                  eksikVarMi = true;
-                  Map<String, String> bosCevap = {};
-                  for (var kat in kategoriler) {
-                    bosCevap[kat["id"].toString()] = "-";
-                  }
-                  tamamlanmisCevaplar[p] = bosCevap;
-                }
-              }
-
-              if (eksikVarMi) {
-                await FirebaseFirestore.instance
-                    .collection('odalar')
-                    .doc(widget.odaKodu)
-                    .update({
-                  'cevaplar': tamamlanmisCevaplar,
-                });
-              }
-            }
-          });
+      try {
+        Map<String, String> stringMap = {};
+        for (var kat in kategoriler) {
+          int id = kat["id"];
+          String cevap = tumCevaplar[ben]?[id] ?? "-";
+          stringMap[id.toString()] = cevap.trim().isEmpty ? "-" : cevap;
         }
-        return;
-      } else {
-        String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-        if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
-          await _hostPuanlariHesaplaVeKaydet();
-        } else {
-          if (mounted)
+
+        await FirebaseFirestore.instance
+            .collection('odalar')
+            .doc(widget.odaKodu)
+            .update({
+          'cevaplar.$ben': stringMap,
+        });
+
+        var doc = await FirebaseFirestore.instance
+            .collection('odalar')
+            .doc(widget.odaKodu)
+            .get();
+        var anlikCevaplar = doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
+
+        if (anlikCevaplar.length < masadakiHerkes.length) {
+          if (mounted) {
             setState(() {
               rakipBekleniyor = true;
             });
+          }
+
+          String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+          if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
+
+            // 🚀 MUAZZAM DÜZELTME: Masum oyuncunun hakkını koruyan dinamik zamanlayıcı!
+            int beklemeSuresi = _kalanSure > 0 ? (_kalanSure + 7) : 7;
+
+            Future.delayed(Duration(seconds: beklemeSuresi), () async {
+              if (mounted && rakipBekleniyor && !turBittiMi) {
+                try {
+                  var guncelDoc = await FirebaseFirestore.instance
+                      .collection('odalar')
+                      .doc(widget.odaKodu)
+                      .get();
+                  var guncelCevaplar = guncelDoc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
+
+                  bool eksikVarMi = false;
+                  Map<String, dynamic> tamamlanmisCevaplar = Map.from(guncelCevaplar);
+
+                  for (var p in masadakiHerkes) {
+                    if (!tamamlanmisCevaplar.containsKey(p)) {
+                      eksikVarMi = true;
+                      Map<String, String> bosCevap = {};
+                      for (var kat in kategoriler) {
+                        bosCevap[kat["id"].toString()] = "-";
+                      }
+                      tamamlanmisCevaplar[p] = bosCevap;
+                    }
+                  }
+
+                  if (eksikVarMi) {
+                    await FirebaseFirestore.instance
+                        .collection('odalar')
+                        .doc(widget.odaKodu)
+                        .update({
+                      'cevaplar': tamamlanmisCevaplar,
+                    });
+                  }
+                } catch (e) {
+                  print("Host gecikmeli kontrol hatası: $e");
+                  // Hata olsa da sistemi aç (Deadlock koruması)
+                  if (mounted) setState(() => rakipBekleniyor = false);
+                }
+              }
+            });
+          }
+          return;
+        } else {
+          String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+          if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
+            await _hostPuanlariHesaplaVeKaydet();
+          } else {
+            if (mounted) {
+              setState(() {
+                rakipBekleniyor = true;
+              });
+            }
+          }
+        }
+      } catch (e) {
+        print("Cevap gönderme hatası: $e");
+        // 🚀 ZIRH: Ağ hatasında ekranı sonsuz döngüden kurtar!
+        if (mounted) {
+          setState(() {
+            rakipBekleniyor = false;
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Bağlantı sorunu! Lütfen internetinizi kontrol edin."),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ));
         }
       }
     } else {
+      // 🚀 KUSURSUZ BOT İNSANSI HIZ SİMÜLATÖRÜ (Zaman + Oyuncu Performansı Harmanı)
+      int oyuncuDoluKelime = 0;
+      tumCevaplar[ben]?.forEach((key, value) {
+        if (value != "-") oyuncuDoluKelime++;
+      });
+
+      final random = Random();
+      int gecenSure = 90 - _kalanSure;
+
+      // 1. Fiziksel sınır (7 saniyede max 1 kelime yazılabilir)
+      int zamanaGoreMaxKelime = (gecenSure ~/ 7) + 1;
+
+      // 2. Performans sınırı (Oyuncu ne yazdıysa max 1 fazlası)
+      int performansaGoreMaxKelime = oyuncuDoluKelime == 0
+          ? (random.nextInt(3) + 1)
+          : (oyuncuDoluKelime + random.nextInt(2));
+
+      // 3. İki sınırın en düşüğünü (en mantıklısını) seç
+      int izinVerilenKelimeSayisi = zamanaGoreMaxKelime < performansaGoreMaxKelime
+          ? zamanaGoreMaxKelime
+          : performansaGoreMaxKelime;
+
+      for (var botName in masadakiHerkes) {
+        if (botName != ben) {
+          int botDoluKelime = 0;
+          tumCevaplar[botName]?.forEach((key, value) {
+            if (value != "-") botDoluKelime++;
+          });
+
+          if (botDoluKelime > izinVerilenKelimeSayisi) {
+            int silinmesiGereken = botDoluKelime - izinVerilenKelimeSayisi;
+            for (var kat in kategoriler.reversed) {
+              if (silinmesiGereken <= 0) break;
+              int catId = kat["id"];
+              if (tumCevaplar[botName] != null && tumCevaplar[botName]?[catId] != "-") {
+                tumCevaplar[botName]![catId] = "-";
+                silinmesiGereken--;
+              }
+            }
+          }
+        }
+      }
       await topluDegerlendir();
     }
   }
-
 // ---------------- BÖLÜM 18 SONU ----------------
 
 // ==========================================

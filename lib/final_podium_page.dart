@@ -1,3 +1,6 @@
+// ==========================================
+// BÖLÜM 1: İçe Aktarmalar ve Sınıf Tanımları
+// ==========================================
 import 'package:flutter/material.dart';
 import 'lobby_page.dart'; // 🔴 Nokta atışı: Kendi lobi dosyan eklendi!
 
@@ -24,6 +27,12 @@ class FinalPodiumPage extends StatefulWidget {
 }
 
 class _FinalPodiumPageState extends State<FinalPodiumPage> {
+// ---------------- BÖLÜM 1 SONU ----------------
+
+
+// ==========================================
+// BÖLÜM 2: Değişkenler, Sıralama Mantığı ve Animasyonlar
+// ==========================================
   List<Map<String, dynamic>> _siralamalar = [];
   bool _ucuncuGoster = false;
   bool _ikinciGoster = false;
@@ -33,6 +42,7 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
   @override
   void initState() {
     super.initState();
+    // Gelen puanları listeye alıp büyükten küçüğe sıralıyoruz
     _siralamalar = [
       {'ad': widget.oyuncuAdi, 'puan': widget.oyuncuSkor, 'benMi': true},
       {'ad': widget.rakip1Adi, 'puan': widget.rakip1Skor, 'benMi': false},
@@ -63,16 +73,20 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
       context,
       MaterialPageRoute(
           builder: (context) => LobbyPage(
-                // Lobi sayfasının bizden zorunlu olarak istediği parametreleri buraya ekliyoruz:
-                oyuncuAdi: widget.oyuncuAdi,
-                aksesuarIndex: 0,
-                renkIndex: 0,
-                yuzIndex: 0,
-              )),
-      (route) => false,
+            oyuncuAdi: widget.oyuncuAdi,
+            aksesuarIndex: 0,
+            renkIndex: 0,
+            yuzIndex: 0,
+          )),
+          (route) => false,
     );
   }
+// ---------------- BÖLÜM 2 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 3: Kürsü (Podium) Görsel Tasarım Aracı
+// ==========================================
   Widget _kursuSutunu(Map<String, dynamic> kisi, int sira, double yukseklik,
       Color renk, bool goster) {
     return AnimatedOpacity(
@@ -93,7 +107,7 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color:
-                      kisi['benMi'] ? const Color(0xFF5E17EB) : Colors.black87,
+                  kisi['benMi'] ? const Color(0xFF5E17EB) : Colors.black87,
                   fontSize: sira == 1 ? 16 : 14),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -139,7 +153,12 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
       ),
     );
   }
+// ---------------- BÖLÜM 3 SONU ----------------
 
+
+// ==========================================
+// BÖLÜM 4: Ana Arayüz (Build) ve Butonlar
+// ==========================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,3 +253,4 @@ class _FinalPodiumPageState extends State<FinalPodiumPage> {
     );
   }
 }
+// ---------------- BÖLÜM 4 SONU ----------------
