@@ -71,6 +71,8 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   bool erkenBitirmeBonusuKazandiMi = false;
   bool rakipBekleniyor = false;
   bool isLoading = false;
+  bool _hukmenGalibiyetGosterildi = false;
+  final List<String> _toleransBeklenenler = [];
   bool benHazirMiyim = false;
   int hazirOyuncuSayisi = 0;
   bool _isTransitioning = false;
@@ -166,17 +168,24 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   }
 
   @override
+
   void dispose() {
-    // 🚀 YENİ: Kopya Gözlemcisi temizleniyor
     WidgetsBinding.instance.removeObserver(this);
 
     _timer?.cancel();
     _guvenlikTimer?.cancel();
     _odaSubscription?.cancel();
     _inputController.dispose();
+
+    // 🚀 YENİ EKLENEN: Oyuncu uygulamadan çıkarsa veya sayfayı kapatırsa kendini veritabanından silsin
+    if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
+      FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+        'aktifOyuncular': FieldValue.arrayRemove([ben])
+      }).catchError((e) => print("Çıkış bildirimi gönderilemedi: $e")); // Hata yutucu (Silent Catch) eklendi
+    }
+
     super.dispose();
   }
-
 // ---------------- BÖLÜM 3 SONU ----------------
 
 
@@ -290,7 +299,7 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
 // ---------------- BÖLÜM 4 SONU ----------------
 
 // ==========================================
-// BÖLÜM 5: Firebase Üzerinden Canlı Odayı Dinleyen Kod (ZAMAN BONUSU EŞİTLEMESİ DÜZELTİLDİ)
+// BÖLÜM 5: Firebase Üzerinden Canlı Odayı Dinleyen Kod (DÜŞEN OYUNCU ZIRHI EKLENDİ)
 // ==========================================
   void _canliOdaDinle() {
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
@@ -303,6 +312,101 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
       if (!snapshot.exists || !mounted) return;
 
       var data = snapshot.data() as Map<String, dynamic>;
+
+      // ==================================================
+      // 🚀 YENİ BÖLGE: DÜŞEN OYUNCU KONTROLÜ (FİREBASE CACHE KORUMALI)
+      // ==================================================
+      List<dynamic> dbAktifOyuncular = data['aktifOyuncular'] ?? [];
+
+      if (dbAktifOyuncular.isNotEmpty && dbAktifOyuncular.length < masadakiHerkes.length) {
+
+        // 1. İsimlerdeki boşluk veya büyük/küçük harf uyuşmazlıklarını sıfırlayarak gerçek eksikleri bul:
+        List<String> dusenler = masadakiHerkes.where((p) {
+          String cleanP = trToLowerCase(p.trim());
+          return !dbAktifOyuncular.any((aktif) => trToLowerCase(aktif.toString().trim()) == cleanP);
+        }).toList();
+
+        String anlikKurucu = data['kurucu']?.toString().trim() ?? "";
+
+        for (String dusenKisi in dusenler) {
+          // 2. Eğer bu kişi için zaten bir geri sayım başlatmadıysak başlat
+          if (!_toleransBeklenenler.contains(dusenKisi)) {
+            _toleransBeklenenler.add(dusenKisi);
+
+            // 🛡️ 7 Saniye Tolerans Kalkanı
+            Future.delayed(const Duration(seconds: 7), () async {
+              if (!mounted) return;
+
+              // 3. Yedi saniye sonra sunucudan (cache olmadan) EN GÜNCEL halini zorla çek
+              var guncelDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+              List<dynamic> guncelAktifler = guncelDoc.data()?['aktifOyuncular'] ?? [];
+
+              // 4. Hala yoksa, adam GERÇEKTEN kopmuştur.
+              bool halaYok = !guncelAktifler.any((aktif) => trToLowerCase(aktif.toString().trim()) == trToLowerCase(dusenKisi.trim()));
+
+              if (halaYok && masadakiHerkes.contains(dusenKisi)) {
+                setState(() {
+                  masadakiHerkes.remove(dusenKisi);
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("⚠️ $dusenKisi bağlantısı koptu ve oyundan ayrıldı!"),
+                  backgroundColor: Colors.orange.shade900,
+                  duration: const Duration(seconds: 4),
+                ));
+
+                if (odadakiErkenBitirenKisi == dusenKisi) {
+                  setState(() => odadakiErkenBitirenKisi = "");
+                }
+
+                // 👑 HOST MIGRATION (Hakem Devri)
+                if (trToLowerCase(dusenKisi.trim()) == trToLowerCase(anlikKurucu) && guncelAktifler.isNotEmpty) {
+                  String yeniKurucu = guncelAktifler.first.toString();
+                  if (trToLowerCase(yeniKurucu.trim()) == trToLowerCase(ben.trim())) {
+                    await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+                      'kurucu': ben
+                    });
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("👑 Kurucu ayrıldı. Odanın yeni kurucusu sizsiniz!"),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 3),
+                      ));
+                    }
+                  }
+                }
+
+                // KONTROL 1: Odada sadece sen kaldıysan oyunu hükmen bitir
+                if (masadakiHerkes.length <= 1) {
+                  _hukmenGalibiyetIsleminiBaslat();
+                  return;
+                }
+
+                // KONTROL 2: Düşen oyuncu yüzünden kilitlendiyse aç
+                if (rakipBekleniyor) {
+                  var anlikCevaplar = guncelDoc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
+                  bool herkesCevapVerdiMi = true;
+                  for (var p in masadakiHerkes) {
+                    if (!anlikCevaplar.containsKey(p)) {
+                      herkesCevapVerdiMi = false;
+                      break;
+                    }
+                  }
+                  String kurucuGuncel = (guncelDoc.data()?['kurucu'] ?? "").toString().trim();
+                  if (herkesCevapVerdiMi && trToLowerCase(kurucuGuncel) == trToLowerCase(ben)) {
+                    await _hostPuanlariHesaplaVeKaydet();
+                  }
+                }
+              } else {
+                // Firebase önbellek (cache) dalgalanmasıymış! Sahte alarm.
+                _toleransBeklenenler.remove(dusenKisi);
+              }
+            });
+          }
+        }
+      }
+      // ==================================================
+
       var cevaplarMap = data['cevaplar'] as Map<String, dynamic>? ?? {};
       var puanlarMap = data['puanlar'] as Map<String, dynamic>? ?? {};
       List<dynamic> hazirOyuncular = data['hazirOyuncular'] ?? [];
@@ -315,7 +419,6 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
         setState(() {
           odadakiErkenBitirenKisi = dbErkenBitiren;
           erkenBitirmeBonusuKazandiMi = true;
-          // EĞER RAKİP BUTONA BASTIYSA VE SÜRE 20'DEN BÜYÜKSE SÜREYİ 20'YE DÜŞÜR:
           if (_kalanSure > 20) _kalanSure = 20;
         });
       }
@@ -366,7 +469,6 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
         }
       }
 
-      // 🔥 MİSAFİR OYUNCUNUN (CLIENT) PUANLARI ALIP TOPLADIĞI YER
       if (puanlarMap.isNotEmpty &&
           trToLowerCase(kurucu) != trToLowerCase(ben)) {
         puanlarMap.forEach((kullanici, pMap) {
@@ -384,8 +486,7 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
           }
         });
 
-        // 🚀 YENİ EKLENEN KISIM: Misafir telefon kategorileri topladıktan sonra zaman bonusunu da haneye ekliyor!
-        if (odadakiErkenBitirenKisi.isNotEmpty) {
+        if (odadakiErkenBitirenKisi.isNotEmpty && masadakiHerkes.contains(odadakiErkenBitirenKisi)) {
           tumTurPuanlari[odadakiErkenBitirenKisi] =
               (tumTurPuanlari[odadakiErkenBitirenKisi] ?? 0) + 10;
         }
@@ -415,10 +516,85 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
       }
     });
   }
-
 // ---------------- BÖLÜM 5 SONU ----------------
 
+// 🚀 YENİ EKLENEN BÖLÜM 5.5: Hükmen Galibiyet Operasyonu
 // ==========================================
+  Future<void> _hukmenGalibiyetIsleminiBaslat() async {
+    // 🛡️ ZIRH: Eğer bu pencere zaten açıldıysa veya sayfa kapandıysa işlemi durdur!
+    if (!mounted || _hukmenGalibiyetGosterildi) return;
+    _hukmenGalibiyetGosterildi = true;
+
+    // 1. Arka plandaki tüm saatli bombaları (timer) iptal et
+    _timer?.cancel();
+    _guvenlikTimer?.cancel();
+    _kopyaTimer?.cancel();
+
+    // 2. Oyuncuya zaferini şeffafça bildir
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.purple.shade900,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Column(
+          children: [
+            Icon(Icons.emoji_events, color: Colors.amber, size: 50),
+            SizedBox(height: 10),
+            Text("Hükmen Galibiyet! 🏆", style: TextStyle(color: Colors.amber)),
+          ],
+        ),
+        content: const Text(
+          "Diğer tüm oyuncuların bağlantısı koptuğu için oyunu hükmen kazandınız!",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.greenAccent.shade700,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _guncelMevcutTur = widget.toplamTurSayisi;
+
+                // ==================================================
+                // 🚀 MATEMATİKSEL ZAFER GARANTİSİ (SİNSİ RAKİP KORUMASI)
+                // ==================================================
+                int enYuksekRakipPuan = 0;
+                macSkorlari.forEach((key, value) {
+                  if (key != ben && value > enYuksekRakipPuan) {
+                    enYuksekRakipPuan = value;
+                  }
+                });
+
+                int benimGuncelSkorum = macSkorlari[ben] ?? 0;
+
+                // Eğer rakip bizden öndeyken kaçtıysa, onun puanını ezip 10 puan öne geçiyoruz!
+                if (benimGuncelSkorum <= enYuksekRakipPuan) {
+                  macSkorlari[ben] = enYuksekRakipPuan + 10;
+                } else {
+                  // Zaten öndeysek sadece 10 puanlık hükmen bonusumuzu alıyoruz
+                  macSkorlari[ben] = benimGuncelSkorum + 10;
+                }
+                // ==================================================
+              });
+              _sonrakiTuraGec();
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text("Sonuç Sayfasına Git", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
 // BÖLÜM 6: Tur Bittiğinde Otomatik İlerlemeyi Sağlayan 30 Saniyelik Zombi Koruması
 // ==========================================
   void _guvenlikSayaciniBaslat() {

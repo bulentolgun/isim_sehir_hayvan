@@ -260,12 +260,13 @@ class LobbyPage extends StatelessWidget {
   Future<void> _canliOdaOlustur(
       BuildContext context, String mevcutOyuncu) async {
     final String kod =
-        (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
+    (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
 
     await FirebaseFirestore.instance.collection('odalar').doc(kod).set({
       'odaKodu': kod,
       'kurucu': mevcutOyuncu,
       'oyuncular': [mevcutOyuncu],
+      'aktifOyuncular': [mevcutOyuncu], // 🚀 1. EKLENTİ: Kurucu aktif listeye eklendi
       'durum': 'BEKLENIYOR',
       'olusturulmaTarihi': FieldValue.serverTimestamp(),
     });
@@ -308,7 +309,7 @@ class LobbyPage extends StatelessWidget {
                     builder: (context) => GamePage(
                       oyuncuAdi: mevcutOyuncu,
                       rakipAdi:
-                          oyuncular.where((p) => p != mevcutOyuncu).join(", "),
+                      oyuncular.where((p) => p != mevcutOyuncu).join(", "),
                       yuzIndex: yuzIndex,
                       aksesuarIndex: aksesuarIndex,
                       renkIndex: renkIndex,
@@ -326,14 +327,14 @@ class LobbyPage extends StatelessWidget {
 
             return AlertDialog(
               insetPadding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24)),
               title: Column(
                 children: [
                   const Text("🎮 Oyun Odası",
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                   const SizedBox(height: 14),
                   Container(
                     width: double.infinity,
@@ -434,7 +435,6 @@ class LobbyPage extends StatelessWidget {
                   ),
                 ],
               ),
-              // YENİ DÜZELTME: 10 Kişiye Uyumlu ve Kaydırılabilir Lobi Ekranı
               content: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 child: Column(
@@ -450,24 +450,24 @@ class LobbyPage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: oyuncular
                               .map((p) => Card(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    child: ListTile(
-                                      dense: true,
-                                      leading: const Icon(Icons.person,
-                                          color: Colors.purple),
-                                      title: Text(p.toString(),
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      trailing: p == mevcutOyuncu
-                                          ? const Text("Sen",
-                                              style: TextStyle(
-                                                  color: Colors.blue,
-                                                  fontWeight: FontWeight.bold))
-                                          : null,
-                                    ),
-                                  ))
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                BorderRadius.circular(12)),
+                            child: ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.person,
+                                  color: Colors.purple),
+                              title: Text(p.toString(),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              trailing: p == mevcutOyuncu
+                                  ? const Text("Sen",
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold))
+                                  : null,
+                            ),
+                          ))
                               .toList(),
                         ),
                       ),
@@ -482,12 +482,13 @@ class LobbyPage extends StatelessWidget {
                         .collection('odalar')
                         .doc(kod)
                         .update({
-                      'oyuncular': FieldValue.arrayRemove([mevcutOyuncu])
+                      'oyuncular': FieldValue.arrayRemove([mevcutOyuncu]),
+                      'aktifOyuncular': FieldValue.arrayRemove([mevcutOyuncu]) // 🚀 2. EKLENTİ (TESTTE BULUNAN HATA): Lobiden çıkan, aktiflerden de silinir.
                     });
                     if (context.mounted) Navigator.pop(context);
                   },
                   child:
-                      const Text("Ayrıl", style: TextStyle(color: Colors.red)),
+                  const Text("Ayrıl", style: TextStyle(color: Colors.red)),
                 ),
                 if (isHost)
                   ElevatedButton(
@@ -498,71 +499,44 @@ class LobbyPage extends StatelessWidget {
                     ),
                     onPressed: oyuncular.length >= 2
                         ? () async {
-                            List<String> harfler = [
-                              "A",
-                              "B",
-                              "C",
-                              "Ç",
-                              "D",
-                              "E",
-                              "F",
-                              "G",
-                              "H",
-                              "I",
-                              "İ",
-                              "J",
-                              "K",
-                              "L",
-                              "M",
-                              "N",
-                              "O",
-                              "Ö",
-                              "P",
-                              "R",
-                              "S",
-                              "Ş",
-                              "T",
-                              "U",
-                              "Ü",
-                              "V",
-                              "Y",
-                              "Z"
-                            ];
-                            harfler.shuffle();
-                            String ortakHarf = harfler.first;
+                      List<String> harfler = [
+                        "A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"
+                      ];
+                      harfler.shuffle();
+                      String ortakHarf = harfler.first;
 
-                            await FirebaseFirestore.instance
-                                .collection('odalar')
-                                .doc(kod)
-                                .update({
-                              'durum': 'BASLADI',
-                              'secilenHarf': ortakHarf,
-                            });
+                      await FirebaseFirestore.instance
+                          .collection('odalar')
+                          .doc(kod)
+                          .update({
+                        'durum': 'BASLADI',
+                        'secilenHarf': ortakHarf,
+                      });
 
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => GamePage(
-                                    oyuncuAdi: mevcutOyuncu,
-                                    rakipAdi: oyuncular
-                                        .where((p) => p != mevcutOyuncu)
-                                        .join(", "),
-                                    yuzIndex: yuzIndex,
-                                    aksesuarIndex: aksesuarIndex,
-                                    renkIndex: renkIndex,
-                                    mevcutTur: 1,
-                                    toplamTurSayisi: 3,
-                                    oyuncuKumulatifSkor: 0,
-                                    rakip1KumulatifSkor: 0,
-                                    secilenHarf: ortakHarf,
-                                    odaKodu: kod,
-                                  ),
-                                ),
-                              );
-                            }
-                          }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GamePage(
+                              oyuncuAdi: mevcutOyuncu,
+                              rakipAdi: oyuncular
+                                  .where((p) => p != mevcutOyuncu)
+                                  .join(", "),
+                              yuzIndex: yuzIndex,
+                              aksesuarIndex: aksesuarIndex,
+                              renkIndex: renkIndex,
+                              mevcutTur: 1,
+                              toplamTurSayisi: 3,
+                              oyuncuKumulatifSkor: 0,
+                              rakip1KumulatifSkor: 0,
+                              secilenHarf: ortakHarf,
+                              odaKodu: kod,
+                            ),
+                          ),
+                        );
+                      }
+                    }
                         : null,
                     child: Text("Oyunu Başlat (${oyuncular.length} Kişi)",
                         style: const TextStyle(color: Colors.white)),
@@ -582,7 +556,7 @@ class LobbyPage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Text("Oda Kodunu Girin"),
           content: TextField(
             controller: controller,
@@ -607,9 +581,6 @@ class LobbyPage extends StatelessWidget {
                       .doc(kod)
                       .get();
                   if (doc.exists) {
-                    // ==========================================
-                    // YENİ EKLENEN: ODA KAPASİTE KONTROLÜ (10 KİŞİ)
-                    // ==========================================
                     List<dynamic> odadakiOyuncular =
                         doc.data()?['oyuncular'] ?? [];
                     if (odadakiOyuncular.length >= 10) {
@@ -621,15 +592,15 @@ class LobbyPage extends StatelessWidget {
                               backgroundColor: Colors.red),
                         );
                       }
-                      return; // Odaya almadan işlemi iptal et
+                      return;
                     }
-                    // ==========================================
 
                     await FirebaseFirestore.instance
                         .collection('odalar')
                         .doc(kod)
                         .update({
-                      'oyuncular': FieldValue.arrayUnion([mevcutOyuncu])
+                      'oyuncular': FieldValue.arrayUnion([mevcutOyuncu]),
+                      'aktifOyuncular': FieldValue.arrayUnion([mevcutOyuncu]) // 🚀 3. EKLENTİ: Odaya kodla katılan kişi aktiflere eklendi
                     });
 
                     if (context.mounted) {
@@ -657,6 +628,7 @@ class LobbyPage extends StatelessWidget {
   }
 
 // ---------------- BÖLÜM 5 SONU ----------------
+
 // ==========================================
 // BÖLÜM 6: Rastgele Eşleştirme Motoru ve Oyuna Geçiş
 // ==========================================
@@ -682,7 +654,6 @@ class LobbyPage extends StatelessWidget {
               if (!islemBasladi) {
                 islemBasladi = true;
 
-                // 1. ADIM: Odayı bul veya kur
                 _rastgeleEslesmeOdasinaGir(ben, turSayisi).then((sonuc) async {
                   if (sonuc.containsKey('error')) {
                     if (dialogContext.mounted) Navigator.pop(dialogContext);
@@ -692,7 +663,6 @@ class LobbyPage extends StatelessWidget {
                   aktifOdaId = sonuc['docId'];
                   bool odayaKatildi = sonuc['joined'];
 
-                  // 2A. Odaya direkt katıldıysak beklemeye gerek yok! Hemen oyuna geç!
                   if (odayaKatildi) {
                     rakipBulundu = true;
                     secilenRakip = sonuc['rakip'];
@@ -706,7 +676,6 @@ class LobbyPage extends StatelessWidget {
                     return;
                   }
 
-                  // 2B. Yeni oda kurduysak, Firebase'i "canlı" dinlemeye başla (Saniyede bir istek atmayı bitirdik)
                   odaDinleyici = FirebaseFirestore.instance
                       .collection('odalar')
                       .doc(aktifOdaId)
@@ -718,7 +687,7 @@ class LobbyPage extends StatelessWidget {
                         rakipBulundu = true;
                         secilenRakip = oyuncular
                             .firstWhere((p) => p != ben,
-                                orElse: () => "GizemliOyuncu")
+                            orElse: () => "GizemliOyuncu")
                             .toString();
                         ortakHarf = doc.data()?['secilenHarf'] ?? "A";
 
@@ -734,28 +703,24 @@ class LobbyPage extends StatelessWidget {
                     }
                   });
 
-                  // Sadece odayı kurduktan sonra süreyi başlatıyoruz ki süre adil işlesin
                   timer = Timer.periodic(const Duration(seconds: 1), (t) async {
                     if (kalanSaniye <= 1) {
                       t.cancel();
-                      odaDinleyici?.cancel(); // Süre bitince dinlemeyi kapat
+                      odaDinleyici?.cancel();
 
-                      // Kimse gelmediyse, sahipsiz odayı Firebase'den temizle
                       if (aktifOdaId.isNotEmpty) {
                         FirebaseFirestore.instance
                             .collection('odalar')
                             .doc(aktifOdaId)
-                            .delete();
+                            .delete(); // Eşleşme başarısızsa Firebase düğümü tamamen siliniyor (Güvenli)
                       }
 
-                      // Bota düşüş
                       final randomBot =
-                          await DatabaseHelper.instance.getRandomBot();
+                      await DatabaseHelper.instance.getRandomBot();
                       secilenRakip = randomBot['bot_adi'] ?? "Ahmet_34";
 
                       if (dialogContext.mounted) Navigator.pop(dialogContext);
                       if (context.mounted) {
-                        // Bota düşerken odaKodu boş gönderilir
                         _oyunaGit(
                             context, ben, secilenRakip, turSayisi, "", null);
                       }
@@ -850,37 +815,9 @@ class LobbyPage extends StatelessWidget {
           .get();
 
       if (mevcutOda.docs.isNotEmpty) {
-        // HAZIR ODA BULUNDU
         String docId = mevcutOda.docs.first.id;
         List<String> harfler = [
-          "A",
-          "B",
-          "C",
-          "Ç",
-          "D",
-          "E",
-          "F",
-          "G",
-          "H",
-          "I",
-          "İ",
-          "J",
-          "K",
-          "L",
-          "M",
-          "N",
-          "O",
-          "Ö",
-          "P",
-          "R",
-          "S",
-          "Ş",
-          "T",
-          "U",
-          "Ü",
-          "V",
-          "Y",
-          "Z"
+          "A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"
         ];
         harfler.shuffle();
         String ortakHarf = harfler.first;
@@ -891,6 +828,7 @@ class LobbyPage extends StatelessWidget {
             .doc(docId)
             .update({
           'oyuncular': FieldValue.arrayUnion([ben]),
+          'aktifOyuncular': FieldValue.arrayUnion([ben]), // 🚀 4. EKLENTİ: Rastgele eşleşmede odaya giren kişi aktiflere eklendi
           'durum': 'BASLADI',
           'secilenHarf': ortakHarf
         });
@@ -902,12 +840,12 @@ class LobbyPage extends StatelessWidget {
           'rakip': kurucu
         };
       } else {
-        // BEKLEYEN ODA YOK, YENİ KUR
         var yeniOda = FirebaseFirestore.instance.collection('odalar').doc();
         await yeniOda.set({
           'odaKodu': yeniOda.id,
           'kurucu': ben,
           'oyuncular': [ben],
+          'aktifOyuncular': [ben], // 🚀 5. EKLENTİ: Rastgele odayı ilk kuran kişi aktiflere eklendi
           'durum': 'BEKLIYOR',
           'isRandomMatch': true,
           'toplamTurSayisi': turSayisi,
