@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'database_helper.dart';
 import 'result_page.dart';
 import 'ad_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class GamePage extends StatefulWidget {
   final String oyuncuAdi;
@@ -88,6 +89,11 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   String odadakiErkenBitirenKisi = "";
   String secilenHarf = "A";
   Timer? _timer;
+
+  // 🚀 YENİ: Maliyetsiz Profesyonel Presence (Burada Olma) Sistemi Değişkenleri
+  DatabaseReference? _benimPresenceRef;
+  StreamSubscription<DatabaseEvent>? _presenceSubscription;
+
   StreamSubscription<DocumentSnapshot>? _odaSubscription;
   int _kalanSure = 90;
 
@@ -101,8 +107,9 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   List<String> kullanilanHarfler = [];
 
 // ---------------- BÖLÜM 1 SONU ----------------
-
 // ==========================================
+
+
 // BÖLÜM 2: Türkçe Karakterleri Düzeltme Kodları
 // ==========================================
   String trToLowerCase(String text) {
@@ -164,17 +171,23 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     _gercekSkorlariYukle();
     AdService.instance.loadInterstitialAd();
     _canliOdaDinle();
+    _presenceSisteminiBaslat(); // 🚀 YENİ EKLENDİ: Gerçek Zamanlı Kopma Tespiti!
     _yeniTurBaslat(ilkBaslangic: true);
   }
 
   @override
-
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
 
     _timer?.cancel();
     _guvenlikTimer?.cancel();
     _odaSubscription?.cancel();
+    _kopyaTimer?.cancel(); // 🚀 EKSİK GİDERİLDİ: Kopya sayacını da temizliyoruz
+
+    // 🚀 YENİ EKLENDİ: Çıkarken Presence dinlemesini durdur ve RTDB'den kendini sil
+    _presenceSubscription?.cancel();
+    _benimPresenceRef?.remove();
+
     _inputController.dispose();
 
     // 🚀 YENİ EKLENEN: Oyuncu uygulamadan çıkarsa veya sayfayı kapatırsa kendini veritabanından silsin
@@ -187,7 +200,6 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     super.dispose();
   }
 // ---------------- BÖLÜM 3 SONU ----------------
-
 
   // ==========================================
 // BÖLÜM 3.5 (YENİ EKLENDİ): Uygulama Yaşam Döngüsü (Gizli Kopya Koruması)
@@ -2203,5 +2215,49 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
           : const SafeArea(child: BottomBannerAdWidget()),
     );
   }
-}
+
 // ---------------- BÖLÜM 22 SONU ----------------
+// ==========================================
+// 🚀 YENİ EKLENEN BÖLÜM 23: Firebase Presence API (Gerçek Zamanlı Kopma Tespiti)
+// ==========================================
+  Future<void> _presenceSisteminiBaslat() async {
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+
+    // 1. Kendi bağlantı referansımızı (RTDB) oluşturuyoruz
+    _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
+
+    // 2. SİHİRLİ KOMUT: İnternetim koparsa veya çökersem, Google sunucuları beni buradan otomatik silsin!
+    await _benimPresenceRef!.onDisconnect().remove();
+
+    // 3. Şu an bağlı olduğumuzu belirtiyoruz (True yazıyoruz)
+    await _benimPresenceRef!.set(true);
+
+    // 4. Odayı saniyesi saniyesine dinliyoruz
+    _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
+      if (!mounted) return;
+
+      var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+
+      List<String> rtdbDusenler = [];
+      for (String oyuncu in masadakiHerkes) {
+        // Eğer bir oyuncu masamızda var ama RTDB'de yoksa, Google onu silmiş (yani düşmüş) demektir!
+        if (!aktifler.containsKey(oyuncu)) {
+          rtdbDusenler.add(oyuncu);
+        }
+      }
+
+      // Eğer biri düştüyse, onun adını asıl veritabanımızdan (Firestore) siliyoruz.
+      // Firestore'dan silindiği an, BÖLÜM 5 UYANACAK ve size otomatik olarak +10 Puanlık Zaferi verecek!
+      if (rtdbDusenler.isNotEmpty) {
+        try {
+          await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+            'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)
+          });
+        } catch (e) {
+          print("Presence Firestore güncelleme hatası: $e");
+        }
+      }
+    });
+  }
+}
+// ---------------- BÖLÜM 23 SONU ----------------

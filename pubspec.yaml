@@ -2,7 +2,7 @@ name: isim_sehir_hayvan
 description: "İsim Şehir Hayvan - Çok Oyunculu Kelime Oyunu"
 publish_to: 'none'
 
-version: 1.0.1+11
+version: 1.0.1+12
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -40,6 +40,7 @@ dependencies:
   firebase_crashlytics: ^4.3.10
   flutter_dotenv: ^6.0.1
   app_tracking_transparency: ^2.0.7
+  firebase_database: ^11.3.10
 
 dev_dependencies:
   flutter_test:
