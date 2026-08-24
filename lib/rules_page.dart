@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart'; // 🚀 Doğru Çeviri Yolu
 
 class RulesPage extends StatelessWidget {
   const RulesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3E5F5), // Hafif mor arka plan
       appBar: AppBar(
-        title: const Text(
-          "📜 Oyun Kuralları",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        title: Text(
+          l10n.rulesPageTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.purple,
         centerTitle: true,
@@ -26,43 +29,32 @@ class RulesPage extends StatelessWidget {
             _buildRuleCard(
               icon: Icons.abc_rounded,
               iconColor: Colors.orange,
-              title: "1. Harf Kuralı",
-              description:
-                  "Her turun başında rastgele bir harf seçilir. Yazacağınız tüm kelimeler bu harf ile başlamalıdır.",
+              title: l10n.rule1Title,
+              description: l10n.rule1Desc,
             ),
             _buildRuleCard(
               icon: Icons.score_rounded,
               iconColor: Colors.blue,
-              title: "2. Kategori Puanlaması",
-              description: "• İki oyuncu aynı doğru kelimeyi yazarsa: 5 Puan\n"
-                  "• İki oyuncu farklı doğru kelimeler yazarsa: 10 Puan\n"
-                  "• Sadece tek oyuncu doğru kelime yazarsa: 20 Puan\n"
-                  "• Doğru bilinen en uzun kelimeye: +2 Puan Bonus"
-                  "• Maçı kazanan oyuncu +100 Puan alır.",
+              title: l10n.rule2Title,
+              description: l10n.rule2Desc,
             ),
             _buildRuleCard(
               icon: Icons.timer_rounded,
               iconColor: Colors.redAccent,
-              title: "3. Turu Erken Bitirme & 20 Sn Kuralı",
-              description:
-                  "En az 5 kategoriyi doldurduğunuzda 'TURU BİTİR' butonuna basabilirsiniz. "
-                  "Sayaç anında 20 saniyeye düşer ve tur sonunda +10 Zaman Bonusu kazanırsınız.",
+              title: l10n.rule3Title,
+              description: l10n.rule3Desc,
             ),
             _buildRuleCard(
               icon: Icons.emoji_events_rounded,
               iconColor: Colors.amber,
-              title: "4. 🏆 Maç Sonu Galibiyet Bonusu",
-              description:
-                  "• Maç bittiğinde, maçı kim kazandıysa genel puanına ve liderlik tablosuna kaydedilmek üzere +100 Galibiyet Bonusu eklenir.\n"
-                  "• Beraberlik durumunda kimseye ekstra +100 eklenmez, sadece maçta toplanan ham puanlar genel skora yansır.",
+              title: l10n.rule4Title,
+              description: l10n.rule4Desc,
             ),
             _buildRuleCard(
               icon: Icons.verified_rounded,
               iconColor: Colors.green,
-              title: "5. Geçerli Kelimeler",
-              description:
-                  "Eşya, Hayvan, Bitki ve Ülke kategorilerinde sadece gerçek ve somut kelimeler kabul edilir. "
-                  "TDK'deki soyut veya kural dışı kelimeler puan almaz.",
+              title: l10n.rule5Title,
+              description: l10n.rule5Desc,
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -77,9 +69,9 @@ class RulesPage extends StatelessWidget {
                   ),
                   elevation: 3,
                 ),
-                child: const Text(
-                  "ANLADIM, OYUNA DÖN 👍",
-                  style: TextStyle(
+                child: Text(
+                  l10n.understoodButton,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

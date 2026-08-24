@@ -1,0 +1,225 @@
+{
+  "@@locale": "es",
+  "gameTitle": "Tutti Frutti",
+  "gameSubtitle": "¡Pon a prueba tu conocimiento, derrota a tu oponente!",
+  "readyButton": "LISTO 👍",
+  "finishTurnButton": "¡ALTO!",
+  "nameTooShortError": "¡Tu nombre debe tener al menos 2 letras!",
+  "profanityNameError": "¡Apodo inapropiado detectado! Por favor elige otro nombre.",
+  "connectionTimeoutError": "¡Tiempo de conexión agotado! Por favor revisa tu internet.",
+  "serverConnectionError": "No se pudo conectar al servidor. Inténtalo de nuevo.",
+  "defaultPlayerName": "Jugador",
+  "menuTooltip": "Menú",
+  "welcomeContestant": "¡Bienvenido concursante! 🎮",
+  "gameRules": "Reglas del Juego",
+  "gameRulesSubtitle": "Guía de puntuación y competencia",
+  "privacyPolicy": "Política de Privacidad",
+  "privacyPolicySubtitle": "Uso de datos y tus derechos",
+  "contactUs": "Contáctanos",
+  "contactUsSubtitle": "Quejas, sugerencias y soporte",
+  "versionText": "Versión 1.0.0",
+  "lastLoggedInPlayer": "Último jugador conectado",
+  "continueWithSamePlayer": "Continuar con el mismo jugador",
+  "loginWithDifferentName": "Iniciar sesión con un nombre diferente",
+  "returnToProfile": "volver al perfil",
+  "playerNameLabel": "Nombre del Jugador",
+  "customizeAvatar": "Personaliza tu Avatar",
+  "chooseExpression": "Elegir expresión:",
+  "chooseAccessory": "Elegir accesorio:",
+  "chooseThemeColor": "Elegir color de tema:",
+  "aiProfanityError": "¡Este usuario contiene expresiones inapropiadas! Elige otro.",
+  "loginAndStart": "Iniciar sesión y Empezar" ,
+  "chooseGameMode": "ELEGIR MODO DE JUEGO",
+    "welcomePlayer": "¡Bienvenido",
+    "howToPlay": "¿Cómo te gustaría jugar?",
+    "playWithFriends": "Jugar con Amigos (2-10 Jugadores)",
+    "findOpponent": "Buscar Oponente (Partida Rápida)",
+    "returnToLogin": "Volver al Inicio",
+    "scoreText": "Puntuación",
+      "rankText": "Rango",
+      "friendRoomTitle": "SALA DE AMIGOS",
+      "tournamentRoundsTitle": "RONDAS DE TORNEO",
+      "friendRoomSubtitle": "¡Bienvenido {playerName}! Crea una sala e invita a tus amigos.",
+      "@friendRoomSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "tournamentRoundsSubtitle": "¡Bienvenido {playerName}, ¿cuántas rondas quieres jugar?",
+      "@tournamentRoundsSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "createRoomButton": "Crear Sala (2-10 Jugadores)",
+      "joinWithCodeButton": "Unirse con Código",
+      "quickMatch": "Partida Rápida",
+      "standardLeague": "Liga Estándar",
+      "marathonGiants": "Gigantes de Maratón",
+      "goBackButton": "Regresar",
+      "roundText": "RONDA",
+      "searchingOpponent": "Buscando oponente",
+      "waitingForOpponent": "Esperando oponente...",
+      "matchFound": "¡Oponente encontrado!",
+      "timeText": "Tiempo",
+      "roomClosedOrNotFound": "Sala cerrada o no encontrada.",
+      "gameRoom": "Sala de Juego",
+      "roomCode": "CÓDIGO DE SALA",
+      "copyButton": "Copiar",
+      "roomCodeCopied": "¡Código de sala copiado!",
+      "inviteFriend": "Invitar Amigo",
+      "joinedPlayers": "Jugadores Unidos",
+      "youText": "Tú",
+      "leaveButton": "Salir",
+      "startGameButton": "Iniciar Juego",
+      "enterRoomCode": "Ingresar Código",
+      "cancelButton": "Cancelar",
+      "joinButton": "Unirse",
+      "roomFullError": "¡La sala está llena (Máximo 10 jugadores)!",
+      "roomNotFoundError": "¡Sala no encontrada!",
+      "rulesPageTitle": "📜 Reglas del Juego",
+        "rule1Title": "1. La Regla de la Letra",
+        "rule1Desc": "Se elige una letra al azar al inicio de cada ronda. Todas tus palabras deben comenzar con esta letra.",
+        "rule2Title": "2. Puntuación por Categoría",
+        "rule2Desc": "• Si ambos jugadores escriben la misma palabra correcta: 5 Puntos\n• Si los jugadores escriben palabras correctas diferentes: 10 Puntos\n• Si solo un jugador escribe una palabra correcta: 20 Puntos\n• Palabra correcta más larga: +2 Puntos de Bonificación\n• El ganador de la partida recibe +100 Puntos.",
+        "rule3Title": "3. Terminar Antes y Regla de 20 Segundos",
+        "rule3Desc": "Puedes pulsar 'TERMINAR RONDA' cuando completes al menos 5 categorías. El temporizador baja instantáneamente a 20 segundos y ganas un Bono de Tiempo de +10 al final de la ronda.",
+        "rule4Title": "4. 🏆 Bono de Victoria al Final",
+        "rule4Desc": "• Cuando termina la partida, se añade un Bono de Victoria de +100 a la puntuación general y tabla de clasificación del ganador.\n• En caso de empate, no se añaden los +100 extra; solo los puntos base de la partida se reflejan en la puntuación general.",
+        "rule5Title": "5. Palabras Válidas",
+        "rule5Desc": "Solo se aceptan palabras reales y concretas en las categorías de Objeto, Animal, Planta y País. Las palabras abstractas o inválidas según el diccionario oficial no puntuarán.",
+        "understoodButton": "ENTENDIDO, VOLVER AL JUEGO 👍",
+        "contactUsTitle": "Contáctanos",
+          "feedbackSuccess": "Tu comentario se ha enviado correctamente. ¡Gracias! 🎉",
+          "feedbackError": "Error al enviar el mensaje:",
+          "anonymousPlayer": "Jugador Anónimo",
+          "feedbackHeader": "¡Tu Opinión es Valiosa para Nosotros!",
+          "feedbackSubtitle": "¡Bienvenido {playerName}! Puedes enviarnos quejas, sugerencias o informar errores sobre el juego.",
+          "@feedbackSubtitle": {
+            "placeholders": {
+              "playerName": {
+                "type": "String"
+              }
+            }
+          },
+          "feedbackSubjectLabel": "Asunto / Tipo de Comentario",
+          "emailLabel": "Tu Correo (Para respuesta)",
+          "invalidEmailError": "Por favor, introduce un correo válido.",
+          "messageLabel": "Tu Mensaje",
+          "messageHint": "Puedes escribir tus pensamientos o el problema que encontraste en detalle...",
+          "emptyMessageError": "Por favor, escribe tu mensaje.",
+          "shortMessageError": "Por favor, escribe una descripción de al menos 10 caracteres.",
+          "sendingButton": "Enviando...",
+          "sendMessageButton": "Enviar Mensaje",
+          "feedbackTypeSuggestion": "Sugerencia",
+          "feedbackTypeComplaint": "Queja",
+          "feedbackTypeBug": "Informe de Error",
+          "feedbackTypeOther": "Otro",
+          "cheatingWarning": "¡Tu hoja fue confiscada por salir de la pantalla de juego más de 5 segundos!",
+            "playerEliminatedWarning": "⚠️ ¡{playerName} fue eliminado por entregar una hoja en blanco (o desconectarse)!",
+            "@playerEliminatedWarning": {
+              "placeholders": { "playerName": { "type": "String" } }
+            },
+            "newHostWarning": "👑 El anfitrión se fue. ¡Eres el nuevo anfitrión!",
+            "winByForfeitTitle": "¡Victoria por Abandono! 🏆",
+            "winByForfeitDesc": "¡Ganaste el juego porque los demás jugadores se desconectaron!",
+            "goToResultsButton": "Ir a Resultados",
+            "eliminatedTitle": "¡Eliminado! ❌",
+            "eliminatedDesc": "Fuiste eliminado por no escribir palabras en ninguna categoría (o te desconectaste).",
+            "returnToMainMenuButton": "Volver al Menú Principal",
+            "wrongLetterWarning": "¡La palabra que introduzcas debe empezar por la letra '{letter}'!",
+            "@wrongLetterWarning": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "inappropriateWordWarning": "¡Palabra inapropiada detectada!",
+            "singleNameWarning": "¡Solo puedes introducir un nombre en esta sección!",
+            "connectionError": "¡Error de conexión!",
+            "checkingWords": "Comprobando Palabras... 🚀",
+            "answersSavedWaiting": "¡Respuestas guardadas! 🚀\nEsperando a otros jugadores...",
+            "noOpponent": "Sin Oponente",
+            "roundNumberLabel": "RONDA {roundNo}",
+            "@roundNumberLabel": {
+              "placeholders": { "roundNo": { "type": "int" } }
+            },
+            "timeBonus": "BONO DE TIEMPO",
+            "everyoneReady": " ¡Todos listos! Avanzando...",
+            "playersReady": "⏳ {ready} / {total} Jugadores Listos",
+            "@playersReady": {
+              "placeholders": { "ready": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "waitingReady": "ESPERANDO...",
+            "seeResultsWithTimer": "VER RESULTADOS 🏆 ({time} seg)",
+            "@seeResultsWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "readyWithTimer": "ESTOY LISTO 👍 ({time} seg)",
+            "@readyWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "appTitle": "Tutti Frutti",
+            "tourProgress": "Ronda: {current} / {total}",
+            "@tourProgress": {
+              "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "secondsLeft": "{sec} seg",
+            "@secondsLeft": {
+              "placeholders": { "sec": { "type": "int" } }
+            },
+            "currentLetterLabel": "Letra: {letter}",
+            "@currentLetterLabel": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "categoryLabel": "Categoría {category}",
+            "@categoryLabel": {
+              "placeholders": { "category": { "type": "String" } }
+            },
+            "typeYourWordHint": "Escribe tu palabra aquí...",
+            "twentySecondsRule": "⚡ ¡REGLA DE 20 SEGUNDOS INICIADA!",
+            "waitingForTimeEnd": "Esperando que termine el tiempo...",
+            "last20SecondsNoBonus": "ÚLTIMOS 20 SEGUNDOS (SIN BONO)",
+            "finishTurnWithBonus": "TERMINAR RONDA (+10 BONO DE TIEMPO)",
+            "finishTurnMinWords": "TERMINAR RONDA (MÍNIMO 5 PALABRAS)",
+            "previousButton": "◄ Anterior",
+            "nextButton": "Siguiente ►",
+            "catName": "Nombre",
+            "catCity": "Ciudad",
+            "catAnimal": "Animal",
+            "catPlant": "Planta",
+            "catObject": "Objeto",
+            "catCountry": "País",
+            "matchWinnerTitle": "¡ERES EL GANADOR! 🎉",
+              "matchTieTitle": "¡COMPARTISTE EL LIDERATO!",
+              "matchLoserTitle": "¡PERDISTE EL PARTIDO!",
+              "matchRankingTitle": "CLASIFICACIÓN DEL PARTIDO",
+              "youLabel": "(Tú)",
+              "overallStatsTitle": "TUS ESTADÍSTICAS GENERALES",
+              "overallScoreLabel": "Puntuación General:",
+              "rankingLabel": "Tu Rango:",
+              "wentUpLabel": "(▲ Subiste {diff})",
+              "@wentUpLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "wentDownLabel": "(▼ Bajaste {diff})",
+              "@wentDownLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "noChangeLabel": "(- Sin cambios)",
+              "returnToHomeButton": "Volver al Inicio",
+              "pointsSuffix": "Pts",
+              "privacyPolicyTitle": "Política de Privacidad",
+                "privacyLastUpdate": "Última Actualización: 9 de Agosto de 2026",
+                "privacyIntro": "Esta política de privacidad explica nuestro compromiso de proteger la privacidad de nuestros jugadores. Al usar nuestra aplicación, aceptas las prácticas de procesamiento de datos descritas aquí.",
+                "privacySection1Title": "1. Datos Recopilados y Propósito",
+                "privacySection1Text": "• Datos Personales: Nuestra aplicación no recopila, almacena ni solicita datos personales como correo electrónico, nombre real, número de identificación o ubicación precisa.\n\n• Apodos y Puntuaciones: Los apodos y puntuaciones se almacenan de forma segura en Firebase únicamente con fines de emparejamiento y para mostrar la clasificación.",
+                "privacySection2Title": "2. Anuncios y Terceros",
+                "privacySection2Text": "Se utiliza Google AdMob para mantener la aplicación gratuita. AdMob puede usar ID de publicidad para mostrar anuncios relevantes. También usamos Firebase Crashlytics para detectar errores mediante datos anónimos.",
+                "privacySection3Title": "3. Privacidad Infantil",
+                "privacySection3Text": "Nuestro juego es apto para todas las edades. No recopilamos a sabiendas datos personales de niños menores de 13 años.",
+                "privacySection4Title": "4. Seguridad y Contacto",
+                "privacySection4Text": "Ningún dato recopilado se vende o comparte con fines de marketing. Si deseas que tus datos sean eliminados, contáctanos en bulentolgun75@gmail.com.",
+                "closeButton": "Cerrar y Regresar"
+}

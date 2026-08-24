@@ -2,8 +2,8 @@
 // BÖLÜM 1: KÜTÜPHANELER VE İÇE AKTARMALAR (IMPORTS)
 // ==========================================
 import 'dart:io';
-import 'dart:async'; // 🟢 EKLENDİ: Timeout (Zaman aşımı) yakalamak için
-import 'package:flutter/foundation.dart'; // 🟢 EKLENDİ: kIsWeb (Platform) kontrolü için
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,9 +13,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'game_mode_page.dart';
 import 'rules_page.dart';
 import 'contact_us_page.dart';
-import 'gemini_service.dart'; // 🚀 1. ÇÖZÜM: Gemini Servisi Sayfaya Dahil Edildi!
+import 'gemini_service.dart';
+import 'l10n/app_localizations.dart';
+import 'main.dart';
+import 'privacy_policy_page.dart'; // 🚀 GİZLİLİK POLİTİKASI SAYFASI EKLENDİ
 // ---------------- BÖLÜM 1 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 2: SINIF TANIMLAMALARI VE DEĞİŞKENLER (STATE & VARIABLES)
@@ -42,7 +44,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isLoading = false;
 
-  // 🎨 Avatar ve Tema Seçenekleri
   final List<String> yuzler = ["😀", "😎", "🦊", "🐱", "🦁", "🐻"];
   final List<String> aksesuarlar = ["👑", "🕶️", "🎧", "🎩", "🎀", "⭐"];
   final List<Color> renkler = [
@@ -54,7 +55,6 @@ class _LoginPageState extends State<LoginPage> {
     Colors.red
   ];
 
-  // 🛡️ Filtreleme Listesi
   final List<String> yasakliKelimeler = [
     "amk", "sik", "piç", "orospu", "oç", "sg", "yarrak", "göt",
     "meme", "dalyarak", "pezevenk", "kaltak", "fahişe", "amq",
@@ -62,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
     "porno", "sex", "bok"
   ];
 // ---------------- BÖLÜM 2 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 3: YARDIMCI FONKSİYONLAR VE KONTROLLER (HELPER METHODS)
@@ -82,12 +81,11 @@ class _LoginPageState extends State<LoginPage> {
   bool _isimUygunMu(String isim) {
     String temizIsim = isim.trim();
 
-    // Rakam ve sembolleri silip sadece HARFLERİN (tüm alfabeler) uzunluğuna bakıyoruz.
     String sadeceHarfler = temizIsim.replaceAll(RegExp(r'[\d\W_]'), '');
     if (sadeceHarfler.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("İsminiz en az 2 harften oluşmalıdır!"),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.nameTooShortError),
             backgroundColor: Colors.red),
       );
       return false;
@@ -107,8 +105,8 @@ class _LoginPageState extends State<LoginPage> {
 
     if (yasakliKelimeler.contains(bitisikKelime)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.profanityNameError),
             backgroundColor: Colors.red),
       );
       return false;
@@ -118,8 +116,8 @@ class _LoginPageState extends State<LoginPage> {
     for (var kelime in kelimeler) {
       if (yasakliKelimeler.contains(kelime)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin."),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.profanityNameError),
               backgroundColor: Colors.red),
         );
         return false;
@@ -129,7 +127,6 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 // ---------------- BÖLÜM 3 SONU ----------------
-
 
 // ==========================================
 // BÖLÜM 4: CİHAZ, KAYIT VE FİREBASE İŞLEMLERİ (BACKEND & STORAGE)
@@ -223,8 +220,8 @@ class _LoginPageState extends State<LoginPage> {
     } on TimeoutException catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Bağlantı zaman aşımına uğradı! Lütfen internetinizi kontrol edin."),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.connectionTimeoutError),
               backgroundColor: Colors.red),
         );
       }
@@ -232,8 +229,8 @@ class _LoginPageState extends State<LoginPage> {
       debugPrint("Firebase Kullanıcı Kayıt Hatası: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Sunucuya bağlanılamadı. Lütfen tekrar deneyin."),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.serverConnectionError),
               backgroundColor: Colors.red),
         );
       }
@@ -247,7 +244,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 // ---------------- BÖLÜM 4 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 5: KULLANICI ARAYÜZÜ (BUILD METODU VE WIDGET'LAR)
 // ==========================================
@@ -255,7 +251,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final Color activeColor = renkler[(savedRenkIndex ?? 0).clamp(0, renkler.length - 1)];
     final String mevcutOyuncu = savedOyuncuAdi ??
-        (_nameController.text.trim().isEmpty ? "Oyuncu" : _nameController.text.trim());
+        (_nameController.text.trim().isEmpty ? AppLocalizations.of(context)!.defaultPlayerName : _nameController.text.trim());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -263,12 +259,28 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        // 🚀 İŞTE YENİ SOL DİL MENÜSÜ BURADA BAŞLIYOR 🚀
+        leading: PopupMenuButton<Locale>(
+          icon: const Icon(Icons.language, color: Colors.indigo, size: 28),
+          tooltip: "Dil Seçimi / Language",
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          onSelected: (Locale locale) {
+            appLocale.value = locale; // Seçilen dili anında uygular
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
+            const PopupMenuItem<Locale>(value: Locale('tr'), child: Text("🇹🇷 Türkçe")),
+            const PopupMenuItem<Locale>(value: Locale('de'), child: Text("🇩🇪 Deutsch")),
+            const PopupMenuItem<Locale>(value: Locale('en'), child: Text("🇬🇧 English")),
+            const PopupMenuItem<Locale>(value: Locale('es'), child: Text("🇪🇸 Español")),
+          ],
+        ),
+        // 🚀 SOL DİL MENÜSÜ SONU 🚀
         actions: [
           if (hasSavedUser && savedOyuncuAdi != null)
             Builder(
               builder: (context) => IconButton(
                 icon: const Icon(Icons.menu_rounded, color: Colors.indigo, size: 32),
-                tooltip: "Menü",
+                tooltip: AppLocalizations.of(context)!.menuTooltip,
                 onPressed: () => Scaffold.of(context).openEndDrawer(),
               ),
             ),
@@ -285,34 +297,40 @@ class _LoginPageState extends State<LoginPage> {
                 child: Icon(Icons.person, size: 45, color: Colors.indigo.shade700),
               ),
               accountName: Text(mevcutOyuncu, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              accountEmail: const Text("Hoş geldin Yarışmacı! 🎮"),
+              accountEmail: Text(AppLocalizations.of(context)!.welcomeContestant),
             ),
+
+
+
+            // --- ESKİ MENÜ ELEMANLARI (Oyun Kuralları, Gizlilik vb.) ---
             ListTile(
               leading: const Icon(Icons.menu_book_rounded, color: Colors.indigo),
-              title: const Text("Oyun Kuralları", style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Puanlama ve yarışma rehberi"),
+              title: Text(AppLocalizations.of(context)!.gameRules, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(AppLocalizations.of(context)!.gameRulesSubtitle),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const RulesPage()));
               },
             ),
+
+            // 🚀 GİZLİLİK POLİTİKASI DÜZELTİLDİ 🚀
             ListTile(
               leading: const Icon(Icons.privacy_tip_outlined, color: Colors.indigo),
-              title: const Text('İsim Şehir Oyunu Gizlilik Politikası', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              subtitle: const Text('Veri kullanımı ve gizlilik haklarınız'),
-              onTap: () async {
-                Navigator.pop(context);
-                final Uri url = Uri.parse('https://bulentolgun.github.io/isim-sehir-gizlilik/');
-                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                  debugPrint('Sayfa açılamadı');
-                }
+              title: Text(AppLocalizations.of(context)!.privacyPolicy, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              subtitle: Text(AppLocalizations.of(context)!.privacyPolicySubtitle),
+              onTap: () {
+                Navigator.pop(context); // Menüyü kapat
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+                );
               },
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.mark_email_unread_rounded, color: Colors.indigo),
-              title: const Text("Bize Ulaşın", style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Şikayet, öneri ve destek"),
+              title: Text(AppLocalizations.of(context)!.contactUs, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(AppLocalizations.of(context)!.contactUsSubtitle),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -325,7 +343,7 @@ class _LoginPageState extends State<LoginPage> {
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Versiyon 1.0.0", style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+              child: Text(AppLocalizations.of(context)!.versionText, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
             ),
           ],
         ),
@@ -341,11 +359,11 @@ class _LoginPageState extends State<LoginPage> {
                 child: Image.asset('assets/logo.png', height: 120),
               ),
               const SizedBox(height: 15),
-              const Text("İsim Şehir Hayvan Oyunu",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.purple)),
+              Text(AppLocalizations.of(context)!.gameTitle,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.purple)),
               const SizedBox(height: 8),
-              const Text("Zekanı yarıştır, rakibini geride bırak!",
-                  style: TextStyle(fontSize: 14, color: Colors.black)),
+              Text(AppLocalizations.of(context)!.gameSubtitle,
+                  style: const TextStyle(fontSize: 14, color: Colors.black)),
               const SizedBox(height: 30),
               if (hasSavedUser && savedOyuncuAdi != null) ...[
                 Card(
@@ -356,8 +374,8 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       children: [
-                        const Text("Son Giriş Yapan Oyuncu",
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+                        Text(AppLocalizations.of(context)!.lastLoggedInPlayer,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
                         const SizedBox(height: 15),
                         Stack(
                           alignment: Alignment.center,
@@ -393,8 +411,8 @@ class _LoginPageState extends State<LoginPage> {
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                              : const Text("Aynı Oyuncuyla Devam Et",
-                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                              : Text(AppLocalizations.of(context)!.continueWithSamePlayer,
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -412,8 +430,8 @@ class _LoginPageState extends State<LoginPage> {
                     });
                   },
                   icon: const Icon(Icons.swap_horiz, color: Colors.indigo),
-                  label: const Text("Farklı bir isimle giriş yap",
-                      style: TextStyle(color: Colors.indigo, fontSize: 15, fontWeight: FontWeight.bold)),
+                  label: Text(AppLocalizations.of(context)!.loginWithDifferentName,
+                      style: const TextStyle(color: Colors.indigo, fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
               ] else ...[
                 if (savedOyuncuAdi != null) ...[
@@ -437,17 +455,16 @@ class _LoginPageState extends State<LoginPage> {
                             backgroundColor: Colors.white,
                             child: Text(
                               yuzler[(savedYuzIndex ?? 0).clamp(0, yuzler.length - 1)],
-                              style: const TextStyle(fontSize: 18),
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Text(
-                            "${savedOyuncuAdi!} profiline dön",
-                            style: const TextStyle(
-                              color: Colors.indigo,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              letterSpacing: 0.2,
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 180), // En fazla 180 piksel genişleyebilir
+                            child: Text(
+                              "${savedOyuncuAdi!} ${AppLocalizations.of(context)!.returnToProfile}",
+                              style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.2),
+                              overflow: TextOverflow.ellipsis, // Sığmazsa sonuna 3 nokta (...) koyar
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -466,7 +483,7 @@ class _LoginPageState extends State<LoginPage> {
                   keyboardType: TextInputType.name,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
-                    labelText: "Oyuncu Adınız",
+                    labelText: AppLocalizations.of(context)!.playerNameLabel,
                     prefixIcon: const Icon(Icons.person, color: Colors.indigo),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
@@ -476,15 +493,15 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                const Align(
+                Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Avatarını Özelleştir",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo))),
+                    child: Text(AppLocalizations.of(context)!.customizeAvatar,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo))),
                 const SizedBox(height: 15),
 
-                const Align(
+                Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("İfade Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text(AppLocalizations.of(context)!.chooseExpression, style: const TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -511,9 +528,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 15),
 
-                const Align(
+                Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Aksesuar Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text(AppLocalizations.of(context)!.chooseAccessory, style: const TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 60,
                   child: ListView.builder(
@@ -541,9 +558,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 15),
 
-                const Align(
+                Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Tema Rengi Seç:", style: TextStyle(color: Colors.black, fontSize: 12))),
+                    child: Text(AppLocalizations.of(context)!.chooseThemeColor, style: const TextStyle(color: Colors.black, fontSize: 12))),
                 SizedBox(
                   height: 50,
                   child: ListView.builder(
@@ -576,35 +593,30 @@ class _LoginPageState extends State<LoginPage> {
                       : () async {
                     final name = _nameController.text.trim();
 
-                    // 1. Önce lokal kontrol (Kısa isim vs.)
                     if (!_isimUygunMu(name)) return;
 
-                    // 2. Yükleniyor dairesini aktif et
                     setState(() {
                       _isLoading = true;
                     });
 
-                    // 3. Gemini Api Kontrolü
                     bool isimTemizMi = await GeminiService.isimUygunMu(name);
 
-                    // 4. Flutter Async Gap çözümü (Güvenlik)
                     if (!mounted) return;
 
                     if (!isimTemizMi) {
                       setState(() {
                         _isLoading = false;
-                      }); // Yükleme animasyonunu durdur
+                      });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Bu kullanıcı adı uygunsuz ifadeler içeriyor! Lütfen başka bir isim seçin."),
+                        SnackBar(
+                          content: Text(AppLocalizations.of(context)!.aiProfanityError),
                           backgroundColor: Colors.redAccent,
-                          duration: Duration(seconds: 3),
+                          duration: const Duration(seconds: 3),
                         ),
                       );
-                      return; // Geçişi reddet!
+                      return;
                     }
 
-                    // 5. İsim uygunsa, Firebase kayıt ve oyuna giriş işlemlerini başlat
                     await _girisYap(name, secilenYuzIndex, secilenAksesuarIndex, secilenRenkIndex);
                   },
                   style: ElevatedButton.styleFrom(
@@ -618,8 +630,8 @@ class _LoginPageState extends State<LoginPage> {
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                      : const Text("Giriş Yap ve Başla",
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text(AppLocalizations.of(context)!.loginAndStart,
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ],
@@ -629,4 +641,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-// ---------------- BÖLÜM 5 SONU ----------------

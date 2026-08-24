@@ -2,7 +2,7 @@ name: isim_sehir_hayvan
 description: "İsim Şehir Hayvan - Çok Oyunculu Kelime Oyunu"
 publish_to: 'none'
 
-version: 1.0.1+12
+version: 1.0.1+13
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -10,6 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:    # 🚀 YENİ EKLENEN (flutter ile aynı hizada olmalı)
+    sdk: flutter
+  intl: any                 # 🚀 YENİ EKLENEN (flutter ile aynı hizada olmalı)
+
 
   device_info_plus: ^10.1.2 # Veya güncel sürümü
   # Google AdMob Reklam Paketi
@@ -50,6 +54,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
 
 flutter:
+  generate: true
   uses-material-design: true
 
   # 🎯 Veritabanı ve Medya Dosyaları Tanımı

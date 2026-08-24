@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'l10n/app_localizations.dart'; // 🚀 Doğru Çeviri Yolu
 import 'ad_service.dart';
 
 class ContactUsPage extends StatefulWidget {
@@ -19,17 +20,11 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mesajController = TextEditingController();
 
-  String _secilenTur = "Öneri";
+  String _secilenTur = "Öneri"; // İlk değer olarak atanır, build içinde güncellenecek
   bool _isSending = false;
 
-  final List<String> _bildirimTurleri = [
-    "Öneri",
-    "Şikayet",
-    "Hata Bildirimi",
-    "Diğer",
-  ];
-
   Future<void> _mesajGonder() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -38,7 +33,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
     try {
       String oyuncu =
-          widget.oyuncuAdi.isEmpty ? "Anonim Oyuncu" : widget.oyuncuAdi;
+      widget.oyuncuAdi.isEmpty ? l10n.anonymousPlayer : widget.oyuncuAdi;
 
       // 🎯 Firebase Firestore'a Geri Bildirim Kaydı
       await FirebaseFirestore.instance.collection('geri_bildirimler').add({
@@ -51,25 +46,24 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                "Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz! 🎉"),
+          SnackBar(
+            content: Text(l10n.feedbackSuccess),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
 
         _mesajController.clear();
         _emailController.clear();
         setState(() {
-          _secilenTur = "Öneri";
+          _secilenTur = l10n.feedbackTypeSuggestion; // Sıfırlandı
         });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Mesaj gönderilirken hata oluştu: $e"),
+            content: Text("${l10n.feedbackError} $e"),
             backgroundColor: Colors.red,
           ),
         );
@@ -92,15 +86,29 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     String aktifOyuncu =
-        widget.oyuncuAdi.isEmpty ? "Tokatlı60" : widget.oyuncuAdi;
+    widget.oyuncuAdi.isEmpty ? l10n.defaultPlayerName : widget.oyuncuAdi;
+
+    // Bildirim türlerini dile göre oluştur
+    final List<String> bildirimTurleri = [
+      l10n.feedbackTypeSuggestion,
+      l10n.feedbackTypeComplaint,
+      l10n.feedbackTypeBug,
+      l10n.feedbackTypeOther,
+    ];
+
+    // Dil değiştiğinde _secilenTur yeni listede yoksa ilk değere ata
+    if (!bildirimTurleri.contains(_secilenTur)) {
+      _secilenTur = bildirimTurleri.first;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Bize Ulaşın",
+        title: Text(l10n.contactUsTitle,
             style:
-                TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+            const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -123,7 +131,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 const SizedBox(height: 12),
 
                 Text(
-                  "Görüşleriniz Bizim İçin Değerli!",
+                  l10n.feedbackHeader,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20,
@@ -133,7 +141,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Hoş geldin $aktifOyuncu! Oyunla ilgili şikayet, öneri veya karşılaştığın hataları bize iletebilirsin.",
+                  l10n.feedbackSubtitle(aktifOyuncu),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
@@ -144,7 +152,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 DropdownButtonFormField<String>(
                   value: _secilenTur,
                   decoration: InputDecoration(
-                    labelText: "Konu / Bildirim Türü",
+                    labelText: l10n.feedbackSubjectLabel,
                     labelStyle: const TextStyle(color: Colors.purple),
                     prefixIcon: const Icon(Icons.category_rounded,
                         color: Colors.purple),
@@ -153,10 +161,10 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide:
-                          const BorderSide(color: Colors.purple, width: 2),
+                      const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
-                  items: _bildirimTurleri.map((String tur) {
+                  items: bildirimTurleri.map((String tur) {
                     return DropdownMenuItem<String>(
                       value: tur,
                       child: Text(tur,
@@ -174,27 +182,27 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
                 const SizedBox(height: 16),
 
-                // 🎯 E-POSTA ADRESİ INPUT (OPSİYONEL VEYA DÖNÜŞ İÇİN)
+                // 🎯 E-POSTA ADRESİ INPUT
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: "E-Posta Adresiniz (Geri dönüş için)",
+                    labelText: l10n.emailLabel,
                     labelStyle: TextStyle(color: Colors.grey.shade700),
                     prefixIcon:
-                        const Icon(Icons.email_outlined, color: Colors.purple),
+                    const Icon(Icons.email_outlined, color: Colors.purple),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide:
-                          const BorderSide(color: Colors.purple, width: 2),
+                      const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {
                       if (!value.contains('@') || !value.contains('.')) {
-                        return "Lütfen geçerli bir e-posta adresi girin.";
+                        return l10n.invalidEmailError;
                       }
                     }
                     return null;
@@ -209,29 +217,28 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   maxLines: 4,
                   maxLength: 500,
                   decoration: InputDecoration(
-                    labelText: "Mesajınız",
-                    hintText:
-                        "Düşüncelerinizi veya karşılaştığınız sorunu detaylıca yazabilirsiniz...",
+                    labelText: l10n.messageLabel,
+                    hintText: l10n.messageHint,
                     alignLabelWithHint: true,
                     prefixIcon: const Padding(
                       padding: EdgeInsets.only(bottom: 60),
                       child:
-                          Icon(Icons.chat_bubble_outline, color: Colors.purple),
+                      Icon(Icons.chat_bubble_outline, color: Colors.purple),
                     ),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide:
-                          const BorderSide(color: Colors.purple, width: 2),
+                      const BorderSide(color: Colors.purple, width: 2),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return "Lütfen mesajınızı yazın.";
+                      return l10n.emptyMessageError;
                     }
                     if (value.trim().length < 10) {
-                      return "Lütfen en az 10 karakterlik bir açıklama yazın.";
+                      return l10n.shortMessageError;
                     }
                     return null;
                   },
@@ -252,14 +259,14 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   onPressed: _isSending ? null : _mesajGonder,
                   icon: _isSending
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2),
-                        )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  )
                       : const Icon(Icons.send_rounded, size: 20),
                   label: Text(
-                    _isSending ? "Gönderiliyor..." : "Mesajı Gönder",
+                    _isSending ? l10n.sendingButton : l10n.sendMessageButton,
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),

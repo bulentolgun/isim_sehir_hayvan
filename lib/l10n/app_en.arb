@@ -1,0 +1,225 @@
+{
+  "@@locale": "en",
+  "gameTitle": "Word Categories",
+  "gameSubtitle": "Test your knowledge, beat your opponent!",
+  "readyButton": "READY 👍",
+  "finishTurnButton": "STOP!",
+  "nameTooShortError": "Your name must be at least 2 characters!",
+  "profanityNameError": "Inappropriate nickname detected! Please choose another name.",
+  "connectionTimeoutError": "Connection timed out! Please check your internet.",
+  "serverConnectionError": "Could not connect to the server. Please try again.",
+  "defaultPlayerName": "Player",
+  "menuTooltip": "Menu",
+  "welcomeContestant": "Welcome Contestant! 🎮",
+  "gameRules": "Game Rules",
+  "gameRulesSubtitle": "Scoring and competition guide",
+  "privacyPolicy": "Privacy Policy",
+  "privacyPolicySubtitle": "Data usage and your privacy rights",
+  "contactUs": "Contact Us",
+  "contactUsSubtitle": "Complaints, suggestions, and support",
+  "versionText": "Version 1.0.0",
+  "lastLoggedInPlayer": "Last Logged In Player",
+  "continueWithSamePlayer": "Continue with the Same Player",
+  "loginWithDifferentName": "Login with a different name",
+  "returnToProfile": "Return to profile",
+  "playerNameLabel": "Your Player Name",
+  "customizeAvatar": "Customize Your Avatar",
+  "chooseExpression": "Choose Expression:",
+  "chooseAccessory": "Choose Accessory:",
+  "chooseThemeColor": "Choose Theme Color:",
+  "aiProfanityError": "This username contains inappropriate expressions! Please choose another.",
+  "loginAndStart": "Login and Start",
+  "chooseGameMode": "CHOOSE GAME MODE",
+    "welcomePlayer": "Welcome",
+    "howToPlay": "How would you like to play?",
+    "playWithFriends": "Play with Friends (2-10 Players)",
+    "findOpponent": "Find Opponent (Quick Match)",
+    "returnToLogin": "Return to Login Page",
+    "scoreText": "Score",
+      "rankText": "Rank",
+      "friendRoomTitle": "FRIEND ROOM",
+      "tournamentRoundsTitle": "TOURNAMENT ROUNDS",
+      "friendRoomSubtitle": "Welcome {playerName}! You can create a room and invite friends.",
+      "@friendRoomSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "tournamentRoundsSubtitle": "Welcome {playerName}, how many rounds do you want to play?",
+      "@tournamentRoundsSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "createRoomButton": "Create Room (2-10 Players)",
+      "joinWithCodeButton": "Join with Code",
+      "quickMatch": "Quick Match",
+      "standardLeague": "Standard League",
+      "marathonGiants": "Marathon Giants",
+      "goBackButton": "Go Back",
+      "roundText": "ROUND",
+      "searchingOpponent": "Searching for Opponent",
+      "waitingForOpponent": "Waiting for opponent...",
+      "matchFound": "Match Found!",
+      "timeText": "Time",
+      "roomClosedOrNotFound": "Room closed or not found.",
+      "gameRoom": "Game Room",
+      "roomCode": "ROOM CODE",
+      "copyButton": "Copy",
+      "roomCodeCopied": "Room code copied to clipboard!",
+      "inviteFriend": "Invite Friend",
+      "joinedPlayers": "Joined Players",
+      "youText": "You",
+      "leaveButton": "Leave",
+      "startGameButton": "Start Game",
+      "enterRoomCode": "Enter Room Code",
+      "cancelButton": "Cancel",
+      "joinButton": "Join",
+      "roomFullError": "Room is full (Maximum 10 players)!",
+      "roomNotFoundError": "Room not found!",
+      "rulesPageTitle": "📜 Game Rules",
+        "rule1Title": "1. The Letter Rule",
+        "rule1Desc": "A random letter is chosen at the start of each round. All your words must begin with this letter.",
+        "rule2Title": "2. Category Scoring",
+        "rule2Desc": "• If both players write the same correct word: 5 Points\n• If players write different correct words: 10 Points\n• If only one player writes a correct word: 20 Points\n• Longest correct word: +2 Bonus Points\n• The match winner gets +100 Points.",
+        "rule3Title": "3. Ending Early & 20 Sec Rule",
+        "rule3Desc": "You can press 'FINISH TURN' when you fill at least 5 categories. The timer instantly drops to 20 seconds and you gain a +10 Time Bonus at the end of the round.",
+        "rule4Title": "4. 🏆 Match Win Bonus",
+        "rule4Desc": "• When the match ends, +100 Victory Bonus is added to the winner's overall score and leaderboard.\n• In case of a tie, no extra +100 is added; only raw match points are reflected in the overall score.",
+        "rule5Title": "5. Valid Words",
+        "rule5Desc": "Only real and concrete words are accepted in Object, Animal, Plant, and Country categories. Abstract or invalid words according to the official dictionary will not score.",
+        "understoodButton": "UNDERSTOOD, RETURN TO GAME 👍",
+        "contactUsTitle": "Contact Us",
+          "feedbackSuccess": "Your feedback has been sent successfully. Thank you! 🎉",
+          "feedbackError": "Error sending message:",
+          "anonymousPlayer": "Anonymous Player",
+          "feedbackHeader": "Your Feedback is Valuable to Us!",
+          "feedbackSubtitle": "Welcome {playerName}! You can send us complaints, suggestions, or report bugs regarding the game.",
+          "@feedbackSubtitle": {
+            "placeholders": {
+              "playerName": {
+                "type": "String"
+              }
+            }
+          },
+          "feedbackSubjectLabel": "Subject / Feedback Type",
+          "emailLabel": "Your E-Mail (For reply)",
+          "invalidEmailError": "Please enter a valid e-mail address.",
+          "messageLabel": "Your Message",
+          "messageHint": "You can write your thoughts or the issue you encountered in detail...",
+          "emptyMessageError": "Please write your message.",
+          "shortMessageError": "Please write a description of at least 10 characters.",
+          "sendingButton": "Sending...",
+          "sendMessageButton": "Send Message",
+          "feedbackTypeSuggestion": "Suggestion",
+          "feedbackTypeComplaint": "Complaint",
+          "feedbackTypeBug": "Bug Report",
+          "feedbackTypeOther": "Other",
+          "cheatingWarning": "Your paper was confiscated for leaving the game screen for more than 5 seconds!",
+            "playerEliminatedWarning": "⚠️ {playerName} was eliminated for submitting a blank paper (or disconnecting)!",
+            "@playerEliminatedWarning": {
+              "placeholders": { "playerName": { "type": "String" } }
+            },
+            "newHostWarning": "👑 The host has left. You are the new room host!",
+            "winByForfeitTitle": "Victory by Forfeit! 🏆",
+            "winByForfeitDesc": "You won the game by forfeit because all other players disconnected!",
+            "goToResultsButton": "Go to Results Page",
+            "eliminatedTitle": "Eliminated! ❌",
+            "eliminatedDesc": "You were eliminated for not writing any words in any category (or you disconnected).",
+            "returnToMainMenuButton": "Return to Main Menu",
+            "wrongLetterWarning": "The word you entered must start with the letter '{letter}'!",
+            "@wrongLetterWarning": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "inappropriateWordWarning": "Inappropriate word detected!",
+            "singleNameWarning": "You can only enter a single name in the name section!",
+            "connectionError": "Connection error!",
+            "checkingWords": "Checking Words... 🚀",
+            "answersSavedWaiting": "Your answers are saved! 🚀\nWaiting for other players...",
+            "noOpponent": "No Opponent",
+            "roundNumberLabel": "ROUND {roundNo}",
+            "@roundNumberLabel": {
+              "placeholders": { "roundNo": { "type": "int" } }
+            },
+            "timeBonus": "TIME BONUS",
+            "everyoneReady": " Everyone is Ready! Proceeding...",
+            "playersReady": "⏳ {ready} / {total} Players Ready",
+            "@playersReady": {
+              "placeholders": { "ready": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "waitingReady": "WAITING...",
+            "seeResultsWithTimer": "SEE RESULTS 🏆 ({time} sec)",
+            "@seeResultsWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "readyWithTimer": "I'M READY 👍 ({time} sec)",
+            "@readyWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "appTitle": "Word Categories",
+            "tourProgress": "Round: {current} / {total}",
+            "@tourProgress": {
+              "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "secondsLeft": "{sec} sec",
+            "@secondsLeft": {
+              "placeholders": { "sec": { "type": "int" } }
+            },
+            "currentLetterLabel": "Letter: {letter}",
+            "@currentLetterLabel": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "categoryLabel": "{category} Category",
+            "@categoryLabel": {
+              "placeholders": { "category": { "type": "String" } }
+            },
+            "typeYourWordHint": "Type your word here...",
+            "twentySecondsRule": "⚡ 20 SECONDS RULE INITIATED!",
+            "waitingForTimeEnd": "Waiting for time to end...",
+            "last20SecondsNoBonus": "LAST 20 SECONDS (NO BONUS)",
+            "finishTurnWithBonus": "FINISH TURN (+10 TIME BONUS)",
+            "finishTurnMinWords": "FINISH TURN (WRITE AT LEAST 5 WORDS)",
+            "previousButton": "◄ Previous",
+            "nextButton": "Next ►",
+            "catName": "Name",
+            "catCity": "City",
+            "catAnimal": "Animal",
+            "catPlant": "Plant",
+            "catObject": "Object",
+            "catCountry": "Country",
+            "matchWinnerTitle": "YOU ARE THE WINNER! 🎉",
+              "matchTieTitle": "YOU SHARED THE LEAD!",
+              "matchLoserTitle": "YOU LOST THE MATCH!",
+              "matchRankingTitle": "MATCH RANKING",
+              "youLabel": "(You)",
+              "overallStatsTitle": "YOUR OVERALL STATISTICS",
+              "overallScoreLabel": "Overall Score:",
+              "rankingLabel": "Your Rank:",
+              "wentUpLabel": "(▲ Went up {diff})",
+              "@wentUpLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "wentDownLabel": "(▼ Went down {diff})",
+              "@wentDownLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "noChangeLabel": "(- No change)",
+              "returnToHomeButton": "Return to Home",
+              "pointsSuffix": "Pts",
+              "privacyPolicyTitle": "Privacy Policy",
+                "privacyLastUpdate": "Last Updated: August 9, 2026",
+                "privacyIntro": "This privacy policy explains our commitment to protecting the privacy of our players using the Name City mobile application. By using our app, you agree to the data processing practices outlined in this policy.",
+                "privacySection1Title": "1. Collected Data and Purpose",
+                "privacySection1Text": "• Personal Data: Our app does not collect, store on your device, or request personal data such as email address, real name, ID number, or precise location.\n\n• Nickname and Scores: Random nicknames chosen by users and game scores are safely stored on Firebase solely for the purpose of matchmaking and displaying rankings on the leaderboard.",
+                "privacySection2Title": "2. Ads and Third Parties",
+                "privacySection2Text": "Google AdMob is used to keep our app free. AdMob may use device advertising IDs to provide relevant ads. Additionally, Firebase Crashlytics is used, which collects anonymous data to detect and fix bugs.",
+                "privacySection3Title": "3. Children's Privacy",
+                "privacySection3Text": "Name City game appeals to all ages. Our app does not knowingly collect any personal data (name, email, location) from children under the age of 13.",
+                "privacySection4Title": "4. Data Security and Contact",
+                "privacySection4Text": "No collected data is sold or shared for marketing purposes. If you wish your nicknames and scores in the system to be deleted, you can contact us via bulentolgun75@gmail.com.",
+                "closeButton": "Close and Return"
+}

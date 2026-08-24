@@ -14,13 +14,20 @@ import 'login_page.dart';
 import 'deep_link_service.dart';
 import 'firebase_options.dart';
 import 'ad_service.dart'; // 🔴 YENİ EKLENDİ: Reklam ve İzin Servisimizi Tanıması İçin
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
+import 'main.dart';
+
+
 // ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
 // BÖLÜM 2: TEMEL BAŞLATMA VE ÇEVRE DEĞİŞKENLERİ (.env)
 // ==========================================
+final ValueNotifier<Locale> appLocale = ValueNotifier<Locale>(const Locale('tr'));
 // 🟢 void main yerine Future<void> main kullanıldı (Asenkron işlemler için)
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // 🟢 GİZLİ KASA (.env) YÜKLEMESİ (Çökme korumalı try-catch ile eklendi)
@@ -110,19 +117,44 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'İsim Şehir Hayvan Oyunu',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo, // Logonuzun mavi-mor tonu
-          primary: Colors.indigo,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      home: const LoginPage(),
-    );
-  }
-}
+// 🚀 KUMANDAYI DİNLEYEN YENİ YAPI
+return ValueListenableBuilder<Locale>(
+valueListenable: appLocale,
+builder: (context, locale, child) {
+return MaterialApp(
+title: 'İsim Şehir',
+debugShowCheckedModeBanner: false,
+theme: ThemeData(
+colorScheme: ColorScheme.fromSeed(
+seedColor: Colors.indigo,
+primary: Colors.indigo,
+),
+useMaterial3: true,
+scaffoldBackgroundColor: Colors.white,
+),
+
+// --- ÇOKLU DİL MOTORU BAŞLANGICI ---
+localizationsDelegates: const [
+AppLocalizations.delegate,
+GlobalMaterialLocalizations.delegate,
+GlobalWidgetsLocalizations.delegate,
+GlobalCupertinoLocalizations.delegate,
+],
+
+// 🚀 DİKKAT: Artık sabit 'de' veya 'tr' değil, yukarıdaki kumandadan gelen 'locale' kelimesini kullanıyoruz.
+locale: locale,
+
+supportedLocales: const [
+Locale('tr', ''),
+Locale('de', ''),
+Locale('en', ''),
+Locale('es', ''),
+],
+// --- ÇOKLU DİL MOTORU SONU ---
+  home: const LoginPage(),
+);
+},
+);
+  } // <--- 1. EKSİK OLABİLECEK PARANTEZ (build metodunu kapatır)
+} // <--- 2. EKSİK OLABİLECEK PARANTEZ (Sınıfı kapatır)
 // ---------------- BÖLÜM 5 SONU ----------------

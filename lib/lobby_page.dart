@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'l10n/app_localizations.dart';
 import 'database_helper.dart';
 import 'game_page.dart';
 import 'ad_service.dart';
+import 'main.dart'; // 🚀 DİL KİLİDİ İÇİN EKLENDİ
 
 class LobbyPage extends StatelessWidget {
   final String oyuncuAdi;
@@ -41,10 +43,10 @@ class LobbyPage extends StatelessWidget {
           side: const BorderSide(color: Colors.purple, width: 1.5),
           minimumSize: const Size(double.infinity, 50),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         ),
         child: Text(
-          "$turSayisi TUR ($turAciklamasi)",
+          "$turSayisi ${AppLocalizations.of(context)!.roundText} ($turAciklamasi)",
           style: const TextStyle(
             color: Colors.purple,
             fontSize: 15,
@@ -62,7 +64,8 @@ class LobbyPage extends StatelessWidget {
 // ==========================================
   @override
   Widget build(BuildContext context) {
-    final String mevcutOyuncu = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
+    final l10n = AppLocalizations.of(context)!;
+    final String mevcutOyuncu = oyuncuAdi.isEmpty ? l10n.defaultPlayerName : oyuncuAdi;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -81,19 +84,15 @@ class LobbyPage extends StatelessWidget {
                   int siralama = snapshot.data?['siralama'] ?? 1000;
                   int toplamYarismaci = snapshot.data?['toplamYarismaci'] ?? 1000;
 
-                  // ==================================================
-                  // 🛡️ SİHİRLİ KALKAN: MANTIK HATASINI GİZLEYEN KOD
-                  // ==================================================
                   if (siralama > toplamYarismaci) {
                     toplamYarismaci = siralama;
                   }
-                  // ==================================================
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Puan: $puan",
+                        "${l10n.scoreText}: $puan",
                         style: const TextStyle(
                           color: Colors.purple,
                           fontWeight: FontWeight.bold,
@@ -102,7 +101,7 @@ class LobbyPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "Sıra: $siralama/$toplamYarismaci",
+                        "${l10n.rankText}: $siralama/$toplamYarismaci",
                         style: TextStyle(
                           color: Colors.purple.shade300,
                           fontWeight: FontWeight.w600,
@@ -117,7 +116,7 @@ class LobbyPage extends StatelessWidget {
 
             SingleChildScrollView(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 15.0),
+              const EdgeInsets.symmetric(horizontal: 24.0, vertical: 15.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -130,7 +129,7 @@ class LobbyPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    isFriendMode ? "ARKADAŞ ODASI" : "TURNUVA TUR SAYISI",
+                    isFriendMode ? l10n.friendRoomTitle : l10n.tournamentRoundsTitle,
                     style: const TextStyle(
                       color: Colors.purple,
                       fontSize: 22,
@@ -141,10 +140,10 @@ class LobbyPage extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     isFriendMode
-                        ? "Hoş geldin $mevcutOyuncu! Oda açıp arkadaş grubunu davet edebilirsin."
-                        : "Hoş geldin $mevcutOyuncu, kaç tur yarışmak istersiniz?",
+                        ? l10n.friendRoomSubtitle(mevcutOyuncu)
+                        : l10n.tournamentRoundsSubtitle(mevcutOyuncu),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black,
                       fontSize: 14,
                     ),
@@ -160,9 +159,8 @@ class LobbyPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15)),
                       ),
                       icon: const Icon(Icons.add_circle_outline, size: 22),
-// YENİ DÜZELTME: Buton metni (2-10 Kişi) olarak güncellendi.
-                      label: const Text("Oda Oluştur (2-10 Kişi)",
-                          style: TextStyle(
+                      label: Text(l10n.createRoomButton,
+                          style: const TextStyle(
                               fontSize: 15, fontWeight: FontWeight.bold)),
                       onPressed: () => _canliOdaOlustur(context, mevcutOyuncu),
                     ),
@@ -170,15 +168,15 @@ class LobbyPage extends StatelessWidget {
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         side:
-                            const BorderSide(color: Colors.purple, width: 1.5),
+                        const BorderSide(color: Colors.purple, width: 1.5),
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15)),
                       ),
                       icon: const Icon(Icons.login_rounded,
                           color: Colors.purple, size: 22),
-                      label: const Text("Oda Kodu ile Katıl",
-                          style: TextStyle(
+                      label: Text(l10n.joinWithCodeButton,
+                          style: const TextStyle(
                               color: Colors.purple,
                               fontSize: 15,
                               fontWeight: FontWeight.bold)),
@@ -186,9 +184,9 @@ class LobbyPage extends StatelessWidget {
                           _odaKoduGirDiyalogu(context, mevcutOyuncu),
                     ),
                   ] else ...[
-                    _buildTurButonu(context, 1, "Hızlı Kapışma"),
-                    _buildTurButonu(context, 3, "Standart Lig"),
-                    _buildTurButonu(context, 5, "Maraton Devleri"),
+                    _buildTurButonu(context, 1, l10n.quickMatch),
+                    _buildTurButonu(context, 3, l10n.standardLeague),
+                    _buildTurButonu(context, 5, l10n.marathonGiants),
                   ],
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
@@ -201,8 +199,8 @@ class LobbyPage extends StatelessWidget {
                     ),
                     icon: Icon(Icons.arrow_back,
                         color: Colors.grey.shade700, size: 18),
-                    label: const Text("Geri Dön",
-                        style: TextStyle(
+                    label: Text(l10n.goBackButton,
+                        style: const TextStyle(
                             color: Colors.black,
                             fontSize: 14,
                             fontWeight: FontWeight.bold)),
@@ -234,17 +232,13 @@ class LobbyPage extends StatelessWidget {
 // ---------------- BÖLÜM 3 SONU ----------------
 
 // ==========================================
-// BÖLÜM 4: Oyuncu Bilgilerini ve Sıralamayı Çekme Motoru (SIFIR MALİYETLİ YENİ SİSTEM)
+// BÖLÜM 4: Oyuncu Bilgilerini ve Sıralamayı Çekme Motoru
 // ==========================================
   Future<Map<String, dynamic>> _oyuncuBilgileriniGetir(String oyuncuAdi) async {
-    // 1. Kendi yerel puanımızı alıyoruz (Maliyet: 0)
     int dbSkor = await DatabaseHelper.instance.getOyuncuSkor();
-
-    // 2. Az önce veritabanında yazdığımız ZIRHLI ve UCUZ motoru (Bölüm 13) çağırıyoruz
     Map<String, int> hizliVeri =
-        await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(dbSkor);
+    await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(dbSkor);
 
-    // 3. Gelen hazır rakamları alıp ekrana gönderiyoruz
     return {
       'puan': dbSkor,
       'siralama': hizliVeri['sira'] ?? 1000,
@@ -253,7 +247,17 @@ class LobbyPage extends StatelessWidget {
   }
 
 // ---------------- BÖLÜM 4 SONU ----------------
+  // ==========================================
+// BÖLÜM 4.5: ÇOK DİLLİ ALFABE SİSTEMİ 🌍
+// ==========================================
+  List<String> _getAlfabe(String lang) {
+    if (lang == 'en') return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    if (lang == 'de') return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Ä", "Ö", "Ü"];
+    if (lang == 'es') return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Ñ"];
+    return ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
+  }
 
+// ==========================================
 // ==========================================
 // BÖLÜM 5: Arkadaş Odası Kurulumu ve Diyalogları
 // ==========================================
@@ -262,12 +266,15 @@ class LobbyPage extends StatelessWidget {
     final String kod =
     (1000 + (DateTime.now().millisecondsSinceEpoch % 8999)).toString();
 
+    String lang = appLocale.value.languageCode; // 🚀 ODAYI KURANIN DİLİ
+
     await FirebaseFirestore.instance.collection('odalar').doc(kod).set({
       'odaKodu': kod,
       'kurucu': mevcutOyuncu,
       'oyuncular': [mevcutOyuncu],
-      'aktifOyuncular': [mevcutOyuncu], // 🚀 1. EKLENTİ: Kurucu aktif listeye eklendi
+      'aktifOyuncular': [mevcutOyuncu],
       'durum': 'BEKLENIYOR',
+      'odaDili': lang, // 🚀 ODA DİLİ FİREBASE'E KAYDEDİLİYOR
       'olusturulmaTarihi': FieldValue.serverTimestamp(),
     });
 
@@ -279,6 +286,7 @@ class LobbyPage extends StatelessWidget {
   void _canliOdaLobiEkraniGoster(
       BuildContext context, String mevcutOyuncu, String kod,
       {required bool isHost}) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -290,8 +298,7 @@ class LobbyPage extends StatelessWidget {
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData || !snapshot.data!.exists) {
-              return const AlertDialog(
-                  content: Text("Oda kapatıldı veya bulunamadı."));
+              return AlertDialog(content: Text(l10n.roomClosedOrNotFound));
             }
 
             var odaData = snapshot.data!.data() as Map<String, dynamic>;
@@ -332,9 +339,9 @@ class LobbyPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24)),
               title: Column(
                 children: [
-                  const Text("🎮 Oyun Odası",
+                  Text("🎮 ${l10n.gameRoom}",
                       style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
                   const SizedBox(height: 14),
                   Container(
                     width: double.infinity,
@@ -351,8 +358,8 @@ class LobbyPage extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("ODA KODU",
-                                style: TextStyle(
+                            Text(l10n.roomCode,
+                                style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold)),
@@ -372,14 +379,14 @@ class LobbyPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12)),
                           ),
                           icon: const Icon(Icons.copy, size: 18),
-                          label: const Text("Kopyala",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: Text(l10n.copyButton,
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: kod));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Oda kodu panoya kopyalandı!"),
-                                  duration: Duration(seconds: 1)),
+                              SnackBar(
+                                  content: Text(l10n.roomCodeCopied),
+                                  duration: const Duration(seconds: 1)),
                             );
                           },
                         ),
@@ -420,12 +427,12 @@ class LobbyPage extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.share_rounded,
+                        children: [
+                          const Icon(Icons.share_rounded,
                               color: Colors.white, size: 20),
-                          SizedBox(width: 8),
-                          Text("Arkadaşını Davet Et 🚀",
-                              style: TextStyle(
+                          const SizedBox(width: 8),
+                          Text("${l10n.inviteFriend} 🚀",
+                              style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15)),
@@ -440,7 +447,7 @@ class LobbyPage extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Katılan Oyuncular (${oyuncular.length}/10):",
+                    Text("${l10n.joinedPlayers} (${oyuncular.length}/10):",
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     Flexible(
@@ -461,8 +468,8 @@ class LobbyPage extends StatelessWidget {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold)),
                               trailing: p == mevcutOyuncu
-                                  ? const Text("Sen",
-                                  style: TextStyle(
+                                  ? Text(l10n.youText,
+                                  style: const TextStyle(
                                       color: Colors.blue,
                                       fontWeight: FontWeight.bold))
                                   : null,
@@ -483,12 +490,12 @@ class LobbyPage extends StatelessWidget {
                         .doc(kod)
                         .update({
                       'oyuncular': FieldValue.arrayRemove([mevcutOyuncu]),
-                      'aktifOyuncular': FieldValue.arrayRemove([mevcutOyuncu]) // 🚀 2. EKLENTİ (TESTTE BULUNAN HATA): Lobiden çıkan, aktiflerden de silinir.
+                      'aktifOyuncular': FieldValue.arrayRemove([mevcutOyuncu])
                     });
                     if (context.mounted) Navigator.pop(context);
                   },
                   child:
-                  const Text("Ayrıl", style: TextStyle(color: Colors.red)),
+                  Text(l10n.leaveButton, style: const TextStyle(color: Colors.red)),
                 ),
                 if (isHost)
                   ElevatedButton(
@@ -499,9 +506,11 @@ class LobbyPage extends StatelessWidget {
                     ),
                     onPressed: oyuncular.length >= 2
                         ? () async {
-                      List<String> harfler = [
-                        "A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"
-                      ];
+
+                      // 🚀 SABİT TÜRKÇE ALFABE SİLİNDİ, DİNAMİK ALFABE GELDİ!
+                      String lang = appLocale.value.languageCode;
+                      List<String> harfler = _getAlfabe(lang);
+
                       harfler.shuffle();
                       String ortakHarf = harfler.first;
 
@@ -538,7 +547,7 @@ class LobbyPage extends StatelessWidget {
                       }
                     }
                         : null,
-                    child: Text("Oyunu Başlat (${oyuncular.length} Kişi)",
+                    child: Text("${l10n.startGameButton} (${oyuncular.length})",
                         style: const TextStyle(color: Colors.white)),
                   ),
               ],
@@ -550,6 +559,7 @@ class LobbyPage extends StatelessWidget {
   }
 
   void _odaKoduGirDiyalogu(BuildContext context, String mevcutOyuncu) {
+    final l10n = AppLocalizations.of(context)!;
     final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
@@ -557,7 +567,7 @@ class LobbyPage extends StatelessWidget {
         return AlertDialog(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Oda Kodunu Girin"),
+          title: Text(l10n.enterRoomCode),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
@@ -570,7 +580,7 @@ class LobbyPage extends StatelessWidget {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("İptal")),
+                child: Text(l10n.cancelButton)),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
               onPressed: () async {
@@ -581,14 +591,32 @@ class LobbyPage extends StatelessWidget {
                       .doc(kod)
                       .get();
                   if (doc.exists) {
+
+                    // 🚀 DİL KİLİDİ KONTROLÜ BAŞLIYOR 🚀
+                    String odaDili = doc.data()?['odaDili'] ?? 'tr';
+                    String benimDilim = appLocale.value.languageCode;
+
+                    if (odaDili != benimDilim) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Oda ($odaDili) dilinde kurulmuş. Oynamak için cihaz oyun dilinizi değiştirmelisiniz! / Room is in ($odaDili)."),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                      return; // GİRİŞİ YASAKLA!
+                    }
+                    // ---------------------------------
+
                     List<dynamic> odadakiOyuncular =
                         doc.data()?['oyuncular'] ?? [];
                     if (odadakiOyuncular.length >= 10) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  "Oda kapasitesi dolu (Maksimum 10 kişi)!"),
+                          SnackBar(
+                              content: Text(l10n.roomFullError),
                               backgroundColor: Colors.red),
                         );
                       }
@@ -600,7 +628,7 @@ class LobbyPage extends StatelessWidget {
                         .doc(kod)
                         .update({
                       'oyuncular': FieldValue.arrayUnion([mevcutOyuncu]),
-                      'aktifOyuncular': FieldValue.arrayUnion([mevcutOyuncu]) // 🚀 3. EKLENTİ: Odaya kodla katılan kişi aktiflere eklendi
+                      'aktifOyuncular': FieldValue.arrayUnion([mevcutOyuncu])
                     });
 
                     if (context.mounted) {
@@ -611,15 +639,15 @@ class LobbyPage extends StatelessWidget {
                   } else {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Böyle bir oda bulunamadı!"),
+                        SnackBar(
+                            content: Text(l10n.roomNotFoundError),
                             backgroundColor: Colors.red),
                       );
                     }
                   }
                 }
               },
-              child: const Text("Katıl", style: TextStyle(color: Colors.white)),
+              child: Text(l10n.joinButton, style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -633,13 +661,14 @@ class LobbyPage extends StatelessWidget {
 // BÖLÜM 6: Rastgele Eşleştirme Motoru ve Oyuna Geçiş
 // ==========================================
   void _eslesmeVeBaslat(BuildContext context, int turSayisi) {
+    final l10n = AppLocalizations.of(context)!;
     int kalanSaniye = 5;
     bool rakipBulundu = false;
     String secilenRakip = "";
     String ortakHarf = "A";
     Timer? timer;
     StreamSubscription? odaDinleyici;
-    String ben = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
+    String ben = oyuncuAdi.isEmpty ? l10n.defaultPlayerName : oyuncuAdi;
     String aktifOdaId = "";
     bool islemBasladi = false;
 
@@ -712,7 +741,7 @@ class LobbyPage extends StatelessWidget {
                         FirebaseFirestore.instance
                             .collection('odalar')
                             .doc(aktifOdaId)
-                            .delete(); // Eşleşme başarısızsa Firebase düğümü tamamen siliniyor (Güvenli)
+                            .delete();
                       }
 
                       final randomBot =
@@ -736,22 +765,22 @@ class LobbyPage extends StatelessWidget {
               return AlertDialog(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
-                title: const Text("⚔️ Rakip Aranıyor",
+                title: Text("⚔️ ${l10n.searchingOpponent}",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!rakipBulundu) ...[
                       const CircularProgressIndicator(color: Colors.purple),
                       const SizedBox(height: 15),
-                      const Text("Rakip bekleniyor...",
-                          style: TextStyle(fontSize: 15)),
+                      Text(l10n.waitingForOpponent,
+                          style: const TextStyle(fontSize: 15)),
                     ] else ...[
                       const Icon(Icons.check_circle,
                           color: Colors.green, size: 48),
                       const SizedBox(height: 10),
-                      Text("Eşleşme Tamam!\n$secilenRakip",
+                      Text("${l10n.matchFound}\n$secilenRakip",
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 18,
@@ -765,7 +794,7 @@ class LobbyPage extends StatelessWidget {
                       decoration: BoxDecoration(
                           color: Colors.purple.shade50,
                           borderRadius: BorderRadius.circular(10)),
-                      child: Text("Süre: $kalanSaniye",
+                      child: Text("${l10n.timeText}: $kalanSaniye",
                           style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -806,19 +835,23 @@ class LobbyPage extends StatelessWidget {
   Future<Map<String, dynamic>> _rastgeleEslesmeOdasinaGir(
       String ben, int turSayisi) async {
     try {
+
+      String lang = appLocale.value.languageCode; // 🚀 YENİ DİL FİLTRESİ
+
       var mevcutOda = await FirebaseFirestore.instance
           .collection('odalar')
           .where('durum', isEqualTo: 'BEKLIYOR')
           .where('isRandomMatch', isEqualTo: true)
           .where('toplamTurSayisi', isEqualTo: turSayisi)
+          .where('odaDili', isEqualTo: lang) // 🚀 SADECE KENDİ DİLİNDEKİLERLE EŞLEŞ
           .limit(1)
           .get();
 
       if (mevcutOda.docs.isNotEmpty) {
         String docId = mevcutOda.docs.first.id;
-        List<String> harfler = [
-          "A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"
-        ];
+
+        // 🚀 DİNAMİK ALFABE DEVREDE
+        List<String> harfler = _getAlfabe(lang);
         harfler.shuffle();
         String ortakHarf = harfler.first;
         String kurucu = mevcutOda.docs.first.data()['kurucu'] ?? "Rakip";
@@ -828,7 +861,7 @@ class LobbyPage extends StatelessWidget {
             .doc(docId)
             .update({
           'oyuncular': FieldValue.arrayUnion([ben]),
-          'aktifOyuncular': FieldValue.arrayUnion([ben]), // 🚀 4. EKLENTİ: Rastgele eşleşmede odaya giren kişi aktiflere eklendi
+          'aktifOyuncular': FieldValue.arrayUnion([ben]),
           'durum': 'BASLADI',
           'secilenHarf': ortakHarf
         });
@@ -845,10 +878,11 @@ class LobbyPage extends StatelessWidget {
           'odaKodu': yeniOda.id,
           'kurucu': ben,
           'oyuncular': [ben],
-          'aktifOyuncular': [ben], // 🚀 5. EKLENTİ: Rastgele odayı ilk kuran kişi aktiflere eklendi
+          'aktifOyuncular': [ben],
           'durum': 'BEKLIYOR',
           'isRandomMatch': true,
           'toplamTurSayisi': turSayisi,
+          'odaDili': lang, // 🚀 YENİ ODA DİLİ İLE KURULUYOR
           'mevcutTur': 1,
           'olusturulmaTarihi': FieldValue.serverTimestamp(),
         });

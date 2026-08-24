@@ -2,6 +2,7 @@
 // BÖLÜM 1: Kütüphaneler, Sınıf Tanımlaması ve Dışarıdan Gelen Veriler
 // ==========================================
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart'; // 🚀 Doğru Çeviri Yolu
 import 'ad_service.dart';
 
 class ResultPage extends StatelessWidget {
@@ -29,6 +30,8 @@ class ResultPage extends StatelessWidget {
 // ==========================================
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     // Gelen haritayı puanlara göre büyükten küçüğe sıralıyoruz
     List<MapEntry<String, int>> siraliSkorlar = tumMacSkorlari.entries.toList();
     siraliSkorlar.sort((a, b) => b.value.compareTo(a.value));
@@ -40,7 +43,7 @@ class ResultPage extends StatelessWidget {
 
     // Kazanma durumu: Eğer 1. sıradaysak (veya 1. ile aynı puandaysak) kazandık demektir
     bool kazandi =
-        (tumMacSkorlari[oyuncuAdi] == enYuksekSkor && enYuksekSkor > 0);
+    (tumMacSkorlari[oyuncuAdi] == enYuksekSkor && enYuksekSkor > 0);
     bool berabere = kazandi &&
         siraliSkorlar.where((e) => e.value == enYuksekSkor).length > 1;
 
@@ -64,8 +67,8 @@ class ResultPage extends StatelessWidget {
                 kazandi && !berabere
                     ? Icons.emoji_events
                     : (berabere
-                        ? Icons.handshake
-                        : Icons.sentiment_dissatisfied),
+                    ? Icons.handshake
+                    : Icons.sentiment_dissatisfied),
                 size: 90,
                 color: kazandi && !berabere
                     ? Colors.amber.shade700
@@ -74,16 +77,16 @@ class ResultPage extends StatelessWidget {
               const SizedBox(height: 15),
               Text(
                 kazandi && !berabere
-                    ? "MAÇIN GALİBİSİN! 🎉"
-                    : (berabere ? "LİDERLİĞİ PAYLAŞTIN!" : "MAÇI KAYBETTİN!"),
+                    ? l10n.matchWinnerTitle
+                    : (berabere ? l10n.matchTieTitle : l10n.matchLoserTitle),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: kazandi && !berabere
                       ? Colors.green.shade700
                       : (berabere
-                          ? Colors.orange.shade800
-                          : Colors.red.shade700),
+                      ? Colors.orange.shade800
+                      : Colors.red.shade700),
                 ),
               ),
               const SizedBox(height: 25),
@@ -102,8 +105,8 @@ class ResultPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text("MAÇ SIRALAMASI",
-                        style: TextStyle(
+                    Text(l10n.matchRankingTitle,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.purple,
                             fontSize: 13,
@@ -123,7 +126,7 @@ class ResultPage extends StatelessWidget {
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color:
-                              benMiyim ? Colors.purple.shade100 : Colors.white,
+                          benMiyim ? Colors.purple.shade100 : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                               color: benMiyim
@@ -140,10 +143,10 @@ class ResultPage extends StatelessWidget {
                                 color: index == 0
                                     ? Colors.amber
                                     : (index == 1
-                                        ? Colors.grey.shade400
-                                        : (index == 2
-                                            ? Colors.brown.shade300
-                                            : Colors.grey.shade200)),
+                                    ? Colors.grey.shade400
+                                    : (index == 2
+                                    ? Colors.brown.shade300
+                                    : Colors.grey.shade200)),
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
@@ -161,7 +164,7 @@ class ResultPage extends StatelessWidget {
                             // Oyuncu Adı
                             Expanded(
                               child: Text(
-                                benMiyim ? "$isim (Sen)" : isim,
+                                benMiyim ? "$isim ${l10n.youLabel}" : isim,
                                 style: TextStyle(
                                   fontWeight: benMiyim
                                       ? FontWeight.w900
@@ -176,7 +179,7 @@ class ResultPage extends StatelessWidget {
                             ),
                             // Skor
                             Text(
-                              "$skor P",
+                              "$skor ${l10n.pointsSuffix}",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
@@ -208,8 +211,8 @@ class ResultPage extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Text("GENEL İSTATİSTİK DURUMUN",
-                        style: TextStyle(
+                    Text(l10n.overallStatsTitle,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.purple,
                             fontSize: 13)),
@@ -217,12 +220,12 @@ class ResultPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.stars, color: Colors.amber, size: 20),
-                            SizedBox(width: 8),
-                            Text("Genel Puanın:",
-                                style: TextStyle(
+                            const Icon(Icons.stars, color: Colors.amber, size: 20),
+                            const SizedBox(width: 8),
+                            Text(l10n.overallScoreLabel,
+                                style: const TextStyle(
                                     fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
@@ -234,7 +237,7 @@ class ResultPage extends StatelessWidget {
                               alignment: Alignment.centerRight,
                               child: Row(
                                 children: [
-                                  Text("$yeniGenelPuan P",
+                                  Text("$yeniGenelPuan ${l10n.pointsSuffix}",
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
@@ -246,9 +249,9 @@ class ResultPage extends StatelessWidget {
                                         : "(${yeniGenelPuan - eskiGenelPuan})",
                                     style: TextStyle(
                                       color:
-                                          (yeniGenelPuan - eskiGenelPuan) >= 0
-                                              ? Colors.green.shade700
-                                              : Colors.red.shade700,
+                                      (yeniGenelPuan - eskiGenelPuan) >= 0
+                                          ? Colors.green.shade700
+                                          : Colors.red.shade700,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -264,13 +267,13 @@ class ResultPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.leaderboard,
+                            const Icon(Icons.leaderboard,
                                 color: Colors.purple, size: 20),
-                            SizedBox(width: 8),
-                            Text("Sıralaman:",
-                                style: TextStyle(
+                            const SizedBox(width: 8),
+                            Text(l10n.rankingLabel,
+                                style: const TextStyle(
                                     fontWeight: FontWeight.w600, fontSize: 14)),
                           ],
                         ),
@@ -288,20 +291,20 @@ class ResultPage extends StatelessWidget {
                                           fontSize: 15)),
                                   const SizedBox(width: 6),
                                   if (siralamaFarki > 0)
-                                    Text("(▲ $siralamaFarki Yükseldin)",
+                                    Text(l10n.wentUpLabel(siralamaFarki),
                                         style: TextStyle(
                                             color: Colors.green.shade800,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12))
                                   else if (siralamaFarki < 0)
-                                    Text("(▼ ${siralamaFarki.abs()} Geriledin)",
+                                    Text(l10n.wentDownLabel(siralamaFarki.abs()),
                                         style: TextStyle(
                                             color: Colors.red.shade800,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12))
                                   else
-                                    const Text("(- Değişmedi)",
-                                        style: TextStyle(
+                                    Text(l10n.noChangeLabel,
+                                        style: const TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12)),
@@ -331,9 +334,9 @@ class ResultPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15)),
                 ),
                 icon: const Icon(Icons.home, size: 22),
-                label: const Text("Ana Sayfaya Dön",
+                label: Text(l10n.returnToHomeButton,
                     style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },

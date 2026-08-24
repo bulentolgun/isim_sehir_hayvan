@@ -1,7 +1,5 @@
-// ==========================================
-// BÖLÜM 1: Kütüphaneler, Sınıf Tanımlaması ve Parametreler
-// ==========================================
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart';
 import 'lobby_page.dart';
 import 'ad_service.dart';
 
@@ -26,7 +24,8 @@ class GameModePage extends StatelessWidget {
 // ==========================================
   @override
   Widget build(BuildContext context) {
-    final String mevcutOyuncu = oyuncuAdi.isEmpty ? "Tokatlı60" : oyuncuAdi;
+    // Eğer oyuncu adı boşsa, dil dosyasındaki varsayılan ismi çeker
+    final String mevcutOyuncu = oyuncuAdi.isEmpty ? AppLocalizations.of(context)!.defaultPlayerName : oyuncuAdi;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -45,9 +44,9 @@ class GameModePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              const Text(
-                "OYUN MODU SEÇİN",
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.chooseGameMode, // 🚀 ÇEVİRİ EKLENDİ
+                style: const TextStyle(
                   color: Colors.purple,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -56,7 +55,7 @@ class GameModePage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                "Hoş geldin $mevcutOyuncu!\nNasıl oynamak istersin?",
+                "${AppLocalizations.of(context)!.welcomePlayer} $mevcutOyuncu!\n${AppLocalizations.of(context)!.howToPlay}", // 🚀 ÇEVİRİ EKLENDİ
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.black,
@@ -80,9 +79,9 @@ class GameModePage extends StatelessWidget {
                   elevation: 3,
                 ),
                 icon: const Icon(Icons.groups_rounded, size: 28),
-                label: const Text(
-                  "Arkadaşlarınla Oyna (2-4 Kişi)",
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                label: Text(
+                  AppLocalizations.of(context)!.playWithFriends, // 🚀 ÇEVİRİ EKLENDİ
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -112,9 +111,9 @@ class GameModePage extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.flash_on_rounded,
                     color: Colors.purple, size: 28),
-                label: const Text(
-                  "Rakip Bul (Hızlı Kapışma)",
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context)!.findOpponent, // 🚀 ÇEVİRİ EKLENDİ
+                  style: const TextStyle(
                     color: Colors.purple,
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
@@ -155,7 +154,7 @@ class GameModePage extends StatelessWidget {
                 icon: Icon(Icons.arrow_back,
                     color: Colors.grey.shade700, size: 20),
                 label: Text(
-                  "Giriş Sayfasına Dön",
+                  AppLocalizations.of(context)!.returnToLogin, // 🚀 ÇEVİRİ EKLENDİ
                   style: TextStyle(
                     color: Colors.grey.shade700,
                     fontSize: 15,

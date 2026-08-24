@@ -9414,8 +9414,7 @@ INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'polat
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'polat');
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'pori');
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'poyraz');
-INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'prenses');
-INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'przemyslaw');
+INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'prenses')
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'pullu');
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'punar');
 INSERT INTO words (category_id, first_letter, word_value) VALUES (1, 'p', 'purçek');
@@ -13769,6 +13768,510 @@ INSERT INTO words (category_id, first_letter, word_value) VALUES
 
 (6, 'z', 'zambiya'), (6, 'z', 'Zambiya'), (6, 'z', 'ZAMBİYA'),
 (6, 'z', 'zimbabve'), (6, 'z', 'Zimbabve'), (6, 'z', 'ZİMBABVE');
+
+-- ==========================================
+-- 🇬🇧 İNGİLİZCE (EN) KELİME VERİTABANI
+-- ==========================================
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- A HARFİ
+(1, 'a', 'Adam', 'en'), (1, 'a', 'Alice', 'en'), (1, 'a', 'Anna', 'en'), (1, 'a', 'Alex', 'en'), (1, 'a', 'Aaron', 'en'),
+(2, 'a', 'Austin', 'en'), (2, 'a', 'Amsterdam', 'en'), (2, 'a', 'Athens', 'en'), (2, 'a', 'Atlanta', 'en'), (2, 'a', 'Ankara', 'en'),
+(3, 'a', 'Ant', 'en'), (3, 'a', 'Alligator', 'en'), (3, 'a', 'Ape', 'en'), (3, 'a', 'Anaconda', 'en'), (3, 'a', 'Albatross', 'en'),
+(4, 'a', 'Apple', 'en'), (4, 'a', 'Aloe', 'en'), (4, 'a', 'Almond', 'en'), (4, 'a', 'Apricot', 'en'), (4, 'a', 'Ash', 'en'),
+(5, 'a', 'Axe', 'en'), (5, 'a', 'Anchor', 'en'), (5, 'a', 'Arrow', 'en'), (5, 'a', 'Apron', 'en'), (5, 'a', 'Alarm', 'en'),
+(6, 'a', 'Australia', 'en'), (6, 'a', 'Argentina', 'en'), (6, 'a', 'Austria', 'en'), (6, 'a', 'Angola', 'en'), (6, 'a', 'Albania', 'en'),
+-- B HARFİ
+(1, 'b', 'Ben', 'en'), (1, 'b', 'Bella', 'en'), (1, 'b', 'Brian', 'en'), (1, 'b', 'Brad', 'en'), (1, 'b', 'Betty', 'en'),
+(2, 'b', 'Boston', 'en'), (2, 'b', 'Berlin', 'en'), (2, 'b', 'Beijing', 'en'), (2, 'b', 'Bangkok', 'en'), (2, 'b', 'Bogota', 'en'),
+(3, 'b', 'Bear', 'en'), (3, 'b', 'Bat', 'en'), (3, 'b', 'Badger', 'en'), (3, 'b', 'Baboon', 'en'), (3, 'b', 'Buffalo', 'en'),
+(4, 'b', 'Banana', 'en'), (4, 'b', 'Birch', 'en'), (4, 'b', 'Blackberry', 'en'), (4, 'b', 'Bamboo', 'en'), (4, 'b', 'Broccoli', 'en'),
+(5, 'b', 'Bed', 'en'), (5, 'b', 'Bag', 'en'), (5, 'b', 'Book', 'en'), (5, 'b', 'Box', 'en'), (5, 'b', 'Balloon', 'en'),
+(6, 'b', 'Brazil', 'en'), (6, 'b', 'Belgium', 'en'), (6, 'b', 'Bahamas', 'en'), (6, 'b', 'Bahrain', 'en'), (6, 'b', 'Belarus', 'en'),
+-- C HARFİ
+(1, 'c', 'Charlie', 'en'), (1, 'c', 'Chloe', 'en'), (1, 'c', 'Chris', 'en'), (1, 'c', 'Clara', 'en'), (1, 'c', 'Connor', 'en'),
+(2, 'c', 'Chicago', 'en'), (2, 'c', 'Cairo', 'en'), (2, 'c', 'Cape Town', 'en'), (2, 'c', 'Copenhagen', 'en'), (2, 'c', 'Caracas', 'en'),
+(3, 'c', 'Cat', 'en'), (3, 'c', 'Camel', 'en'), (3, 'c', 'Cow', 'en'), (3, 'c', 'Crab', 'en'), (3, 'c', 'Crocodile', 'en'),
+(4, 'c', 'Carrot', 'en'), (4, 'c', 'Cherry', 'en'), (4, 'c', 'Cabbage', 'en'), (4, 'c', 'Cactus', 'en'), (4, 'c', 'Corn', 'en'),
+(5, 'c', 'Cup', 'en'), (5, 'c', 'Chair', 'en'), (5, 'c', 'Car', 'en'), (5, 'c', 'Clock', 'en'), (5, 'c', 'Camera', 'en'),
+(6, 'c', 'Canada', 'en'), (6, 'c', 'China', 'en'), (6, 'c', 'Chile', 'en'), (6, 'c', 'Cuba', 'en'), (6, 'c', 'Colombia', 'en'),
+-- D HARFİ
+(1, 'd', 'David', 'en'), (1, 'd', 'Diana', 'en'), (1, 'd', 'Daniel', 'en'), (1, 'd', 'Daisy', 'en'), (1, 'd', 'Dylan', 'en'),
+(2, 'd', 'Dallas', 'en'), (2, 'd', 'Denver', 'en'), (2, 'd', 'Detroit', 'en'), (2, 'd', 'Dublin', 'en'), (2, 'd', 'Delhi', 'en'),
+(3, 'd', 'Dog', 'en'), (3, 'd', 'Dolphin', 'en'), (3, 'd', 'Deer', 'en'), (3, 'd', 'Donkey', 'en'), (3, 'd', 'Duck', 'en'),
+(4, 'd', 'Daisy', 'en'), (4, 'd', 'Date', 'en'), (4, 'd', 'Daffodil', 'en'), (4, 'd', 'Dill', 'en'), (4, 'd', 'Dragonfruit', 'en'),
+(5, 'd', 'Desk', 'en'), (5, 'd', 'Door', 'en'), (5, 'd', 'Dress', 'en'), (5, 'd', 'Drum', 'en'), (5, 'd', 'Diamond', 'en'),
+(6, 'd', 'Denmark', 'en'), (6, 'd', 'Djibouti', 'en'), (6, 'd', 'Dominica', 'en'), (6, 'd', 'Dominican Republic', 'en'),
+-- E HARFİ
+(1, 'e', 'Eric', 'en'), (1, 'e', 'Emma', 'en'), (1, 'e', 'Ethan', 'en'), (1, 'e', 'Emily', 'en'), (1, 'e', 'Evan', 'en'),
+(2, 'e', 'Edinburgh', 'en'), (2, 'e', 'El Paso', 'en'), (2, 'e', 'Edmonton', 'en'), (2, 'e', 'Entebbe', 'en'), (2, 'e', 'Essen', 'en'),
+(3, 'e', 'Elephant', 'en'), (3, 'e', 'Eagle', 'en'), (3, 'e', 'Eel', 'en'), (3, 'e', 'Emu', 'en'), (3, 'e', 'Elk', 'en'),
+(4, 'e', 'Eggplant', 'en'), (4, 'e', 'Elm', 'en'), (4, 'e', 'Eucalyptus', 'en'), (4, 'e', 'Endive', 'en'), (4, 'e', 'Elderberry', 'en'),
+(5, 'e', 'Eraser', 'en'), (5, 'e', 'Envelope', 'en'), (5, 'e', 'Engine', 'en'), (5, 'e', 'Earring', 'en'), (5, 'e', 'Elevator', 'en'),
+(6, 'e', 'Egypt', 'en'), (6, 'e', 'Ecuador', 'en'), (6, 'e', 'El Salvador', 'en'), (6, 'e', 'Estonia', 'en'), (6, 'e', 'Ethiopia', 'en'),
+-- M HARFİ
+(1, 'm', 'Michael', 'en'), (1, 'm', 'Mia', 'en'), (1, 'm', 'Matthew', 'en'), (1, 'm', 'Maya', 'en'), (1, 'm', 'Mark', 'en'),
+(2, 'm', 'Madrid', 'en'), (2, 'm', 'Moscow', 'en'), (2, 'm', 'Mumbai', 'en'), (2, 'm', 'Miami', 'en'), (2, 'm', 'Munich', 'en'),
+(3, 'm', 'Monkey', 'en'), (3, 'm', 'Mouse', 'en'), (3, 'm', 'Moose', 'en'), (3, 'm', 'Macaque', 'en'), (3, 'm', 'Meerkat', 'en'),
+(4, 'm', 'Melon', 'en'), (4, 'm', 'Mango', 'en'), (4, 'm', 'Mushroom', 'en'), (4, 'm', 'Mint', 'en'), (4, 'm', 'Maple', 'en'),
+(5, 'm', 'Map', 'en'), (5, 'm', 'Mug', 'en'), (5, 'm', 'Mirror', 'en'), (5, 'm', 'Mouse', 'en'), (5, 'm', 'Marker', 'en'),
+(6, 'm', 'Mexico', 'en'), (6, 'm', 'Morocco', 'en'), (6, 'm', 'Malaysia', 'en'), (6, 'm', 'Monaco', 'en'), (6, 'm', 'Mali', 'en'),
+-- S HARFİ
+(1, 's', 'Sarah', 'en'), (1, 's', 'Samuel', 'en'), (1, 's', 'Sophia', 'en'), (1, 's', 'Steven', 'en'), (1, 's', 'Simon', 'en'),
+(2, 's', 'Sydney', 'en'), (2, 's', 'Seoul', 'en'), (2, 's', 'Singapore', 'en'), (2, 's', 'Seattle', 'en'), (2, 's', 'Stockholm', 'en'),
+(3, 's', 'Snake', 'en'), (3, 's', 'Shark', 'en'), (3, 's', 'Spider', 'en'), (3, 's', 'Sheep', 'en'), (3, 's', 'Snail', 'en'),
+(4, 's', 'Spinach', 'en'), (4, 's', 'Strawberry', 'en'), (4, 's', 'Sunflower', 'en'), (4, 's', 'Soy', 'en'), (4, 's', 'Sage', 'en'),
+(5, 's', 'Spoon', 'en'), (5, 's', 'Shoe', 'en'), (5, 's', 'Soap', 'en'), (5, 's', 'Sofa', 'en'), (5, 's', 'Scissors', 'en'),
+(6, 's', 'Spain', 'en'), (6, 's', 'Sweden', 'en'), (6, 's', 'Switzerland', 'en'), (6, 's', 'Syria', 'en'), (6, 's', 'Senegal', 'en'),
+-- T HARFİ
+(1, 't', 'Thomas', 'en'), (1, 't', 'Taylor', 'en'), (1, 't', 'Tyler', 'en'), (1, 't', 'Tara', 'en'), (1, 't', 'Timothy', 'en'),
+(2, 't', 'Tokyo', 'en'), (2, 't', 'Toronto', 'en'), (2, 't', 'Tehran', 'en'), (2, 't', 'Taipei', 'en'), (2, 't', 'Toulouse', 'en'),
+(3, 't', 'Tiger', 'en'), (3, 't', 'Turtle', 'en'), (3, 't', 'Turkey', 'en'), (3, 't', 'Toad', 'en'), (3, 't', 'Toucan', 'en'),
+(4, 't', 'Tomato', 'en'), (4, 't', 'Tulip', 'en'), (4, 't', 'Thyme', 'en'), (4, 't', 'Turnip', 'en'), (4, 't', 'Tangerine', 'en'),
+(5, 't', 'Table', 'en'), (5, 't', 'Towel', 'en'), (5, 't', 'Train', 'en'), (5, 't', 'Ticket', 'en'), (5, 't', 'Tent', 'en'),
+(6, 't', 'Turkey', 'en'), (6, 't', 'Thailand', 'en'), (6, 't', 'Taiwan', 'en'), (6, 't', 'Tanzania', 'en'), (6, 't', 'Tunisia', 'en');
+
+-- ==========================================
+-- 🇩🇪 ALMANCA (DE) KELİME VERİTABANI
+-- ==========================================
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- A HARFİ
+(1, 'a', 'Andreas', 'de'), (1, 'a', 'Anna', 'de'), (1, 'a', 'Alexander', 'de'), (1, 'a', 'Andrea', 'de'), (1, 'a', 'Anton', 'de'),
+(2, 'a', 'Aachen', 'de'), (2, 'a', 'Augsburg', 'de'), (2, 'a', 'Amsterdam', 'de'), (2, 'a', 'Athen', 'de'), (2, 'a', 'Ankara', 'de'),
+(3, 'a', 'Affe', 'de'), (3, 'a', 'Aal', 'de'), (3, 'a', 'Ameise', 'de'), (3, 'a', 'Adler', 'de'), (3, 'a', 'Alligator', 'de'),
+(4, 'a', 'Apfel', 'de'), (4, 'a', 'Ahorn', 'de'), (4, 'a', 'Ananas', 'de'), (4, 'a', 'Aubergine', 'de'), (4, 'a', 'Aprikose', 'de'),
+(5, 'a', 'Auto', 'de'), (5, 'a', 'Axt', 'de'), (5, 'a', 'Anker', 'de'), (5, 'a', 'Ampel', 'de'), (5, 'a', 'Armband', 'de'),
+(6, 'a', 'Argentinien', 'de'), (6, 'a', 'Australien', 'de'), (6, 'a', 'Algerien', 'de'), (6, 'a', 'Angola', 'de'), (6, 'a', 'Albanien', 'de'),
+-- B HARFİ
+(1, 'b', 'Bernd', 'de'), (1, 'b', 'Birgit', 'de'), (1, 'b', 'Bastian', 'de'), (1, 'b', 'Barbara', 'de'), (1, 'b', 'Boris', 'de'),
+(2, 'b', 'Berlin', 'de'), (2, 'b', 'Bremen', 'de'), (2, 'b', 'Bonn', 'de'), (2, 'b', 'Bochum', 'de'), (2, 'b', 'Bielefeld', 'de'),
+(3, 'b', 'Bär', 'de'), (3, 'b', 'Biene', 'de'), (3, 'b', 'Biber', 'de'), (3, 'b', 'Bison', 'de'), (3, 'b', 'Bussard', 'de'),
+(4, 'b', 'Banane', 'de'), (4, 'b', 'Birne', 'de'), (4, 'b', 'Baum', 'de'), (4, 'b', 'Brokkoli', 'de'), (4, 'b', 'Brombeere', 'de'),
+(5, 'b', 'Bett', 'de'), (5, 'b', 'Brille', 'de'), (5, 'b', 'Buch', 'de'), (5, 'b', 'Ball', 'de'), (5, 'b', 'Bild', 'de'),
+(6, 'b', 'Brasilien', 'de'), (6, 'b', 'Belgien', 'de'), (6, 'b', 'Bolivien', 'de'), (6, 'b', 'Bulgarien', 'de'), (6, 'b', 'Burundi', 'de'),
+-- C HARFİ
+(1, 'c', 'Christian', 'de'), (1, 'c', 'Clara', 'de'), (1, 'c', 'Christoph', 'de'), (1, 'c', 'Claudia', 'de'), (1, 'c', 'Clemens', 'de'),
+(2, 'c', 'Chemnitz', 'de'), (2, 'c', 'Cottbus', 'de'), (2, 'c', 'Celle', 'de'), (2, 'c', 'Chicago', 'de'), (2, 'c', 'Caracas', 'de'),
+(3, 'c', 'Chamäleon', 'de'), (3, 'c', 'Clownfisch', 'de'), (3, 'c', 'Cobra', 'de'), (3, 'c', 'Coyote', 'de'), (3, 'c', 'Chinchilla', 'de'),
+(4, 'c', 'Champignon', 'de'), (4, 'c', 'Chili', 'de'), (4, 'c', 'Clementine', 'de'), (4, 'c', 'Chrysantheme', 'de'), (4, 'c', 'Cashew', 'de'),
+(5, 'c', 'Computer', 'de'), (5, 'c', 'Couch', 'de'), (5, 'c', 'CD', 'de'), (5, 'c', 'Cello', 'de'), (5, 'c', 'Creme', 'de'),
+(6, 'c', 'China', 'de'), (6, 'c', 'Chile', 'de'), (6, 'c', 'Costa Rica', 'de'), (6, 'c', 'Curaçao', 'de'), (6, 'c', 'Kolumbien', 'de'),
+-- D HARFİ
+(1, 'd', 'Dieter', 'de'), (1, 'd', 'Doris', 'de'), (1, 'd', 'Daniel', 'de'), (1, 'd', 'David', 'de'), (1, 'd', 'Dennis', 'de'),
+(2, 'd', 'Dortmund', 'de'), (2, 'd', 'Dresden', 'de'), (2, 'd', 'Düsseldorf', 'de'), (2, 'd', 'Duisburg', 'de'), (2, 'd', 'Darmstadt', 'de'),
+(3, 'd', 'Dachs', 'de'), (3, 'd', 'Delfin', 'de'), (3, 'd', 'Dromedar', 'de'), (3, 'd', 'Dackel', 'de'), (3, 'd', 'Dorsch', 'de'),
+(4, 'd', 'Dattel', 'de'), (4, 'd', 'Dill', 'de'), (4, 'd', 'Distel', 'de'), (4, 'd', 'Dahlie', 'de'), (4, 'd', 'Dotterblume', 'de'),
+(5, 'd', 'Dose', 'de'), (5, 'd', 'Decke', 'de'), (5, 'd', 'Dach', 'de'), (5, 'd', 'Drucker', 'de'), (5, 'd', 'Dusche', 'de'),
+(6, 'd', 'Deutschland', 'de'), (6, 'd', 'Dänemark', 'de'), (6, 'd', 'Dominikanische Republik', 'de'), (6, 'd', 'Dschibuti', 'de'),
+-- E HARFİ
+(1, 'e', 'Emil', 'de'), (1, 'e', 'Emma', 'de'), (1, 'e', 'Erik', 'de'), (1, 'e', 'Eva', 'de'), (1, 'e', 'Elias', 'de'),
+(2, 'e', 'Erfurt', 'de'), (2, 'e', 'Essen', 'de'), (2, 'e', 'Erlangen', 'de'), (2, 'e', 'Emsdetten', 'de'), (2, 'e', 'Eisenach', 'de'),
+(3, 'e', 'Elefant', 'de'), (3, 'e', 'Eule', 'de'), (3, 'e', 'Esel', 'de'), (3, 'e', 'Eisbär', 'de'), (3, 'e', 'Ente', 'de'),
+(4, 'e', 'Erbse', 'de'), (4, 'e', 'Erdbeere', 'de'), (4, 'e', 'Eiche', 'de'), (4, 'e', 'Efeu', 'de'), (4, 'e', 'Erdnuss', 'de'),
+(5, 'e', 'Eimer', 'de'), (5, 'e', 'Etikett', 'de'), (5, 'e', 'Eis', 'de'), (5, 'e', 'Eisen', 'de'), (5, 'e', 'Ehering', 'de'),
+(6, 'e', 'Estland', 'de'), (6, 'e', 'Ecuador', 'de'), (6, 'e', 'El Salvador', 'de'), (6, 'e', 'Eritrea', 'de'), (6, 'e', 'Eswatini', 'de'),
+-- M HARFİ
+(1, 'm', 'Michael', 'de'), (1, 'm', 'Maria', 'de'), (1, 'm', 'Martin', 'de'), (1, 'm', 'Monika', 'de'), (1, 'm', 'Markus', 'de'),
+(2, 'm', 'München', 'de'), (2, 'm', 'Magdeburg', 'de'), (2, 'm', 'Mainz', 'de'), (2, 'm', 'Mannheim', 'de'), (2, 'm', 'Madrid', 'de'),
+(3, 'm', 'Maus', 'de'), (3, 'm', 'Möwe', 'de'), (3, 'm', 'Marder', 'de'), (3, 'm', 'Mammut', 'de'), (3, 'm', 'Murmeltier', 'de'),
+(4, 'm', 'Melone', 'de'), (4, 'm', 'Mango', 'de'), (4, 'm', 'Mais', 'de'), (4, 'm', 'Minze', 'de'), (4, 'm', 'Mandel', 'de'),
+(5, 'm', 'Maus', 'de'), (5, 'm', 'Messer', 'de'), (5, 'm', 'Mantel', 'de'), (5, 'm', 'Motorrad', 'de'), (5, 'm', 'Mütze', 'de'),
+(6, 'm', 'Mexiko', 'de'), (6, 'm', 'Marokko', 'de'), (6, 'm', 'Monaco', 'de'), (6, 'm', 'Mali', 'de'), (6, 'm', 'Malta', 'de'),
+-- S HARFİ
+(1, 's', 'Stefan', 'de'), (1, 's', 'Sabine', 'de'), (1, 's', 'Sebastian', 'de'), (1, 's', 'Susanne', 'de'), (1, 's', 'Simon', 'de'),
+(2, 's', 'Stuttgart', 'de'), (2, 's', 'Schwerin', 'de'), (2, 's', 'Saarbrücken', 'de'), (2, 's', 'Solingen', 'de'), (2, 's', 'Salzburg', 'de'),
+(3, 's', 'Schlange', 'de'), (3, 's', 'Schwein', 'de'), (3, 's', 'Spinne', 'de'), (3, 's', 'Schaf', 'de'), (3, 's', 'Schwan', 'de'),
+(4, 's', 'Salat', 'de'), (4, 's', 'Spinat', 'de'), (4, 's', 'Sonnenblume', 'de'), (4, 's', 'Sellerie', 'de'), (4, 's', 'Soja', 'de'),
+(5, 's', 'Schuh', 'de'), (5, 's', 'Schrank', 'de'), (5, 's', 'Stuhl', 'de'), (5, 's', 'Spiegel', 'de'), (5, 's', 'Seife', 'de'),
+(6, 's', 'Spanien', 'de'), (6, 's', 'Schweden', 'de'), (6, 's', 'Schweiz', 'de'), (6, 's', 'Syrien', 'de'), (6, 's', 'Serbien', 'de'),
+-- T HARFİ
+(1, 't', 'Thomas', 'de'), (1, 't', 'Tobias', 'de'), (1, 't', 'Tina', 'de'), (1, 't', 'Theresa', 'de'), (1, 't', 'Tim', 'de'),
+(2, 't', 'Trier', 'de'), (2, 't', 'Tübingen', 'de'), (2, 't', 'Tokio', 'de'), (2, 't', 'Toronto', 'de'), (2, 't', 'Turin', 'de'),
+(3, 't', 'Tiger', 'de'), (3, 't', 'Taube', 'de'), (3, 't', 'Truthahn', 'de'), (3, 't', 'Tintenfisch', 'de'), (3, 't', 'Tapir', 'de'),
+(4, 't', 'Tomate', 'de'), (4, 't', 'Tulpe', 'de'), (4, 't', 'Thymian', 'de'), (4, 't', 'Tanne', 'de'), (4, 't', 'Traube', 'de'),
+(5, 't', 'Tisch', 'de'), (5, 't', 'Tasse', 'de'), (5, 't', 'Teller', 'de'), (5, 't', 'Teppich', 'de'), (5, 't', 'Tür', 'de'),
+(6, 't', 'Türkei', 'de'), (6, 't', 'Thailand', 'de'), (6, 't', 'Tunesien', 'de'), (6, 't', 'Tschechien', 'de'), (6, 't', 'Taiwan', 'de');
+
+-- ==========================================
+-- 🇪🇸 İSPANYOLCA (ES) KELİME VERİTABANI
+-- ==========================================
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- A HARFİ
+(1, 'a', 'Alejandro', 'es'), (1, 'a', 'Ana', 'es'), (1, 'a', 'Antonio', 'es'), (1, 'a', 'Alicia', 'es'), (1, 'a', 'Andrés', 'es'),
+(2, 'a', 'Alicante', 'es'), (2, 'a', 'Atenas', 'es'), (2, 'a', 'Atlanta', 'es'), (2, 'a', 'Ámsterdam', 'es'), (2, 'a', 'Asunción', 'es'),
+(3, 'a', 'Araña', 'es'), (3, 'a', 'Águila', 'es'), (3, 'a', 'Abeja', 'es'), (3, 'a', 'Ardilla', 'es'), (3, 'a', 'Alce', 'es'),
+(4, 'a', 'Ajo', 'es'), (4, 'a', 'Apio', 'es'), (4, 'a', 'Almendra', 'es'), (4, 'a', 'Aguacate', 'es'), (4, 'a', 'Arroz', 'es'),
+(5, 'a', 'Anillo', 'es'), (5, 'a', 'Auto', 'es'), (5, 'a', 'Armario', 'es'), (5, 'a', 'Almohada', 'es'), (5, 'a', 'Alfombra', 'es'),
+(6, 'a', 'Argentina', 'es'), (6, 'a', 'Alemania', 'es'), (6, 'a', 'Australia', 'es'), (6, 'a', 'Austria', 'es'), (6, 'a', 'Angola', 'es'),
+-- B HARFİ
+(1, 'b', 'Bernardo', 'es'), (1, 'b', 'Blanca', 'es'), (1, 'b', 'Bruno', 'es'), (1, 'b', 'Beatriz', 'es'), (1, 'b', 'Benjamín', 'es'),
+(2, 'b', 'Barcelona', 'es'), (2, 'b', 'Bogotá', 'es'), (2, 'b', 'Buenos Aires', 'es'), (2, 'b', 'Berlín', 'es'), (2, 'b', 'Boston', 'es'),
+(3, 'b', 'Burro', 'es'), (3, 'b', 'Búho', 'es'), (3, 'b', 'Ballena', 'es'), (3, 'b', 'Buitre', 'es'), (3, 'b', 'Babuino', 'es'),
+(4, 'b', 'Banana', 'es'), (4, 'b', 'Brócoli', 'es'), (4, 'b', 'Berenjena', 'es'), (4, 'b', 'Bambú', 'es'), (4, 'b', 'Bellota', 'es'),
+(5, 'b', 'Barco', 'es'), (5, 'b', 'Botella', 'es'), (5, 'b', 'Bicicleta', 'es'), (5, 'b', 'Bolso', 'es'), (5, 'b', 'Botón', 'es'),
+(6, 'b', 'Brasil', 'es'), (6, 'b', 'Bolivia', 'es'), (6, 'b', 'Bélgica', 'es'), (6, 'b', 'Bulgaria', 'es'), (6, 'b', 'Bahamas', 'es'),
+-- C HARFİ
+(1, 'c', 'Carlos', 'es'), (1, 'c', 'Carmen', 'es'), (1, 'c', 'Camila', 'es'), (1, 'c', 'Cristian', 'es'), (1, 'c', 'Catalina', 'es'),
+(2, 'c', 'Caracas', 'es'), (2, 'c', 'Córdoba', 'es'), (2, 'c', 'Chicago', 'es'), (2, 'c', 'Copenhague', 'es'), (2, 'c', 'Cali', 'es'),
+(3, 'c', 'Caballo', 'es'), (3, 'c', 'Cerdo', 'es'), (3, 'c', 'Camello', 'es'), (3, 'c', 'Cangrejo', 'es'), (3, 'c', 'Cocodrilo', 'es'),
+(4, 'c', 'Cebolla', 'es'), (4, 'c', 'Cereza', 'es'), (4, 'c', 'Calabaza', 'es'), (4, 'c', 'Coco', 'es'), (4, 'c', 'Ciruela', 'es'),
+(5, 'c', 'Cama', 'es'), (5, 'c', 'Copa', 'es'), (5, 'c', 'Cuchara', 'es'), (5, 'c', 'Coche', 'es'), (5, 'c', 'Cuaderno', 'es'),
+(6, 'c', 'Colombia', 'es'), (6, 'c', 'Chile', 'es'), (6, 'c', 'Cuba', 'es'), (6, 'c', 'Canadá', 'es'), (6, 'c', 'Costa Rica', 'es'),
+-- D HARFİ
+(1, 'd', 'Diego', 'es'), (1, 'd', 'Daniela', 'es'), (1, 'd', 'David', 'es'), (1, 'd', 'Diana', 'es'), (1, 'd', 'Darío', 'es'),
+(2, 'd', 'Dallas', 'es'), (2, 'd', 'Denver', 'es'), (2, 'd', 'Detroit', 'es'), (2, 'd', 'Dakar', 'es'), (2, 'd', 'Dublín', 'es'),
+(3, 'd', 'Delfín', 'es'), (3, 'd', 'Dromedario', 'es'), (3, 'd', 'Dingo', 'es'), (3, 'd', 'Dragón de Komodo', 'es'), (3, 'd', 'Danta', 'es'),
+(4, 'd', 'Durazno', 'es'), (4, 'd', 'Dátil', 'es'), (4, 'd', 'Diente de león', 'es'), (4, 'd', 'Dalía', 'es'), (4, 'd', 'Durian', 'es'),
+(5, 'd', 'Dado', 'es'), (5, 'd', 'Diario', 'es'), (5, 'd', 'Diamante', 'es'), (5, 'd', 'Disco', 'es'), (5, 'd', 'Ducha', 'es'),
+(6, 'd', 'Dinamarca', 'es'), (6, 'd', 'Dominica', 'es'),
+-- E HARFİ
+(1, 'e', 'Eduardo', 'es'), (1, 'e', 'Elena', 'es'), (1, 'e', 'Enrique', 'es'), (1, 'e', 'Esperanza', 'es'), (1, 'e', 'Emilio', 'es'),
+(2, 'e', 'Estambul', 'es'), (2, 'e', 'El Paso', 'es'), (2, 'e', 'Edimburgo', 'es'), (2, 'e', 'Estrasburgo', 'es'), (2, 'e', 'El Cairo', 'es'),
+(3, 'e', 'Elefante', 'es'), (3, 'e', 'Erizo', 'es'), (3, 'e', 'Escarabajo', 'es'), (3, 'e', 'Estrella de mar', 'es'), (3, 'e', 'Escorpión', 'es'),
+(4, 'e', 'Espinaca', 'es'), (4, 'e', 'Eucalipto', 'es'), (4, 'e', 'Espárrago', 'es'), (4, 'e', 'Eneldo', 'es'), (4, 'e', 'Endivia', 'es'),
+(5, 'e', 'Espejo', 'es'), (5, 'e', 'Escoba', 'es'), (5, 'e', 'Escalera', 'es'), (5, 'e', 'Escritorio', 'es'), (5, 'e', 'Estufa', 'es'),
+(6, 'e', 'Ecuador', 'es'), (6, 'e', 'Egipto', 'es'), (6, 'e', 'El Salvador', 'es'), (6, 'e', 'España', 'es'), (6, 'e', 'Estonia', 'es'),
+-- M HARFİ
+(1, 'm', 'Miguel', 'es'), (1, 'm', 'María', 'es'), (1, 'm', 'Mateo', 'es'), (1, 'm', 'Martina', 'es'), (1, 'm', 'Manuel', 'es'),
+(2, 'm', 'Madrid', 'es'), (2, 'm', 'Monterrey', 'es'), (2, 'm', 'Medellín', 'es'), (2, 'm', 'Miami', 'es'), (2, 'm', 'Moscú', 'es'),
+(3, 'm', 'Mono', 'es'), (3, 'm', 'Mosca', 'es'), (3, 'm', 'Mariposa', 'es'), (3, 'm', 'Murciélago', 'es'), (3, 'm', 'Medusa', 'es'),
+(4, 'm', 'Manzana', 'es'), (4, 'm', 'Mango', 'es'), (4, 'm', 'Melón', 'es'), (4, 'm', 'Maíz', 'es'), (4, 'm', 'Menta', 'es'),
+(5, 'm', 'Mesa', 'es'), (5, 'm', 'Mochila', 'es'), (5, 'm', 'Mapa', 'es'), (5, 'm', 'Martillo', 'es'), (5, 'm', 'Maleta', 'es'),
+(6, 'm', 'México', 'es'), (6, 'm', 'Marruecos', 'es'), (6, 'm', 'Mónaco', 'es'), (6, 'm', 'Malta', 'es'), (6, 'm', 'Malasia', 'es'),
+-- S HARFİ
+(1, 's', 'Santiago', 'es'), (1, 's', 'Sofía', 'es'), (1, 's', 'Sebastián', 'es'), (1, 's', 'Silvia', 'es'), (1, 's', 'Sergio', 'es'),
+(2, 's', 'Sevilla', 'es'), (2, 's', 'Santander', 'es'), (2, 's', 'Seúl', 'es'), (2, 's', 'Sídney', 'es'),
+(3, 's', 'Serpiente', 'es'), (3, 's', 'Sapo', 'es'), (3, 's', 'Saltamontes', 'es'), (3, 's', 'Sardina', 'es'), (3, 's', 'Salamandra', 'es'),
+(4, 's', 'Sandía', 'es'), (4, 's', 'Soya', 'es'), (4, 's', 'Salvia', 'es'), (4, 's', 'Sésamo', 'es'), (4, 's', 'Sauco', 'es'),
+(5, 's', 'Silla', 'es'), (5, 's', 'Sombrero', 'es'), (5, 's', 'Sofá', 'es'), (5, 's', 'Sartén', 'es'), (5, 's', 'Sábana', 'es'),
+(6, 's', 'Suecia', 'es'), (6, 's', 'Suiza', 'es'), (6, 's', 'Siria', 'es'), (6, 's', 'Senegal', 'es'), (6, 's', 'Somalia', 'es'),
+-- T HARFİ
+(1, 't', 'Tomás', 'es'), (1, 't', 'Teresa', 'es'), (1, 't', 'Thiago', 'es'), (1, 't', 'Tatiana', 'es'), (1, 't', 'Teodoro', 'es'),
+(2, 't', 'Tokio', 'es'), (2, 't', 'Toronto', 'es'), (2, 't', 'Tijuana', 'es'), (2, 't', 'Toledo', 'es'), (2, 't', 'Turín', 'es'),
+(3, 't', 'Tigre', 'es'), (3, 't', 'Tiburón', 'es'), (3, 't', 'Tortuga', 'es'), (3, 't', 'Toro', 'es'), (3, 't', 'Tucán', 'es'),
+(4, 't', 'Tomate', 'es'), (4, 't', 'Trigo', 'es'), (4, 't', 'Tomillo', 'es'), (4, 't', 'Toronja', 'es'), (4, 't', 'Tulipán', 'es'),
+(5, 't', 'Tenedor', 'es'), (5, 't', 'Taza', 'es'), (5, 't', 'Tijeras', 'es'), (5, 't', 'Toalla', 'es'), (5, 't', 'Teléfono', 'es'),
+(6, 't', 'Turquía', 'es'), (6, 't', 'Tailandia', 'es'), (6, 't', 'Taiwán', 'es'), (6, 't', 'Tanzania', 'es'), (6, 't', 'Túnez', 'es');
+
+-- ==========================================
+-- 2. DEV PAKET (F, G, H, K, L, P, R) - EN, DE, ES
+-- ==========================================
+
+-- 🇬🇧 İNGİLİZCE (EN) EK PAKET
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- F HARFİ
+(1, 'f', 'Frank', 'en'), (1, 'f', 'Fiona', 'en'), (1, 'f', 'Felix', 'en'), (1, 'f', 'Faith', 'en'), (1, 'f', 'Fred', 'en'),
+(2, 'f', 'Frankfurt', 'en'), (2, 'f', 'Florence', 'en'), (2, 'f', 'Fargo', 'en'), (2, 'f', 'Freetown', 'en'), (2, 'f', 'Fresno', 'en'),
+(3, 'f', 'Fox', 'en'), (3, 'f', 'Frog', 'en'), (3, 'f', 'Fish', 'en'), (3, 'f', 'Flamingo', 'en'), (3, 'f', 'Falcon', 'en'),
+(4, 'f', 'Fig', 'en'), (4, 'f', 'Fern', 'en'), (4, 'f', 'Flax', 'en'), (4, 'f', 'Fennel', 'en'), (4, 'f', 'Fuchsia', 'en'),
+(5, 'f', 'Fork', 'en'), (5, 'f', 'Fan', 'en'), (5, 'f', 'Flag', 'en'), (5, 'f', 'Flute', 'en'), (5, 'f', 'Frame', 'en'),
+(6, 'f', 'France', 'en'), (6, 'f', 'Finland', 'en'), (6, 'f', 'Fiji', 'en'),
+-- G HARFİ
+(1, 'g', 'George', 'en'), (1, 'g', 'Grace', 'en'), (1, 'g', 'Gabriel', 'en'), (1, 'g', 'Gloria', 'en'), (1, 'g', 'Gavin', 'en'),
+(2, 'g', 'Geneva', 'en'), (2, 'g', 'Glasgow', 'en'), (2, 'g', 'Guangzhou', 'en'), (2, 'g', 'Genoa', 'en'), (2, 'g', 'Guatemala City', 'en'),
+(3, 'g', 'Goat', 'en'), (3, 'g', 'Giraffe', 'en'), (3, 'g', 'Gorilla', 'en'), (3, 'g', 'Goose', 'en'), (3, 'g', 'Gazelle', 'en'),
+(4, 'g', 'Grape', 'en'), (4, 'g', 'Garlic', 'en'), (4, 'g', 'Ginger', 'en'), (4, 'g', 'Guava', 'en'), (4, 'g', 'Geranium', 'en'),
+(5, 'g', 'Glass', 'en'), (5, 'g', 'Guitar', 'en'), (5, 'g', 'Glove', 'en'), (5, 'g', 'Gate', 'en'), (5, 'g', 'Globe', 'en'),
+(6, 'g', 'Germany', 'en'), (6, 'g', 'Greece', 'en'), (6, 'g', 'Ghana', 'en'), (6, 'g', 'Guatemala', 'en'), (6, 'g', 'Georgia', 'en'),
+-- H HARFİ
+(1, 'h', 'Harry', 'en'), (1, 'h', 'Hannah', 'en'), (1, 'h', 'Henry', 'en'), (1, 'h', 'Harper', 'en'), (1, 'h', 'Hunter', 'en'),
+(2, 'h', 'Houston', 'en'), (2, 'h', 'Havana', 'en'), (2, 'h', 'Helsinki', 'en'), (2, 'h', 'Hamburg', 'en'), (2, 'h', 'Hong Kong', 'en'),
+(3, 'h', 'Horse', 'en'), (3, 'h', 'Hippo', 'en'), (3, 'h', 'Hawk', 'en'), (3, 'h', 'Hamster', 'en'), (3, 'h', 'Hyena', 'en'),
+(4, 'h', 'Hazelnut', 'en'), (4, 'h', 'Hibiscus', 'en'), (4, 'h', 'Holly', 'en'), (4, 'h', 'Hops', 'en'), (4, 'h', 'Hemp', 'en'),
+(5, 'h', 'Hat', 'en'), (5, 'h', 'Hammer', 'en'), (5, 'h', 'House', 'en'), (5, 'h', 'Helmet', 'en'), (5, 'h', 'Hose', 'en'),
+(6, 'h', 'Honduras', 'en'), (6, 'h', 'Hungary', 'en'), (6, 'h', 'Haiti', 'en'),
+-- K HARFİ
+(1, 'k', 'Kevin', 'en'), (1, 'k', 'Katie', 'en'), (1, 'k', 'Kyle', 'en'), (1, 'k', 'Karen', 'en'), (1, 'k', 'Kelly', 'en'),
+(2, 'k', 'Kyoto', 'en'), (2, 'k', 'Kiev', 'en'), (2, 'k', 'Kabul', 'en'), (2, 'k', 'Karachi', 'en'), (2, 'k', 'Kigali', 'en'),
+(3, 'k', 'Kangaroo', 'en'), (3, 'k', 'Koala', 'en'), (3, 'k', 'Kiwi', 'en'), (3, 'k', 'Kingfisher', 'en'), (3, 'k', 'Krill', 'en'),
+(4, 'k', 'Kiwi', 'en'), (4, 'k', 'Kale', 'en'), (4, 'k', 'Kelp', 'en'), (4, 'k', 'Kumquat', 'en'),
+(5, 'k', 'Key', 'en'), (5, 'k', 'Kite', 'en'), (5, 'k', 'Knife', 'en'), (5, 'k', 'Keyboard', 'en'), (5, 'k', 'Kettle', 'en'),
+(6, 'k', 'Kenya', 'en'), (6, 'k', 'Kuwait', 'en'), (6, 'k', 'Kazakhstan', 'en'), (6, 'k', 'Kosovo', 'en'), (6, 'k', 'Kiribati', 'en'),
+-- L HARFİ
+(1, 'l', 'Liam', 'en'), (1, 'l', 'Lily', 'en'), (1, 'l', 'Lucas', 'en'), (1, 'l', 'Laura', 'en'), (1, 'l', 'Leo', 'en'),
+(2, 'l', 'London', 'en'), (2, 'l', 'Los Angeles', 'en'), (2, 'l', 'Lisbon', 'en'), (2, 'l', 'Lima', 'en'), (2, 'l', 'Lagos', 'en'),
+(3, 'l', 'Lion', 'en'), (3, 'l', 'Leopard', 'en'), (3, 'l', 'Llama', 'en'), (3, 'l', 'Lobster', 'en'), (3, 'l', 'Lemur', 'en'),
+(4, 'l', 'Lemon', 'en'), (4, 'l', 'Lettuce', 'en'), (4, 'l', 'Lily', 'en'), (4, 'l', 'Lavender', 'en'), (4, 'l', 'Leek', 'en'),
+(5, 'l', 'Lamp', 'en'), (5, 'l', 'Lock', 'en'), (5, 'l', 'Laptop', 'en'), (5, 'l', 'Ladder', 'en'), (5, 'l', 'Leaf', 'en'),
+(6, 'l', 'Lebanon', 'en'), (6, 'l', 'Libya', 'en'), (6, 'l', 'Lithuania', 'en'), (6, 'l', 'Latvia', 'en'), (6, 'l', 'Luxembourg', 'en'),
+-- P HARFİ
+(1, 'p', 'Peter', 'en'), (1, 'p', 'Penelope', 'en'), (1, 'p', 'Paul', 'en'), (1, 'p', 'Piper', 'en'), (1, 'p', 'Patrick', 'en'),
+(2, 'p', 'Paris', 'en'), (2, 'p', 'Prague', 'en'), (2, 'p', 'Phoenix', 'en'), (2, 'p', 'Portland', 'en'), (2, 'p', 'Perth', 'en'),
+(3, 'p', 'Penguin', 'en'), (3, 'p', 'Pig', 'en'), (3, 'p', 'Panda', 'en'), (3, 'p', 'Parrot', 'en'), (3, 'p', 'Panther', 'en'),
+(4, 'p', 'Potato', 'en'), (4, 'p', 'Peach', 'en'), (4, 'p', 'Pear', 'en'), (4, 'p', 'Pineapple', 'en'), (4, 'p', 'Plum', 'en'),
+(5, 'p', 'Pen', 'en'), (5, 'p', 'Pencil', 'en'), (5, 'p', 'Plate', 'en'), (5, 'p', 'Pillow', 'en'), (5, 'p', 'Phone', 'en'),
+(6, 'p', 'Peru', 'en'), (6, 'p', 'Poland', 'en'), (6, 'p', 'Portugal', 'en'), (6, 'p', 'Philippines', 'en'), (6, 'p', 'Panama', 'en'),
+-- R HARFİ
+(1, 'r', 'Robert', 'en'), (1, 'r', 'Rachel', 'en'), (1, 'r', 'Richard', 'en'), (1, 'r', 'Rebecca', 'en'), (1, 'r', 'Ryan', 'en'),
+(2, 'r', 'Rome', 'en'), (2, 'r', 'Rio de Janeiro', 'en'), (2, 'r', 'Riyadh', 'en'), (2, 'r', 'Rotterdam', 'en'), (2, 'r', 'Reykjavik', 'en'),
+(3, 'r', 'Rabbit', 'en'), (3, 'r', 'Rhino', 'en'), (3, 'r', 'Rat', 'en'), (3, 'r', 'Raven', 'en'), (3, 'r', 'Raccoon', 'en'),
+(4, 'r', 'Radish', 'en'), (4, 'r', 'Rose', 'en'), (4, 'r', 'Raspberry', 'en'), (4, 'r', 'Rosemary', 'en'), (4, 'r', 'Rice', 'en'),
+(5, 'r', 'Ring', 'en'), (5, 'r', 'Radio', 'en'), (5, 'r', 'Rope', 'en'), (5, 'r', 'Rug', 'en'), (5, 'r', 'Ruler', 'en'),
+(6, 'r', 'Russia', 'en'), (6, 'r', 'Romania', 'en'), (6, 'r', 'Rwanda', 'en');
+
+-- 🇩🇪 ALMANCA (DE) EK PAKET
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- F HARFİ
+(1, 'f', 'Felix', 'de'), (1, 'f', 'Fiona', 'de'), (1, 'f', 'Frank', 'de'), (1, 'f', 'Fabian', 'de'), (1, 'f', 'Frida', 'de'),
+(2, 'f', 'Frankfurt', 'de'), (2, 'f', 'Freiburg', 'de'), (2, 'f', 'Flensburg', 'de'), (2, 'f', 'Fürth', 'de'), (2, 'f', 'Fulda', 'de'),
+(3, 'f', 'Fuchs', 'de'), (3, 'f', 'Frosch', 'de'), (3, 'f', 'Fisch', 'de'), (3, 'f', 'Falke', 'de'), (3, 'f', 'Fledermaus', 'de'),
+(4, 'f', 'Feige', 'de'), (4, 'f', 'Fichte', 'de'), (4, 'f', 'Farn', 'de'), (4, 'f', 'Fenchel', 'de'), (4, 'f', 'Flieder', 'de'),
+(5, 'f', 'Fahrrad', 'de'), (5, 'f', 'Fenster', 'de'), (5, 'f', 'Flasche', 'de'), (5, 'f', 'Fernseher', 'de'), (5, 'f', 'Feuerzeug', 'de'),
+(6, 'f', 'Frankreich', 'de'), (6, 'f', 'Finnland', 'de'), (6, 'f', 'Fidschi', 'de'),
+-- G HARFİ
+(1, 'g', 'Georg', 'de'), (1, 'g', 'Gabi', 'de'), (1, 'g', 'Günter', 'de'), (1, 'g', 'Gisela', 'de'), (1, 'g', 'Gustav', 'de'),
+(2, 'g', 'Göttingen', 'de'), (2, 'g', 'Gelsenkirchen', 'de'), (2, 'g', 'Genf', 'de'), (2, 'g', 'Graz', 'de'), (2, 'g', 'Greifswald', 'de'),
+(3, 'g', 'Gans', 'de'), (3, 'g', 'Giraffe', 'de'), (3, 'g', 'Gepard', 'de'), (3, 'g', 'Gorilla', 'de'), (3, 'g', 'Geier', 'de'),
+(4, 'g', 'Gurke', 'de'), (4, 'g', 'Granatapfel', 'de'), (4, 'g', 'Grapefruit', 'de'), (4, 'g', 'Gerste', 'de'), (4, 'g', 'Gänseblümchen', 'de'),
+(5, 'g', 'Gabel', 'de'), (5, 'g', 'Glas', 'de'), (5, 'g', 'Gürtel', 'de'), (5, 'g', 'Gitarre', 'de'), (5, 'g', 'Gießkanne', 'de'),
+(6, 'g', 'Griechenland', 'de'), (6, 'g', 'Georgien', 'de'), (6, 'g', 'Ghana', 'de'), (6, 'g', 'Guatemala', 'de'), (6, 'g', 'Gabun', 'de'),
+-- H HARFİ
+(1, 'h', 'Hans', 'de'), (1, 'h', 'Hannah', 'de'), (1, 'h', 'Heinrich', 'de'), (1, 'h', 'Helena', 'de'), (1, 'h', 'Hannes', 'de'),
+(2, 'h', 'Hamburg', 'de'), (2, 'h', 'Hannover', 'de'), (2, 'h', 'Heidelberg', 'de'), (2, 'h', 'Halle', 'de'), (2, 'h', 'Helsinki', 'de'),
+(3, 'h', 'Hund', 'de'), (3, 'h', 'Hase', 'de'), (3, 'h', 'Hirsch', 'de'), (3, 'h', 'Hai', 'de'), (3, 'h', 'Huhn', 'de'),
+(4, 'h', 'Haselnuss', 'de'), (4, 'h', 'Himbeere', 'de'), (4, 'h', 'Holunder', 'de'), (4, 'h', 'Hafer', 'de'), (4, 'h', 'Hibiskus', 'de'),
+(5, 'h', 'Hose', 'de'), (5, 'h', 'Hammer', 'de'), (5, 'h', 'Hut', 'de'), (5, 'h', 'Handy', 'de'), (5, 'h', 'Haus', 'de'),
+(6, 'h', 'Holland', 'de'), (6, 'h', 'Honduras', 'de'), (6, 'h', 'Haiti', 'de'),
+-- K HARFİ
+(1, 'k', 'Kevin', 'de'), (1, 'k', 'Katharina', 'de'), (1, 'k', 'Klaus', 'de'), (1, 'k', 'Karolin', 'de'), (1, 'k', 'Karl', 'de'),
+(2, 'k', 'Köln', 'de'), (2, 'k', 'Kiel', 'de'), (2, 'k', 'Karlsruhe', 'de'), (2, 'k', 'Kassel', 'de'), (2, 'k', 'Kopenhagen', 'de'),
+(3, 'k', 'Katze', 'de'), (3, 'k', 'Krokodil', 'de'), (3, 'k', 'Kamel', 'de'), (3, 'k', 'Kuh', 'de'), (3, 'k', 'Känguru', 'de'),
+(4, 'k', 'Kirsche', 'de'), (4, 'k', 'Kartoffel', 'de'), (4, 'k', 'Kürbis', 'de'), (4, 'k', 'Kiwi', 'de'), (4, 'k', 'Kastanie', 'de'),
+(5, 'k', 'Koffer', 'de'), (5, 'k', 'Kamm', 'de'), (5, 'k', 'Kamera', 'de'), (5, 'k', 'Kissen', 'de'), (5, 'k', 'Korb', 'de'),
+(6, 'k', 'Kroatien', 'de'), (6, 'k', 'Kuba', 'de'), (6, 'k', 'Kenia', 'de'), (6, 'k', 'Kanada', 'de'), (6, 'k', 'Kolumbien', 'de'),
+-- L HARFİ
+(1, 'l', 'Lukas', 'de'), (1, 'l', 'Laura', 'de'), (1, 'l', 'Leon', 'de'), (1, 'l', 'Lena', 'de'), (1, 'l', 'Lisa', 'de'),
+(2, 'l', 'Leipzig', 'de'), (2, 'l', 'Lübeck', 'de'), (2, 'l', 'London', 'de'), (2, 'l', 'Linz', 'de'), (2, 'l', 'Lissabon', 'de'),
+(3, 'l', 'Löwe', 'de'), (3, 'l', 'Lama', 'de'), (3, 'l', 'Luchs', 'de'), (3, 'l', 'Leguan', 'de'), (3, 'l', 'Libelle', 'de'),
+(4, 'l', 'Lauch', 'de'), (4, 'l', 'Linse', 'de'), (4, 'l', 'Lilie', 'de'), (4, 'l', 'Lavendel', 'de'), (4, 'l', 'Limette', 'de'),
+(5, 'l', 'Lampe', 'de'), (5, 'l', 'Löffel', 'de'), (5, 'l', 'Leiter', 'de'), (5, 'l', 'Lineal', 'de'), (5, 'l', 'Lupe', 'de'),
+(6, 'l', 'Litauen', 'de'), (6, 'l', 'Lettland', 'de'), (6, 'l', 'Libanon', 'de'), (6, 'l', 'Libyen', 'de'), (6, 'l', 'Luxemburg', 'de'),
+-- P HARFİ
+(1, 'p', 'Peter', 'de'), (1, 'p', 'Pia', 'de'), (1, 'p', 'Paul', 'de'), (1, 'p', 'Paula', 'de'), (1, 'p', 'Philipp', 'de'),
+(2, 'p', 'Potsdam', 'de'), (2, 'p', 'Paderborn', 'de'), (2, 'p', 'Paris', 'de'), (2, 'p', 'Prag', 'de'), (2, 'p', 'Passau', 'de'),
+(3, 'p', 'Pinguin', 'de'), (3, 'p', 'Panda', 'de'), (3, 'p', 'Pferd', 'de'), (3, 'p', 'Papagei', 'de'), (3, 'p', 'Pelikan', 'de'),
+(4, 'p', 'Paprika', 'de'), (4, 'p', 'Pfirsich', 'de'), (4, 'p', 'Pflaume', 'de'), (4, 'p', 'Porree', 'de'), (4, 'p', 'Pilz', 'de'),
+(5, 'p', 'Pfanne', 'de'), (5, 'p', 'Pinsel', 'de'), (5, 'p', 'Papier', 'de'), (5, 'p', 'Paket', 'de'), (5, 'p', 'Pfeife', 'de'),
+(6, 'p', 'Polen', 'de'), (6, 'p', 'Portugal', 'de'), (6, 'p', 'Peru', 'de'), (6, 'p', 'Panama', 'de'), (6, 'p', 'Paraguay', 'de'),
+-- R HARFİ
+(1, 'r', 'Robert', 'de'), (1, 'r', 'Rita', 'de'), (1, 'r', 'Richard', 'de'), (1, 'r', 'Rebecca', 'de'), (1, 'r', 'Ralf', 'de'),
+(2, 'r', 'Rostock', 'de'), (2, 'r', 'Regensburg', 'de'), (2, 'r', 'Rom', 'de'), (2, 'r', 'Riga', 'de'), (2, 'r', 'Reutlingen', 'de'),
+(3, 'r', 'Ratte', 'de'), (3, 'r', 'Reh', 'de'), (3, 'r', 'Rabe', 'de'), (3, 'r', 'Robbe', 'de'), (3, 'r', 'Regenwurm', 'de'),
+(4, 'r', 'Radieschen', 'de'), (4, 'r', 'Rose', 'de'), (4, 'r', 'Rucola', 'de'), (4, 'r', 'Rosmarin', 'de'), (4, 'r', 'Rettich', 'de'),
+(5, 'r', 'Regenschirm', 'de'), (5, 'r', 'Radio', 'de'), (5, 'r', 'Ring', 'de'), (5, 'r', 'Rucksack', 'de'), (5, 'r', 'Reifen', 'de'),
+(6, 'r', 'Russland', 'de'), (6, 'r', 'Rumänien', 'de'), (6, 'r', 'Ruanda', 'de');
+
+-- 🇪🇸 İSPANYOLCA (ES) EK PAKET
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- F HARFİ
+(1, 'f', 'Fernando', 'es'), (1, 'f', 'Fernanda', 'es'), (1, 'f', 'Francisco', 'es'), (1, 'f', 'Felipe', 'es'), (1, 'f', 'Fátima', 'es'),
+(2, 'f', 'Florencia', 'es'), (2, 'f', 'Fráncfort', 'es'), (2, 'f', 'Fukuoka', 'es'), (2, 'f', 'Freetown', 'es'), (2, 'f', 'Fresno', 'es'),
+(3, 'f', 'Foca', 'es'), (3, 'f', 'Flamenco', 'es'), (3, 'f', 'Faisán', 'es'),
+(4, 'f', 'Fresa', 'es'), (4, 'f', 'Frambuesa', 'es'), (4, 'f', 'Frijol', 'es'), (4, 'f', 'Flor', 'es'), (4, 'f', 'Fresno (Árbol)', 'es'),
+(5, 'f', 'Foco', 'es'), (5, 'f', 'Farol', 'es'), (5, 'f', 'Falda', 'es'), (5, 'f', 'Flauta', 'es'), (5, 'f', 'Filtro', 'es'),
+(6, 'f', 'Francia', 'es'), (6, 'f', 'Finlandia', 'es'), (6, 'f', 'Filipinas', 'es'), (6, 'f', 'Fiyi', 'es'),
+-- G HARFİ
+(1, 'g', 'Gabriel', 'es'), (1, 'g', 'Gabriela', 'es'), (1, 'g', 'Guillermo', 'es'), (1, 'g', 'Gloria', 'es'), (1, 'g', 'Gustavo', 'es'),
+(2, 'g', 'Guadalajara', 'es'), (2, 'g', 'Granada', 'es'), (2, 'g', 'Ginebra', 'es'), (2, 'g', 'Guayaquil', 'es'), (2, 'g', 'Génova', 'es'),
+(3, 'g', 'Gato', 'es'), (3, 'g', 'Gorila', 'es'), (3, 'g', 'Gallo', 'es'), (3, 'g', 'Gaviota', 'es'), (3, 'g', 'Gusano', 'es'),
+(4, 'g', 'Garbanzo', 'es'), (4, 'g', 'Granada (Fruta)', 'es'), (4, 'g', 'Girasol', 'es'), (4, 'g', 'Guayaba', 'es'), (4, 'g', 'Guisante', 'es'),
+(5, 'g', 'Gorra', 'es'), (5, 'g', 'Gafas', 'es'), (5, 'g', 'Guitarra', 'es'), (5, 'g', 'Guante', 'es'), (5, 'g', 'Goma', 'es'),
+(6, 'g', 'Guatemala', 'es'), (6, 'g', 'Grecia', 'es'), (6, 'g', 'Guinea', 'es'), (6, 'g', 'Georgia', 'es'), (6, 'g', 'Ghana', 'es'),
+-- H HARFİ
+(1, 'h', 'Hugo', 'es'), (1, 'h', 'Héctor', 'es'), (1, 'h', 'Helena', 'es'), (1, 'h', 'Hernán', 'es'), (1, 'h', 'Hilda', 'es'),
+(2, 'h', 'Houston', 'es'), (2, 'h', 'Hamburgo', 'es'), (2, 'h', 'Helsinki', 'es'), (2, 'h', 'Hong Kong', 'es'), (2, 'h', 'Hanoi', 'es'),
+(3, 'h', 'Hipopótamo', 'es'), (3, 'h', 'Hiena', 'es'), (3, 'h', 'Halcón', 'es'), (3, 'h', 'Hormiga', 'es'), (3, 'h', 'Hámster', 'es'),
+(4, 'h', 'Higo', 'es'), (4, 'h', 'Hiedra', 'es'), (4, 'h', 'Hierbabuena', 'es'), (4, 'h', 'Hinojo', 'es'), (4, 'h', 'Hortensia', 'es'),
+(5, 'h', 'Hilo', 'es'), (5, 'h', 'Horno', 'es'), (5, 'h', 'Hacha', 'es'), (5, 'h', 'Heladera', 'es'), (5, 'h', 'Hamaca', 'es'),
+(6, 'h', 'Honduras', 'es'), (6, 'h', 'Haití', 'es'), (6, 'h', 'Hungría', 'es'),
+-- K HARFİ
+(1, 'k', 'Karla', 'es'), (1, 'k', 'Kevin', 'es'), (1, 'k', 'Karina', 'es'), (1, 'k', 'Karen', 'es'),
+(2, 'k', 'Kyoto', 'es'), (2, 'k', 'Kiev', 'es'), (2, 'k', 'Kabul', 'es'), (2, 'k', 'Karachi', 'es'),
+(3, 'k', 'Koala', 'es'), (3, 'k', 'Kiwi (Ave)', 'es'), (3, 'k', 'Krill', 'es'),
+(4, 'k', 'Kiwi', 'es'), (4, 'k', 'Kumquat', 'es'),
+(5, 'k', 'Kiosco', 'es'), (5, 'k', 'Kayak', 'es'), (5, 'k', 'Kétchup', 'es'),
+(6, 'k', 'Kenia', 'es'), (6, 'k', 'Kuwait', 'es'), (6, 'k', 'Kazajistán', 'es'),
+-- L HARFİ
+(1, 'l', 'Luis', 'es'), (1, 'l', 'Lucía', 'es'), (1, 'l', 'Lucas', 'es'), (1, 'l', 'Laura', 'es'), (1, 'l', 'Leonardo', 'es'),
+(2, 'l', 'Lima', 'es'), (2, 'l', 'Londres', 'es'), (2, 'l', 'Lisboa', 'es'), (2, 'l', 'Los Ángeles', 'es'), (2, 'l', 'Lyon', 'es'),
+(3, 'l', 'León', 'es'), (3, 'l', 'Lobo', 'es'), (3, 'l', 'Loro', 'es'), (3, 'l', 'Lombriz', 'es'), (3, 'l', 'Liebre', 'es'),
+(4, 'l', 'Limón', 'es'), (4, 'l', 'Lechuga', 'es'), (4, 'l', 'Lenteja', 'es'), (4, 'l', 'Lirio', 'es'), (4, 'l', 'Lima (Fruta)', 'es'),
+(5, 'l', 'Lápiz', 'es'), (5, 'l', 'Libro', 'es'), (5, 'l', 'Lámpara', 'es'), (5, 'l', 'Lentes', 'es'), (5, 'l', 'Llave', 'es'),
+(6, 'l', 'Líbano', 'es'), (6, 'l', 'Libia', 'es'), (6, 'l', 'Lituania', 'es'), (6, 'l', 'Letonia', 'es'), (6, 'l', 'Luxemburgo', 'es'),
+-- P HARFİ
+(1, 'p', 'Pablo', 'es'), (1, 'p', 'Paula', 'es'), (1, 'p', 'Pedro', 'es'), (1, 'p', 'Patricia', 'es'), (1, 'p', 'Pilar', 'es'),
+(2, 'p', 'París', 'es'), (2, 'p', 'Puebla', 'es'), (2, 'p', 'Praga', 'es'), (2, 'p', 'Panamá (Ciudad)', 'es'), (2, 'p', 'Pekín', 'es'),
+(3, 'p', 'Perro', 'es'), (3, 'p', 'Pájaro', 'es'), (3, 'p', 'Pato', 'es'), (3, 'p', 'Puma', 'es'), (3, 'p', 'Pez', 'es'),
+(4, 'p', 'Papa', 'es'), (4, 'p', 'Plátano', 'es'), (4, 'p', 'Pera', 'es'), (4, 'p', 'Pepino', 'es'), (4, 'p', 'Piña', 'es'),
+(5, 'p', 'Puerta', 'es'), (5, 'p', 'Plato', 'es'), (5, 'p', 'Papel', 'es'), (5, 'p', 'Pantalón', 'es'), (5, 'p', 'Peine', 'es'),
+(6, 'p', 'Perú', 'es'), (6, 'p', 'Polonia', 'es'), (6, 'p', 'Portugal', 'es'), (6, 'p', 'Panamá', 'es'), (6, 'p', 'Paraguay', 'es'),
+-- R HARFİ
+(1, 'r', 'Roberto', 'es'), (1, 'r', 'Rosa', 'es'), (1, 'r', 'Raúl', 'es'), (1, 'r', 'Ricardo', 'es'), (1, 'r', 'Rocío', 'es'),
+(2, 'r', 'Roma', 'es'), (2, 'r', 'Río de Janeiro', 'es'), (2, 'r', 'Rosario', 'es'), (2, 'r', 'Róterdam', 'es'), (2, 'r', 'Reikiavik', 'es'),
+(3, 'r', 'Ratón', 'es'), (3, 'r', 'Rana', 'es'), (3, 'r', 'Rinoceronte', 'es'), (3, 'r', 'Ruiseñor', 'es'), (3, 'r', 'Raya', 'es'),
+(4, 'r', 'Rábano', 'es'), (4, 'r', 'Rosa (Flor)', 'es'), (4, 'r', 'Romero', 'es'), (4, 'r', 'Repollo', 'es'), (4, 'r', 'Roble', 'es'),
+(5, 'r', 'Reloj', 'es'), (5, 'r', 'Rueda', 'es'), (5, 'r', 'Regla', 'es'), (5, 'r', 'Radio', 'es'), (5, 'r', 'Ropa', 'es'),
+(6, 'r', 'Rusia', 'es'), (6, 'r', 'Rumanía', 'es'), (6, 'r', 'Ruanda', 'es');
+
+-- ==========================================
+-- 3. VE SON DEV PAKET (I, J, N, O, Q, U, V, W, X, Y, Z)
+-- ==========================================
+
+-- 🇬🇧 İNGİLİZCE (EN) SON HARFLER
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- I HARFİ
+(1, 'i', 'Ian', 'en'), (1, 'i', 'Isaac', 'en'), (1, 'i', 'Isabella', 'en'), (1, 'i', 'Ivy', 'en'), (1, 'i', 'Iris', 'en'),
+(2, 'i', 'Istanbul', 'en'), (2, 'i', 'Indianapolis', 'en'), (2, 'i', 'Islamabad', 'en'), (2, 'i', 'Irvine', 'en'), (2, 'i', 'Ithaca', 'en'),
+(3, 'i', 'Iguana', 'en'), (3, 'i', 'Impala', 'en'), (3, 'i', 'Insect', 'en'), (3, 'i', 'Ibis', 'en'), (3, 'i', 'Inchworm', 'en'),
+(4, 'i', 'Ivy', 'en'), (4, 'i', 'Iris', 'en'), (4, 'i', 'Iceberg lettuce', 'en'), (4, 'i', 'Indian fig', 'en'), (4, 'i', 'Ironweed', 'en'),
+(5, 'i', 'Ice', 'en'), (5, 'i', 'Iron', 'en'), (5, 'i', 'Ink', 'en'), (5, 'i', 'iPad', 'en'), (5, 'i', 'Instrument', 'en'),
+(6, 'i', 'India', 'en'), (6, 'i', 'Italy', 'en'), (6, 'i', 'Ireland', 'en'), (6, 'i', 'Iceland', 'en'), (6, 'i', 'Indonesia', 'en'),
+-- J HARFİ
+(1, 'j', 'Jack', 'en'), (1, 'j', 'James', 'en'), (1, 'j', 'Julia', 'en'), (1, 'j', 'Jacob', 'en'), (1, 'j', 'Jessica', 'en'),
+(2, 'j', 'Jakarta', 'en'), (2, 'j', 'Jerusalem', 'en'), (2, 'j', 'Johannesburg', 'en'), (2, 'j', 'Jacksonville', 'en'), (2, 'j', 'Juneau', 'en'),
+(3, 'j', 'Jaguar', 'en'), (3, 'j', 'Jellyfish', 'en'), (3, 'j', 'Jackal', 'en'), (3, 'j', 'Jay', 'en'), (3, 'j', 'Jellybug', 'en'),
+(4, 'j', 'Jasmine', 'en'), (4, 'j', 'Jalapeno', 'en'), (4, 'j', 'Jackfruit', 'en'), (4, 'j', 'Juniper', 'en'), (4, 'j', 'Jicama', 'en'),
+(5, 'j', 'Jar', 'en'), (5, 'j', 'Jacket', 'en'), (5, 'j', 'Jeep', 'en'), (5, 'j', 'Jet', 'en'), (5, 'j', 'Jug', 'en'),
+(6, 'j', 'Japan', 'en'), (6, 'j', 'Jamaica', 'en'), (6, 'j', 'Jordan', 'en'),
+-- N HARFİ
+(1, 'n', 'Noah', 'en'), (1, 'n', 'Nina', 'en'), (1, 'n', 'Natalie', 'en'), (1, 'n', 'Nicholas', 'en'), (1, 'n', 'Nathan', 'en'),
+(2, 'n', 'New York', 'en'), (2, 'n', 'Nairobi', 'en'), (2, 'n', 'Naples', 'en'), (2, 'n', 'New Orleans', 'en'), (2, 'n', 'Nashville', 'en'),
+(3, 'n', 'Newt', 'en'), (3, 'n', 'Nightingale', 'en'), (3, 'n', 'Narwhal', 'en'), (3, 'n', 'Numbat', 'en'), (3, 'n', 'Nematode', 'en'),
+(4, 'n', 'Nutmeg', 'en'), (4, 'n', 'Nectarine', 'en'), (4, 'n', 'Narcissus', 'en'), (4, 'n', 'Nettle', 'en'), (4, 'n', 'Nut', 'en'),
+(5, 'n', 'Nail', 'en'), (5, 'n', 'Needle', 'en'), (5, 'n', 'Net', 'en'), (5, 'n', 'Notebook', 'en'), (5, 'n', 'Necklace', 'en'),
+(6, 'n', 'Norway', 'en'), (6, 'n', 'Nigeria', 'en'), (6, 'n', 'Nepal', 'en'), (6, 'n', 'Nicaragua', 'en'), (6, 'n', 'Netherlands', 'en'),
+-- O HARFİ
+(1, 'o', 'Oliver', 'en'), (1, 'o', 'Olivia', 'en'), (1, 'o', 'Oscar', 'en'), (1, 'o', 'Owen', 'en'), (1, 'o', 'Orla', 'en'),
+(2, 'o', 'Oslo', 'en'), (2, 'o', 'Ottawa', 'en'), (2, 'o', 'Orlando', 'en'), (2, 'o', 'Osaka', 'en'), (2, 'o', 'Omaha', 'en'),
+(3, 'o', 'Owl', 'en'), (3, 'o', 'Ostrich', 'en'), (3, 'o', 'Octopus', 'en'), (3, 'o', 'Otter', 'en'), (3, 'o', 'Orangutan', 'en'),
+(4, 'o', 'Orange', 'en'), (4, 'o', 'Onion', 'en'), (4, 'o', 'Olive', 'en'), (4, 'o', 'Orchid', 'en'), (4, 'o', 'Oat', 'en'),
+(5, 'o', 'Oven', 'en'), (5, 'o', 'Oar', 'en'), (5, 'o', 'Oboe', 'en'), (5, 'o', 'Ornament', 'en'), (5, 'o', 'Ottoman', 'en'),
+(6, 'o', 'Oman', 'en'),
+-- Q HARFİ
+(1, 'q', 'Quinn', 'en'), (1, 'q', 'Quincy', 'en'),
+(2, 'q', 'Quito', 'en'), (2, 'q', 'Quebec', 'en'),
+(3, 'q', 'Quail', 'en'), (3, 'q', 'Quokka', 'en'),
+(4, 'q', 'Quince', 'en'), (4, 'q', 'Quinoa', 'en'),
+(5, 'q', 'Quilt', 'en'), (5, 'q', 'Quill', 'en'),
+(6, 'q', 'Qatar', 'en'),
+-- U HARFİ
+(1, 'u', 'Ursula', 'en'), (1, 'u', 'Umar', 'en'), (1, 'u', 'Ulysses', 'en'), (1, 'u', 'Uma', 'en'), (1, 'u', 'Uri', 'en'),
+(2, 'u', 'Utrecht', 'en'), (2, 'u', 'Ulaanbaatar', 'en'), (2, 'u', 'Ushuaia', 'en'), (2, 'u', 'Ufa', 'en'), (2, 'u', 'Udon Thani', 'en'),
+(3, 'u', 'Urchin', 'en'), (3, 'u', 'Urial', 'en'), (3, 'u', 'Umbrellabird', 'en'), (3, 'u', 'Uakari', 'en'), (3, 'u', 'Uguisu', 'en'),
+(4, 'u', 'Ugli fruit', 'en'), (4, 'u', 'Ulmus', 'en'), (4, 'u', 'Ursinia', 'en'), (4, 'u', 'Uva ursi', 'en'), (4, 'u', 'Upland cotton', 'en'),
+(5, 'u', 'Umbrella', 'en'), (5, 'u', 'Ukulele', 'en'), (5, 'u', 'Uniform', 'en'), (5, 'u', 'Urn', 'en'), (5, 'u', 'USB', 'en'),
+(6, 'u', 'Uganda', 'en'), (6, 'u', 'Uruguay', 'en'), (6, 'u', 'Ukraine', 'en'), (6, 'u', 'United Kingdom', 'en'), (6, 'u', 'United States', 'en'),
+-- V HARFİ
+(1, 'v', 'Victor', 'en'), (1, 'v', 'Victoria', 'en'), (1, 'v', 'Vincent', 'en'), (1, 'v', 'Valeria', 'en'), (1, 'v', 'Vanessa', 'en'),
+(2, 'v', 'Venice', 'en'), (2, 'v', 'Vienna', 'en'), (2, 'v', 'Vancouver', 'en'), (2, 'v', 'Valencia', 'en'), (2, 'v', 'Verona', 'en'),
+(3, 'v', 'Vulture', 'en'), (3, 'v', 'Viper', 'en'), (3, 'v', 'Vole', 'en'), (3, 'v', 'Vicuna', 'en'), (3, 'v', 'Vaquita', 'en'),
+(4, 'v', 'Vanilla', 'en'), (4, 'v', 'Violet', 'en'), (4, 'v', 'Verbena', 'en'), (4, 'v', 'Velvet bean', 'en'), (4, 'v', 'Vetch', 'en'),
+(5, 'v', 'Vase', 'en'), (5, 'v', 'Violin', 'en'), (5, 'v', 'Van', 'en'), (5, 'v', 'Vacuum', 'en'), (5, 'v', 'Vest', 'en'),
+(6, 'v', 'Vietnam', 'en'), (6, 'v', 'Venezuela', 'en'), (6, 'v', 'Vanuatu', 'en'), (6, 'v', 'Vatican City', 'en'),
+-- W, X, Y, Z HARFLERİ
+(1, 'w', 'William', 'en'), (2, 'w', 'Washington', 'en'), (3, 'w', 'Wolf', 'en'), (4, 'w', 'Walnut', 'en'), (5, 'w', 'Window', 'en'), (6, 'w', 'Wales', 'en'),
+(1, 'x', 'Xavier', 'en'), (2, 'x', 'Xalapa', 'en'), (3, 'x', 'X-ray tetra', 'en'), (4, 'x', 'Xerophyte', 'en'), (5, 'x', 'Xylophone', 'en'),
+(1, 'y', 'Yusuf', 'en'), (2, 'y', 'Yokohama', 'en'), (3, 'y', 'Yak', 'en'), (4, 'y', 'Yam', 'en'), (5, 'y', 'Yacht', 'en'), (6, 'y', 'Yemen', 'en'),
+(1, 'z', 'Zoe', 'en'), (2, 'z', 'Zurich', 'en'), (3, 'z', 'Zebra', 'en'), (4, 'z', 'Zucchini', 'en'), (5, 'z', 'Zipper', 'en'), (6, 'z', 'Zambia', 'en'),
+(6, 'z', 'Zimbabwe', 'en');
+
+
+-- 🇩🇪 ALMANCA (DE) SON HARFLER
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- I HARFİ
+(1, 'i', 'Ida', 'de'), (1, 'i', 'Ines', 'de'), (1, 'i', 'Ilse', 'de'), (1, 'i', 'Ingo', 'de'), (1, 'i', 'Igor', 'de'),
+(2, 'i', 'Innsbruck', 'de'), (2, 'i', 'Ingolstadt', 'de'), (2, 'i', 'Istanbul', 'de'), (2, 'i', 'Isny', 'de'), (2, 'i', 'Iserlohn', 'de'),
+(3, 'i', 'Igel', 'de'), (3, 'i', 'Iltis', 'de'), (3, 'i', 'Impala', 'de'), (3, 'i', 'Insekt', 'de'), (3, 'i', 'Iguana', 'de'),
+(4, 'i', 'Ingwer', 'de'), (4, 'i', 'Iris', 'de'), (4, 'i', 'Immergrün', 'de'), (4, 'i', 'Ilex', 'de'), (4, 'i', 'Islandmoos', 'de'),
+(5, 'i', 'Insel', 'de'), (5, 'i', 'iPad', 'de'), (5, 'i', 'Inhalator', 'de'), (5, 'i', 'Instrument', 'de'), (5, 'i', 'Isolierband', 'de'),
+(6, 'i', 'Italien', 'de'), (6, 'i', 'Indien', 'de'), (6, 'i', 'Irland', 'de'), (6, 'i', 'Island', 'de'), (6, 'i', 'Indonesien', 'de'),
+-- J HARFİ
+(1, 'j', 'Julia', 'de'), (1, 'j', 'Jan', 'de'), (1, 'j', 'Jens', 'de'), (1, 'j', 'Jonas', 'de'), (1, 'j', 'Johanna', 'de'),
+(2, 'j', 'Jena', 'de'), (2, 'j', 'Jerusalem', 'de'), (2, 'j', 'Jakarta', 'de'), (2, 'j', 'Johannesburg', 'de'), (2, 'j', 'Jever', 'de'),
+(3, 'j', 'Jaguar', 'de'), (3, 'j', 'Jaguarpuma', 'de'), (3, 'j', 'Junikäfer', 'de'), (3, 'j', 'Jabiru', 'de'), (3, 'j', 'Jak', 'de'),
+(4, 'j', 'Jasmin', 'de'), (4, 'j', 'Johannisbeere', 'de'), (4, 'j', 'Jalapeno', 'de'), (4, 'j', 'Judasbaum', 'de'), (4, 'j', 'Jackfrucht', 'de'),
+(5, 'j', 'Jacke', 'de'), (5, 'j', 'Jeans', 'de'), (5, 'j', 'Jalousie', 'de'), (5, 'j', 'Jacht', 'de'), (5, 'j', 'Joghurt', 'de'),
+(6, 'j', 'Japan', 'de'), (6, 'j', 'Jamaika', 'de'), (6, 'j', 'Jordanien', 'de'), (6, 'j', 'Jemen', 'de'),
+-- N HARFİ
+(1, 'n', 'Nina', 'de'), (1, 'n', 'Norbert', 'de'), (1, 'n', 'Nadja', 'de'), (1, 'n', 'Nils', 'de'), (1, 'n', 'Nora', 'de'),
+(2, 'n', 'Nürnberg', 'de'), (2, 'n', 'Neuss', 'de'), (2, 'n', 'Neapel', 'de'), (2, 'n', 'New York', 'de'), (2, 'n', 'Neu-Ulm', 'de'),
+(3, 'n', 'Nashorn', 'de'), (3, 'n', 'Nilpferd', 'de'), (3, 'n', 'Nachtigall', 'de'), (3, 'n', 'Nasenbär', 'de'), (3, 'n', 'Nacktmull', 'de'),
+(4, 'n', 'Nelke', 'de'), (4, 'n', 'Narzisse', 'de'), (4, 'n', 'Nuss', 'de'), (4, 'n', 'Nektarine', 'de'), (4, 'n', 'Nadelbaum', 'de'),
+(5, 'n', 'Nadel', 'de'), (5, 'n', 'Nagel', 'de'), (5, 'n', 'Netz', 'de'), (5, 'n', 'Notizbuch', 'de'), (5, 'n', 'Nudelholz', 'de'),
+(6, 'n', 'Norwegen', 'de'), (6, 'n', 'Niederlande', 'de'), (6, 'n', 'Nigeria', 'de'), (6, 'n', 'Nepal', 'de'), (6, 'n', 'Neuseeland', 'de'),
+-- O HARFİ
+(1, 'o', 'Otto', 'de'), (1, 'o', 'Oliver', 'de'), (1, 'o', 'Olivia', 'de'), (1, 'o', 'Olaf', 'de'), (1, 'o', 'Olga', 'de'),
+(2, 'o', 'Osnabrück', 'de'), (2, 'o', 'Oldenburg', 'de'), (2, 'o', 'Oberhausen', 'de'), (2, 'o', 'Offenbach', 'de'), (2, 'o', 'Oslo', 'de'),
+(3, 'o', 'Ochse', 'de'), (3, 'o', 'Otter', 'de'), (3, 'o', 'Oktopus', 'de'), (3, 'o', 'Orang-Utan', 'de'), (3, 'o', 'Ozelot', 'de'),
+(4, 'o', 'Orange', 'de'), (4, 'o', 'Orchidee', 'de'), (4, 'o', 'Oleander', 'de'), (4, 'o', 'Olive', 'de'), (4, 'o', 'Oregano', 'de'),
+(5, 'o', 'Ofen', 'de'), (5, 'o', 'Ohrring', 'de'), (5, 'o', 'Ordner', 'de'), (5, 'o', 'Orgel', 'de'), (5, 'o', 'Objektiv', 'de'),
+(6, 'o', 'Österreich', 'de'), (6, 'o', 'Oman', 'de'), (6, 'o', 'Osttimor', 'de'),
+-- U HARFİ
+(1, 'u', 'Uwe', 'de'), (1, 'u', 'Ulrike', 'de'), (1, 'u', 'Ute', 'de'), (1, 'u', 'Ulrich', 'de'), (1, 'u', 'Udo', 'de'),
+(2, 'u', 'Ulm', 'de'), (2, 'u', 'Unna', 'de'), (2, 'u', 'Utrecht', 'de'), (2, 'u', 'Ulan-Bator', 'de'), (2, 'u', 'Ushuaia', 'de'),
+(3, 'u', 'Uhu', 'de'), (3, 'u', 'Unke', 'de'), (3, 'u', 'Urial', 'de'), (3, 'u', 'Uakari', 'de'), (3, 'u', 'Uferschnepfe', 'de'),
+(4, 'u', 'Ulme', 'de'), (4, 'u', 'Usambaraveilchen', 'de'), (4, 'u', 'Uferrebe', 'de'), (4, 'u', 'Urweltmammutbaum', 'de'), (4, 'u', 'Uradal', 'de'),
+(5, 'u', 'Uhr', 'de'), (5, 'u', 'Unterhemd', 'de'), (5, 'u', 'Umschlag', 'de'), (5, 'u', 'Urne', 'de'), (5, 'u', 'U-Boot', 'de'),
+(6, 'u', 'Ungarn', 'de'), (6, 'u', 'Uruguay', 'de'), (6, 'u', 'Uganda', 'de'), (6, 'u', 'Ukraine', 'de'), (6, 'u', 'USA', 'de'),
+-- V HARFİ
+(1, 'v', 'Volker', 'de'), (1, 'v', 'Vera', 'de'), (1, 'v', 'Viktor', 'de'), (1, 'v', 'Vanessa', 'de'), (1, 'v', 'Valentin', 'de'),
+(2, 'v', 'Venedig', 'de'), (2, 'v', 'Vancouver', 'de'), (2, 'v', 'Valencia', 'de'), (2, 'v', 'Verona', 'de'), (2, 'v', 'Varna', 'de'),
+(3, 'v', 'Vogel', 'de'), (3, 'v', 'Viper', 'de'), (3, 'v', 'Vogelspinne', 'de'), (3, 'v', 'Vikunja', 'de'), (3, 'v', 'Vielfraß', 'de'),
+(4, 'v', 'Veilchen', 'de'), (4, 'v', 'Vanille', 'de'), (4, 'v', 'Vergissmeinnicht', 'de'), (4, 'v', 'Venusfliegenfalle', 'de'), (4, 'v', 'Vogelbeere', 'de'),
+(5, 'v', 'Vase', 'de'), (5, 'v', 'Violine', 'de'), (5, 'v', 'Ventilator', 'de'), (5, 'v', 'Vorhang', 'de'), (5, 'v', 'Visitenkarte', 'de'),
+(6, 'v', 'Venezuela', 'de'), (6, 'v', 'Vietnam', 'de'), (6, 'v', 'Vatikanstadt', 'de'), (6, 'v', 'Vanuatu', 'de'),
+-- W, Y, Z HARFLERİ
+(1, 'w', 'Wolfgang', 'de'), (2, 'w', 'Wien', 'de'), (3, 'w', 'Wolf', 'de'), (4, 'w', 'Walnuss', 'de'), (5, 'w', 'Wagen', 'de'), (6, 'w', 'Weißrussland', 'de'),
+(1, 'y', 'Yvonne', 'de'), (2, 'y', 'Yokohama', 'de'), (3, 'y', 'Yak', 'de'), (4, 'y', 'Ysop', 'de'), (5, 'y', 'Yacht', 'de'),
+(1, 'z', 'Zoe', 'de'), (2, 'z', 'Zürich', 'de'), (3, 'z', 'Zebra', 'de'), (4, 'z', 'Zitrone', 'de'), (5, 'z', 'Zelt', 'de'), (6, 'z', 'Zypern', 'de');
+
+
+-- 🇪🇸 İSPANYOLCA (ES) SON HARFLER
+INSERT INTO words (category_id, first_letter, word_value, lang) VALUES
+-- I HARFİ
+(1, 'i', 'Ignacio', 'es'), (1, 'i', 'Isabel', 'es'), (1, 'i', 'Iván', 'es'), (1, 'i', 'Inés', 'es'), (1, 'i', 'Irene', 'es'),
+(2, 'i', 'Ibiza', 'es'), (2, 'i', 'Ibagué', 'es'), (2, 'i', 'Iquique', 'es'), (2, 'i', 'Ica', 'es'), (2, 'i', 'Islamabad', 'es'),
+(3, 'i', 'Iguana', 'es'), (3, 'i', 'Impala', 'es'), (3, 'i', 'Insecto', 'es'), (3, 'i', 'Ibis', 'es'), (3, 'i', 'Indri', 'es'),
+(4, 'i', 'Icaco', 'es'), (4, 'i', 'Iris', 'es'), (4, 'i', 'Ilang-ilang', 'es'), (4, 'i', 'Ipecacuana', 'es'), (4, 'i', 'Ipomea', 'es'),
+(5, 'i', 'Imán', 'es'), (5, 'i', 'Impresora', 'es'), (5, 'i', 'Inyector', 'es'), (5, 'i', 'Instrumento', 'es'), (5, 'i', 'Interruptor', 'es'),
+(6, 'i', 'India', 'es'), (6, 'i', 'Italia', 'es'), (6, 'i', 'Irlanda', 'es'), (6, 'i', 'Islandia', 'es'), (6, 'i', 'Indonesia', 'es'),
+-- J HARFİ
+(1, 'j', 'Juan', 'es'), (1, 'j', 'José', 'es'), (1, 'j', 'Javier', 'es'), (1, 'j', 'Jorge', 'es'), (1, 'j', 'Julia', 'es'),
+(2, 'j', 'Jerusalén', 'es'), (2, 'j', 'Johannesburgo', 'es'), (2, 'j', 'Junín', 'es'), (2, 'j', 'Jerez', 'es'), (2, 'j', 'Jalapa', 'es'),
+(3, 'j', 'Jabalí', 'es'), (3, 'j', 'Jaguar', 'es'), (3, 'j', 'Jirafa', 'es'), (3, 'j', 'Jilguero', 'es'), (3, 'j', 'Jerbo', 'es'),
+(4, 'j', 'Jazmín', 'es'), (4, 'j', 'Jalapeño', 'es'), (4, 'j', 'Jengibre', 'es'), (4, 'j', 'Judía', 'es'), (4, 'j', 'Juncia', 'es'),
+(5, 'j', 'Jarra', 'es'), (5, 'j', 'Joya', 'es'), (5, 'j', 'Jabón', 'es'), (5, 'j', 'Juguete', 'es'), (5, 'j', 'Jaula', 'es'),
+(6, 'j', 'Japón', 'es'), (6, 'j', 'Jamaica', 'es'), (6, 'j', 'Jordania', 'es'),
+-- N HARFİ
+(1, 'n', 'Nicolás', 'es'), (1, 'n', 'Natalia', 'es'), (1, 'n', 'Nuria', 'es'), (1, 'n', 'Néstor', 'es'), (1, 'n', 'Noelia', 'es'),
+(2, 'n', 'Nueva York', 'es'), (2, 'n', 'Nápoles', 'es'), (2, 'n', 'Nairobi', 'es'), (2, 'n', 'Nantes', 'es'), (2, 'n', 'Nagasaki', 'es'),
+(3, 'n', 'Nutria', 'es'), (3, 'n', 'Narval', 'es'), (3, 'n', 'Náyade', 'es'), (3, 'n', 'Nematodo', 'es'), (3, 'n', 'Novillo', 'es'),
+(4, 'n', 'Naranja', 'es'), (4, 'n', 'Nuez', 'es'), (4, 'n', 'Nabo', 'es'), (4, 'n', 'Níspero', 'es'), (4, 'n', 'Nenúfar', 'es'),
+(5, 'n', 'Nevera', 'es'), (5, 'n', 'Nave', 'es'), (5, 'n', 'Nudo', 'es'), (5, 'n', 'Navaja', 'es'), (5, 'n', 'Neumático', 'es'),
+(6, 'n', 'Noruega', 'es'), (6, 'n', 'Nigeria', 'es'), (6, 'n', 'Nepal', 'es'), (6, 'n', 'Nicaragua', 'es'), (6, 'n', 'Namibia', 'es'),
+-- O HARFİ
+(1, 'o', 'Óscar', 'es'), (1, 'o', 'Olivia', 'es'), (1, 'o', 'Omar', 'es'), (1, 'o', 'Orlando', 'es'), (1, 'o', 'Olga', 'es'),
+(2, 'o', 'Oslo', 'es'), (2, 'o', 'Ottawa', 'es'), (2, 'o', 'Orlando', 'es'), (2, 'o', 'Osaka', 'es'), (2, 'o', 'Oviedo', 'es'),
+(3, 'o', 'Oso', 'es'), (3, 'o', 'Oveja', 'es'), (3, 'o', 'Oruga', 'es'), (3, 'o', 'Ostra', 'es'), (3, 'o', 'Orangután', 'es'),
+(4, 'o', 'Olivo', 'es'), (4, 'o', 'Orquídea', 'es'), (4, 'o', 'Orégano', 'es'), (4, 'o', 'Olmo', 'es'), (4, 'o', 'Ortiga', 'es'),
+(5, 'o', 'Olla', 'es'), (5, 'o', 'Ordenador', 'es'), (5, 'o', 'Orejera', 'es'), (5, 'o', 'Órgano', 'es'), (5, 'o', 'Obelisco', 'es'),
+(6, 'o', 'Omán', 'es'),
+-- U HARFİ
+(1, 'u', 'Úrsula', 'es'), (1, 'u', 'Ulises', 'es'), (1, 'u', 'Uriel', 'es'), (1, 'u', 'Umberto', 'es'), (1, 'u', 'Ubaldo', 'es'),
+(2, 'u', 'Ushuaia', 'es'), (2, 'u', 'Utrera', 'es'), (2, 'u', 'Uruapan', 'es'), (2, 'u', 'Ufa', 'es'), (2, 'u', 'Uagadugú', 'es'),
+(3, 'u', 'Urraca', 'es'), (3, 'u', 'Urogallo', 'es'), (3, 'u', 'Urial', 'es'), (3, 'u', 'Uacarí', 'es'), (3, 'u', 'Urubú', 'es'),
+(4, 'u', 'Uva', 'es'), (4, 'u', 'Uña de gato', 'es'), (4, 'u', 'Ulmaria', 'es'), (4, 'u', 'Uchuva', 'es'), (4, 'u', 'Urceolina', 'es'),
+(5, 'u', 'Urna', 'es'), (5, 'u', 'Uniforme', 'es'), (5, 'u', 'Ukelele', 'es'), (5, 'u', 'USB', 'es'), (5, 'u', 'Utensilio', 'es'),
+(6, 'u', 'Uruguay', 'es'), (6, 'u', 'Uganda', 'es'), (6, 'u', 'Ucrania', 'es'), (6, 'u', 'Uzbekistán', 'es'),
+-- V HARFİ
+(1, 'v', 'Víctor', 'es'), (1, 'v', 'Victoria', 'es'), (1, 'v', 'Vicente', 'es'), (1, 'v', 'Verónica', 'es'), (1, 'v', 'Valeria', 'es'),
+(2, 'v', 'Valencia', 'es'), (2, 'v', 'Venecia', 'es'), (2, 'v', 'Viena', 'es'), (2, 'v', 'Vancouver', 'es'), (2, 'v', 'Valladolid', 'es'),
+(3, 'v', 'Vaca', 'es'), (3, 'v', 'Víbora', 'es'), (3, 'v', 'Vicuña', 'es'), (3, 'v', 'Vencejo', 'es'), (3, 'v', 'Vaca marina', 'es'),
+(4, 'v', 'Vainilla', 'es'), (4, 'v', 'Violeta', 'es'), (4, 'v', 'Vid', 'es'), (4, 'v', 'Verbena', 'es'), (4, 'v', 'Verdolaga', 'es'),
+(5, 'v', 'Vaso', 'es'), (5, 'v', 'Ventana', 'es'), (5, 'v', 'Violín', 'es'), (5, 'v', 'Vestido', 'es'), (5, 'v', 'Vela', 'es'),
+(6, 'v', 'Venezuela', 'es'), (6, 'v', 'Vietnam', 'es'), (6, 'v', 'Vaticano', 'es'), (6, 'v', 'Vanuatu', 'es'),
+-- Y, Z HARFLERİ
+(1, 'y', 'Yolanda', 'es'), (2, 'y', 'Yokohama', 'es'), (3, 'y', 'Yegua', 'es'), (4, 'y', 'Yuca', 'es'), (5, 'y', 'Yate', 'es'), (6, 'y', 'Yemen', 'es'),
+(1, 'z', 'Zoe', 'es'), (2, 'z', 'Zaragoza', 'es'), (3, 'z', 'Zorro', 'es'), (4, 'z', 'Zanahoria', 'es'), (5, 'z', 'Zapato', 'es'), (6, 'z', 'Zambia', 'es');
 
 
 

@@ -1,0 +1,225 @@
+{
+  "@@locale": "tr",
+  "gameTitle": "İsim Şehir Hayvan",
+  "gameSubtitle": "Zekanı yarıştır, rakibini geride bırak!",
+  "readyButton": "HAZIR 👍",
+  "finishTurnButton": "DUR!",
+  "nameTooShortError": "İsminiz en az 2 harften oluşmalıdır!",
+  "profanityNameError": "Uygunsuz takma ad tespiti! Lütfen başka bir isim seçin.",
+  "connectionTimeoutError": "Bağlantı zaman aşımına uğradı! Lütfen internetinizi kontrol edin.",
+  "serverConnectionError": "Sunucuya bağlanılamadı. Lütfen tekrar deneyin.",
+  "defaultPlayerName": "Oyuncu",
+  "menuTooltip": "Menü",
+  "welcomeContestant": "Hoş geldin Yarışmacı! 🎮",
+  "gameRules": "Oyun Kuralları",
+  "gameRulesSubtitle": "Puanlama ve yarışma rehberi",
+  "privacyPolicy": "İsim Şehir Oyunu Gizlilik Politikası",
+  "privacyPolicySubtitle": "Veri kullanımı ve gizlilik haklarınız",
+  "contactUs": "Bize Ulaşın",
+  "contactUsSubtitle": "Şikayet, öneri ve destek",
+  "versionText": "Versiyon 1.0.0",
+  "lastLoggedInPlayer": "Son Giriş Yapan Oyuncu",
+  "continueWithSamePlayer": "Aynı Oyuncuyla Devam Et",
+  "loginWithDifferentName": "Farklı bir isimle giriş yap",
+  "returnToProfile": "profiline dön",
+  "playerNameLabel": "Oyuncu Adınız",
+  "customizeAvatar": "Avatarını Özelleştir",
+  "chooseExpression": "İfade Seç:",
+  "chooseAccessory": "Aksesuar Seç:",
+  "chooseThemeColor": "Tema Rengi Seç:",
+  "aiProfanityError": "Bu kullanıcı adı uygunsuz ifadeler içeriyor! Lütfen başka bir isim seçin.",
+  "loginAndStart": "Giriş Yap ve Başla" ,
+  "chooseGameMode": "OYUN MODU SEÇİN",
+    "welcomePlayer": "Hoş geldin",
+    "howToPlay": "Nasıl oynamak istersin?",
+    "playWithFriends": "Arkadaşlarınla Oyna (2-10 Kişi)",
+    "findOpponent": "Rakip Bul (Hızlı Kapışma)",
+    "returnToLogin": "Giriş Sayfasına Dön",
+    "scoreText": "Puan",
+      "rankText": "Sıra",
+      "friendRoomTitle": "ARKADAŞ ODASI",
+      "tournamentRoundsTitle": "TURNUVA TUR SAYISI",
+      "friendRoomSubtitle": "Hoş geldin {playerName}! Oda açıp arkadaş grubunu davet edebilirsin.",
+      "@friendRoomSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "tournamentRoundsSubtitle": "Hoş geldin {playerName}, kaç tur yarışmak istersiniz?",
+      "@tournamentRoundsSubtitle": {
+        "placeholders": {
+          "playerName": {
+            "type": "String"
+          }
+        }
+      },
+      "createRoomButton": "Oda Oluştur (2-10 Kişi)",
+      "joinWithCodeButton": "Oda Kodu ile Katıl",
+      "quickMatch": "Hızlı Kapışma",
+      "standardLeague": "Standart Lig",
+      "marathonGiants": "Maraton Devleri",
+      "goBackButton": "Geri Dön",
+      "roundText": "TUR",
+      "searchingOpponent": "Rakip Aranıyor",
+      "waitingForOpponent": "Rakip bekleniyor...",
+      "matchFound": "Eşleşme Tamam!",
+      "timeText": "Süre",
+      "roomClosedOrNotFound": "Oda kapatıldı veya bulunamadı.",
+      "gameRoom": "Oyun Odası",
+      "roomCode": "ODA KODU",
+      "copyButton": "Kopyala",
+      "roomCodeCopied": "Oda kodu panoya kopyalandı!",
+      "inviteFriend": "Arkadaşını Davet Et",
+      "joinedPlayers": "Katılan Oyuncular",
+      "youText": "Sen",
+      "leaveButton": "Ayrıl",
+      "startGameButton": "Oyunu Başlat",
+      "enterRoomCode": "Oda Kodunu Girin",
+      "cancelButton": "İptal",
+      "joinButton": "Katıl",
+      "roomFullError": "Oda kapasitesi dolu (Maksimum 10 kişi)!",
+      "roomNotFoundError": "Böyle bir oda bulunamadı!",
+      "rulesPageTitle": "📜 Oyun Kuralları",
+        "rule1Title": "1. Harf Kuralı",
+        "rule1Desc": "Her turun başında rastgele bir harf seçilir. Yazacağınız tüm kelimeler bu harf ile başlamalıdır.",
+        "rule2Title": "2. Kategori Puanlaması",
+        "rule2Desc": "• İki oyuncu aynı doğru kelimeyi yazarsa: 5 Puan\n• İki oyuncu farklı doğru kelimeler yazarsa: 10 Puan\n• Sadece tek oyuncu doğru kelime yazarsa: 20 Puan\n• Doğru bilinen en uzun kelimeye: +2 Puan Bonus\n• Maçı kazanan oyuncu +100 Puan alır.",
+        "rule3Title": "3. Turu Erken Bitirme & 20 Sn Kuralı",
+        "rule3Desc": "En az 5 kategoriyi doldurduğunuzda 'TURU BİTİR' butonuna basabilirsiniz. Sayaç anında 20 saniyeye düşer ve tur sonunda +10 Zaman Bonusu kazanırsınız.",
+        "rule4Title": "4. 🏆 Maç Sonu Galibiyet Bonusu",
+        "rule4Desc": "• Maç bittiğinde, maçı kim kazandıysa genel puanına ve liderlik tablosuna kaydedilmek üzere +100 Galibiyet Bonusu eklenir.\n• Beraberlik durumunda kimseye ekstra +100 eklenmez, sadece maçta toplanan ham puanlar genel skora yansır.",
+        "rule5Title": "5. Geçerli Kelimeler",
+        "rule5Desc": "Eşya, Hayvan, Bitki ve Ülke kategorilerinde sadece gerçek ve somut kelimeler kabul edilir. TDK'deki soyut veya kural dışı kelimeler puan almaz.",
+        "understoodButton": "ANLADIM, OYUNA DÖN 👍",
+        "contactUsTitle": "Bize Ulaşın",
+          "feedbackSuccess": "Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz! 🎉",
+          "feedbackError": "Mesaj gönderilirken hata oluştu:",
+          "anonymousPlayer": "Anonim Oyuncu",
+          "feedbackHeader": "Görüşleriniz Bizim İçin Değerli!",
+          "feedbackSubtitle": "Hoş geldin {playerName}! Oyunla ilgili şikayet, öneri veya karşılaştığın hataları bize iletebilirsin.",
+          "@feedbackSubtitle": {
+            "placeholders": {
+              "playerName": {
+                "type": "String"
+              }
+            }
+          },
+          "feedbackSubjectLabel": "Konu / Bildirim Türü",
+          "emailLabel": "E-Posta Adresiniz (Geri dönüş için)",
+          "invalidEmailError": "Lütfen geçerli bir e-posta adresi girin.",
+          "messageLabel": "Mesajınız",
+          "messageHint": "Düşüncelerinizi veya karşılaştığınız sorunu detaylıca yazabilirsiniz...",
+          "emptyMessageError": "Lütfen mesajınızı yazın.",
+          "shortMessageError": "Lütfen en az 10 karakterlik bir açıklama yazın.",
+          "sendingButton": "Gönderiliyor...",
+          "sendMessageButton": "Mesajı Gönder",
+          "feedbackTypeSuggestion": "Öneri",
+          "feedbackTypeComplaint": "Şikayet",
+          "feedbackTypeBug": "Hata Bildirimi",
+          "feedbackTypeOther": "Diğer",
+          "cheatingWarning": "Oyun ekranından 5 saniyeden fazla ayrıldığınız için kağıdınıza el konuldu!",
+            "playerEliminatedWarning": "⚠️ {playerName} boş kağıt verdiği (veya koptuğu) için elendi!",
+            "@playerEliminatedWarning": {
+              "placeholders": { "playerName": { "type": "String" } }
+            },
+            "newHostWarning": "👑 Kurucu ayrıldı. Odanın yeni kurucusu sizsiniz!",
+            "winByForfeitTitle": "Hükmen Galibiyet! 🏆",
+            "winByForfeitDesc": "Diğer tüm oyuncuların bağlantısı koptuğu için oyunu hükmen kazandınız!",
+            "goToResultsButton": "Sonuç Sayfasına Git",
+            "eliminatedTitle": "Elendiniz! ❌",
+            "eliminatedDesc": "Hiçbir kategoriye kelime yazmadığınız için (veya bağlantınız koptuğu için) bu oyundan elendiniz.",
+            "returnToMainMenuButton": "Ana Menüye Dön",
+            "wrongLetterWarning": "Girdiğiniz kelime '{letter}' harfi ile başlamalıdır!",
+            "@wrongLetterWarning": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "inappropriateWordWarning": "Uygunsuz kelime tespiti!",
+            "singleNameWarning": "İsim bölümüne sadece tek bir isim girebilirsiniz!",
+            "connectionError": "Bağlantı sorunu!",
+            "checkingWords": "Kelimeler Kontrol Ediliyor... 🚀",
+            "answersSavedWaiting": "Cevaplarınız Kaydedildi! 🚀\nDiğer Oyuncular Bekleniyor...",
+            "noOpponent": "Rakip Yok",
+            "roundNumberLabel": "{roundNo}. TUR",
+            "@roundNumberLabel": {
+              "placeholders": { "roundNo": { "type": "int" } }
+            },
+            "timeBonus": "ZAMAN BONUSU",
+            "everyoneReady": " Herkes Hazır! İlerleniyor...",
+            "playersReady": "⏳ {ready} / {total} Oyuncu Hazır",
+            "@playersReady": {
+              "placeholders": { "ready": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "waitingReady": "HAZIR BEKLİYOR...",
+            "seeResultsWithTimer": "SONUÇLARI GÖR 🏆 ({time} sn)",
+            "@seeResultsWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "readyWithTimer": "HAZIRIM 👍 ({time} sn)",
+            "@readyWithTimer": {
+              "placeholders": { "time": { "type": "int" } }
+            },
+            "appTitle": "İsim Şehir Hayvan Oyunu",
+            "tourProgress": "Tur: {current} / {total}",
+            "@tourProgress": {
+              "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+            },
+            "secondsLeft": "{sec} sn",
+            "@secondsLeft": {
+              "placeholders": { "sec": { "type": "int" } }
+            },
+            "currentLetterLabel": "Harf: {letter}",
+            "@currentLetterLabel": {
+              "placeholders": { "letter": { "type": "String" } }
+            },
+            "categoryLabel": "{category} Kategorisi",
+            "@categoryLabel": {
+              "placeholders": { "category": { "type": "String" } }
+            },
+            "typeYourWordHint": "Kelimenizi buraya yazın...",
+            "twentySecondsRule": "⚡ 20 SANİYE KURALI BAŞLATILDI!",
+            "waitingForTimeEnd": "Sürenin Bitmesi Bekleniyor...",
+            "last20SecondsNoBonus": "SON 20 SANİYE (BONUS KAPANDI)",
+            "finishTurnWithBonus": "TURU BİTİR (+10 ZAMAN BONUSU)",
+            "finishTurnMinWords": "TURU BİTİR (EN AZ 5 KELİME YAZIN)",
+            "previousButton": "◄ Önceki",
+            "nextButton": "Sonraki ►",
+            "catName": "İsim",
+            "catCity": "Şehir",
+            "catAnimal": "Hayvan",
+            "catPlant": "Bitki",
+            "catObject": "Eşya",
+            "catCountry": "Ülke",
+            "matchWinnerTitle": "MAÇIN GALİBİSİN! 🎉",
+              "matchTieTitle": "LİDERLİĞİ PAYLAŞTIN!",
+              "matchLoserTitle": "MAÇI KAYBETTİN!",
+              "matchRankingTitle": "MAÇ SIRALAMASI",
+              "youLabel": "(Sen)",
+              "overallStatsTitle": "GENEL İSTATİSTİK DURUMUN",
+              "overallScoreLabel": "Genel Puanın:",
+              "rankingLabel": "Sıralaman:",
+              "wentUpLabel": "(▲ {diff} Yükseldin)",
+              "@wentUpLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "wentDownLabel": "(▼ {diff} Geriledin)",
+              "@wentDownLabel": {
+                "placeholders": { "diff": { "type": "int" } }
+              },
+              "noChangeLabel": "(- Değişmedi)",
+              "returnToHomeButton": "Ana Sayfaya Dön",
+              "pointsSuffix": "P",
+              "privacyPolicyTitle": "Gizlilik Politikası",
+                "privacyLastUpdate": "Son Güncelleme: 9 Ağustos 2026",
+                "privacyIntro": "Bu gizlilik politikası, İsim Şehir mobil uygulamasını kullanan oyuncularımızın gizliliğini koruma taahhüdümüzü açıklamaktadır. Uygulamamızı kullanarak bu politikada belirtilen veri işleme süreçlerini kabul etmiş sayılırsınız.",
+                "privacySection1Title": "1. Toplanan Veriler ve Kullanım Amacı",
+                "privacySection1Text": "• Kişisel Veriler: Uygulamamız e-posta adresi, gerçek ad-soyad, T.C. kimlik numarası veya hassas konum gibi kişisel verileri toplamaz, cihazınıza kaydetmez ve sizden talep etmez.\n\n• Takma Ad ve Skorlar: Kullanıcıların belirledikleri rastgele takma adlar ve oyun skorları, sadece rakip eşleşmelerinde ve liderlik tablosunda sıralama göstermek amacıyla Firebase üzerinde güvenle saklanır.",
+                "privacySection2Title": "2. Reklamlar ve Üçüncü Taraf",
+                "privacySection2Text": "Uygulamamızın ücretsiz sunulabilmesi amacıyla Google AdMob kullanılmaktadır. AdMob, kullanıcılara uygun reklamlar sunmak için cihaz reklam kimliklerini kullanabilir. Ayrıca hataları tespit etmek için anonim veriler toplayan Firebase Crashlytics kullanılmaktadır.",
+                "privacySection3Title": "3. Çocukların Gizliliği",
+                "privacySection3Text": "İsim Şehir oyunu her yaşa hitap eder. Uygulamamız 13 yaşından küçük çocuklardan bilerek herhangi bir kişisel veri (isim, e-posta, konum) toplamaz.",
+                "privacySection4Title": "4. Veri Güvenliği ve İletişim",
+                "privacySection4Text": "Toplanan hiçbir veri pazarlama amacıyla satılmaz ve paylaşılmaz. Sistemdeki takma adlarınızın ve skorlarınızın silinmesini isterseniz, bulentolgun75@gmail.com adresi üzerinden bizimle iletişime geçebilirsiniz.",
+                "closeButton": "Kapat ve Geri Dön"
+}
