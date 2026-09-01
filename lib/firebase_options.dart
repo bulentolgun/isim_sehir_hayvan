@@ -79,6 +79,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '617858400184',
     projectId: 'isim-sehir-multiplayer',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
+      databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   // ----------------------------------------
@@ -91,6 +92,7 @@ class DefaultFirebaseOptions {
     projectId: 'isim-sehir-multiplayer',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
     iosBundleId: 'com.tamam.isimsehirhayvan',
+      databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   // ----------------------------------------

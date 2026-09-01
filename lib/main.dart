@@ -25,77 +25,72 @@ import 'main.dart';
 // BÖLÜM 2: TEMEL BAŞLATMA VE ÇEVRE DEĞİŞKENLERİ (.env)
 // ==========================================
 final ValueNotifier<Locale> appLocale = ValueNotifier<Locale>(const Locale('tr'));
-// 🟢 void main yerine Future<void> main kullanıldı (Asenkron işlemler için)
-Future<void> main() async {
 
+Future<void> main() async {
+  // 1. Flutter motorunu garantiye al
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🟢 GİZLİ KASA (.env) YÜKLEMESİ (Çökme korumalı try-catch ile eklendi)
+  // 2. GİZLİ KASA (.env) YÜKLEMESİ
   try {
     await dotenv.load(fileName: ".env");
-
-    // 🔍 DEDEKTİF KODU BURADA: Şifre gerçekten okunuyor mu bakıyoruz!
-    String testSifre = dotenv.env['GEMINI_API_KEY'] ?? "BOS";
-    debugPrint("🕵️ .env KONTROLÜ -> Şifre uzunluğu: ${testSifre.length}");
   } catch (e) {
-    debugPrint("🚨 .env dosyası bulunamadı veya yüklenemedi: $e");
+    debugPrint("🚨 .env dosyası bulunamadı: $e");
   }
 // ---------------- BÖLÜM 2 SONU ----------------
 
 // ==========================================
-// BÖLÜM 3: FIREBASE, CRASHLYTICS VE KİMLİK DOĞRULAMA (AUTH)
+// BÖLÜM 3: FIREBASE, CRASHLYTICS VE KİMLİK DOĞRULAMA (AUTH) (ZIRHLI VERSİYON)
 // ==========================================
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // 🚀 YENİ YÖNTEM: HATA YUTUCU ZIRH
+  // Android zaten başlattıysa çıkan duplicate-app hatasını yutup çökmeyi engeller!
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("⚠️ Firebase zaten çalışıyor (Android Otomatik Başlatma). Hata yoksayıldı!");
+  }
 
-  // 🎯 FIREBASE CRASHLYTICS HATA YAKALAYICILARI
-  // 1. Flutter çerçevesindeki (görünüm, widget) tüm ölümcül hataları yakalar
+  // 4. FIREBASE CRASHLYTICS (Hata Yakalayıcılar)
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-
-  // 2. Arka planda (asenkron, veritabanı vb.) olan gizli hataları yakalar
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
 
-  // 🟢 ÇÖZÜM NOKTASI: Veritabanı işlemlerinden ÖNCE Anonim Giriş yapıyoruz!
-  try {
-    await FirebaseAuth.instance.signInAnonymously();
-    debugPrint(
-        "✅ Firebase Anonim Giriş Başarılı! Artık Firestore veri izni verecek.");
-  } catch (e) {
+  // 5. GİRİŞ VE REKLAM İŞLEMLERİNİ ARKA PLANA AT (Bekleme Yok)
+  FirebaseAuth.instance.signInAnonymously().then((_) {
+    debugPrint("✅ Firebase Anonim Giriş Başarılı!");
+  }).catchError((e) {
     debugPrint("🚨 Firebase Anonim Giriş Hatası: $e");
-  }
+  });
 // ---------------- BÖLÜM 3 SONU ----------------
 
 // ==========================================
 // BÖLÜM 4: REKLAM MOTORU, YEREL VERİTABANI VE UYGULAMA BAŞLATMA
 // ==========================================
-  // 🔴 YENİ YAPI: Önce Apple ATT İzinlerini sorar, sonra AdMob'u başlatır
-  try {
-    await AdService.instance.initializeAds();
-  } catch (e) {
-    debugPrint(
-        "AdMob veya İzin Sistemi Web üzerinde çalışmadığı için atlandı: $e");
-  }
+  AdService.instance.initializeAds().then((_) {
+    debugPrint("✅ AdMob Başarılı!");
+  }).catchError((e) {
+    debugPrint("🚨 AdMob Hatası: $e");
+  });
 
   try {
-    // 3. SQLite Veritabanı ve Arka Plan Senkronizasyonu
-    // Giriş yapıldığı için artık permission-denied hatası VERMEYECEK!
     DatabaseHelper.instance.database;
   } catch (e) {
-    debugPrint("SQLite Web üzerinde çalışmadığı için atlandı.");
+    debugPrint("SQLite hatası: $e");
   }
 
-  // 🎯 İŞTE EKSİK OLAN VE OYUNU BAŞLATAN O SİHİRLİ SATIR:
+  // 🚀 6. NE OLURSA OLSUN OYUNU EKRANA ÇİZ!
   runApp(const MyApp());
 }
 // ---------------- BÖLÜM 4 SONU ----------------
-
-// ==========================================
+/// ==========================================
 // BÖLÜM 5: UYGULAMA KÖK SINIFI (MYAPP) VE ARAYÜZ YAPILANDIRMASI
 // ==========================================
+String? globalBekleyenOdaKodu;
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -111,50 +106,55 @@ class _MyAppState extends State<MyApp> {
     // 🎯 Deep Link Dinleyicisi
     DeepLinkService.initDeepLinks((odaKodu) {
       debugPrint("Gelen Otomatik Oda Kodu: $odaKodu");
-      // TODO: Kullanıcı yönlendirme veya diyalog açma mantığı buraya gelecek
+
+      globalBekleyenOdaKodu = odaKodu;
+
+      if (navigatorKey.currentContext != null) {
+        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+          SnackBar(
+            content: Text("Oda Daveti Algılandı! (Kod: $odaKodu) Odaya girmek için giriş yapın."),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-// 🚀 KUMANDAYI DİNLEYEN YENİ YAPI
-return ValueListenableBuilder<Locale>(
-valueListenable: appLocale,
-builder: (context, locale, child) {
-return MaterialApp(
-title: 'İsim Şehir',
-debugShowCheckedModeBanner: false,
-theme: ThemeData(
-colorScheme: ColorScheme.fromSeed(
-seedColor: Colors.indigo,
-primary: Colors.indigo,
-),
-useMaterial3: true,
-scaffoldBackgroundColor: Colors.white,
-),
-
-// --- ÇOKLU DİL MOTORU BAŞLANGICI ---
-localizationsDelegates: const [
-AppLocalizations.delegate,
-GlobalMaterialLocalizations.delegate,
-GlobalWidgetsLocalizations.delegate,
-GlobalCupertinoLocalizations.delegate,
-],
-
-// 🚀 DİKKAT: Artık sabit 'de' veya 'tr' değil, yukarıdaki kumandadan gelen 'locale' kelimesini kullanıyoruz.
-locale: locale,
-
-supportedLocales: const [
-Locale('tr', ''),
-Locale('de', ''),
-Locale('en', ''),
-Locale('es', ''),
-],
-// --- ÇOKLU DİL MOTORU SONU ---
-  home: const LoginPage(),
-);
-},
-);
-  } // <--- 1. EKSİK OLABİLECEK PARANTEZ (build metodunu kapatır)
-} // <--- 2. EKSİK OLABİLECEK PARANTEZ (Sınıfı kapatır)
+    return ValueListenableBuilder<Locale>(
+      valueListenable: appLocale,
+      builder: (context, locale, child) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'İsim Şehir',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.indigo,
+              primary: Colors.indigo,
+            ),
+            useMaterial3: true,
+            scaffoldBackgroundColor: Colors.white,
+          ),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          locale: locale,
+          supportedLocales: const [
+            Locale('tr', ''),
+            Locale('de', ''),
+            Locale('en', ''),
+            Locale('es', ''),
+          ],
+          home: const LoginPage(),
+        );
+      },
+    );
+  }
+}
 // ---------------- BÖLÜM 5 SONU ----------------

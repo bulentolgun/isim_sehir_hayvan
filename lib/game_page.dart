@@ -637,7 +637,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
   }
 
 // ==========================================
-// BÖLÜM 6: Zombi Koruması (Güvenlik Sayacı)
+// BÖLÜM 6: Zombi Koruması (Güvenlik Sayacı) GÜNCELLENDİ
 // ==========================================
   void _guvenlikSayaciniBaslat() {
     _guvenlikTimer?.cancel();
@@ -670,15 +670,12 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
   Future<void> _zorlaTuruAtlatKontrolu() async {
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-    String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-
-    if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
-      _sonrakiTuraGec();
-    }
+    // 🚀 YENİ MANTIK: Artık "Kurucu muyum?" diye kontrol etmiyoruz.
+    // Süre bittiğinde odadaki HERKES turu atlatma isteği gönderebilir.
+    // Ancak BÖLÜM 21'de kurduğumuz Transaction (Şartlı Güncelleme) sayesinde
+    // sadece İLK ulaşan komut işlenecek, diğerleri reddedilecek.
+    _sonrakiTuraGec();
   }
-
-// ==========================================
 // BÖLÜM 7: Hazır Butonuna Tıklandığında
 // ==========================================
   Future<void> _hazirButonunaBasildi() async {
@@ -1287,11 +1284,17 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
   }
 
+
+  // ==========================================
 // ==========================================
-// BÖLÜM 21: Sonraki Tura Yönlendirme
+// BÖLÜM 21: Sonraki Tura Yönlendirme (ZAMAN DONDURMA ZIRHLI)
 // ==========================================
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
+
+    // 🚀 ÇÖZÜM: Fonksiyon tetiklendiği anki turu "dondurup" hafızaya alıyoruz!
+    // Firebase arka planda değişkeni güncellese bile, bu işlem sabit sayı üzerinden yürür.
+    final int hedeflenenTur = _guncelMevcutTur;
 
     if (!_hukmenGalibiyetGosterildi && !_elenmeGosterildi && widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
       try {
@@ -1309,6 +1312,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
           return;
         }
 
+        // 🚀 KONTROL 1: Odada 2'den az kişi kaldıysa tur atlatma, hükmeni ver!
         if (anlikAktifler.length <= 1) {
           _hukmenGalibiyetIsleminiBaslat();
           return;
@@ -1321,42 +1325,53 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     _isTransitioning = true;
     _guvenlikTimer?.cancel();
 
-    if (_guncelMevcutTur < widget.toplamTurSayisi) {
+    // 🚀 _guncelMevcutTur yerine dondurduğumuz hedeflenenTur'u kullanıyoruz
+    if (hedeflenenTur < widget.toplamTurSayisi) {
       if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
 
-        var doc = await FirebaseFirestore.instance
-            .collection('odalar')
-            .doc(widget.odaKodu)
-            .get(const GetOptions(source: Source.server));
+        DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
 
-        String dbKurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-        bool benKurucuMuyum = (trToLowerCase(dbKurucu) == trToLowerCase(ben));
+        // 🚀 KONTROL 2: FIREBASE TRANSACTION (Çift Tetikleme Koruması)
+        try {
+          await FirebaseFirestore.instance.runTransaction((transaction) async {
+            DocumentSnapshot snapshot = await transaction.get(odaRef);
+            if (!snapshot.exists) return;
 
-        if (benKurucuMuyum) {
-          final tumHarfler = _getAlfabe(); // 🚀 ÇOK DİLLİ ALFABE DEVREDE
-          List<String> kullanilabilirHarfler =
-          tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
-          if (kullanilabilirHarfler.isEmpty) {
-            kullanilabilirHarfler = List.from(tumHarfler);
-            kullanilanHarfler.clear();
-          }
-          kullanilabilirHarfler.shuffle();
-          String yeniHarf = kullanilabilirHarfler.first;
-          kullanilanHarfler.add(yeniHarf);
+            // 🚀 GÜVENLİ OKUMA (SAFE READ) EKLENDİ
+            Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+            int dbMevcutTur = 1;
+            if (data != null && data.containsKey('mevcutTur')) {
+              dbMevcutTur = data['mevcutTur'] as int;
+            }
 
-          await FirebaseFirestore.instance
-              .collection('odalar')
-              .doc(widget.odaKodu)
-              .update({
-            'mevcutTur': _guncelMevcutTur + 1,
-            'secilenHarf': yeniHarf,
-            'cevaplar': {},
-            'puanlar': {},
-            'hazirOyuncular': [],
-            'erkenBitiren': "",
+            // 🚀 BÜYÜK ZIRH: Firebase'deki tur, bizim HAFIZAYA ALDIĞIMIZ tura eşitse artırır.
+            if (dbMevcutTur == hedeflenenTur) {
+              final tumHarfler = _getAlfabe();
+              List<String> kullanilabilirHarfler =
+              tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
+              if (kullanilabilirHarfler.isEmpty) {
+                kullanilabilirHarfler = List.from(tumHarfler);
+                kullanilanHarfler.clear();
+              }
+              kullanilabilirHarfler.shuffle();
+              String yeniHarf = kullanilabilirHarfler.first;
+
+              transaction.update(odaRef, {
+                'mevcutTur': hedeflenenTur + 1, // 🚀 Hedeflenen turu 1 artırır
+                'secilenHarf': yeniHarf,
+                'cevaplar': {},
+                'puanlar': {},
+                'hazirOyuncular': [],
+                'erkenBitiren': "",
+              });
+            }
           });
+        } catch (e) {
+          print("Transaction hatası: $e");
         }
+
       } else {
+        // Botlu Oyun Mantığı Aynen Korundu
         setState(() {
           for (var p in masadakiHerkes) {
             macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
@@ -1369,6 +1384,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         });
       }
     } else {
+      // Oyun Sonu Puanlama Mantığı Aynen Korundu
       for (var p in masadakiHerkes) {
         macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
         tumTurPuanlari[p] = 0;
@@ -1432,7 +1448,6 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
   }
 
-// ==========================================
 // BÖLÜM 22: GÖRSEL TASARIM VE KULLANICI ARAYÜZÜ
 // ==========================================
   @override

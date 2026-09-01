@@ -396,7 +396,7 @@ class LobbyPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () {
-                      String deepLink = "https://isimsehir.app/join?code=$kod";
+                      String deepLink = "https://isim-sehir-multiplayer.web.app/join?code=$kod";
                       String storeLink =
                           "https://play.google.com/store/apps/details?id=com.tamam.isim_sehir_hayvan";
 

@@ -16,8 +16,9 @@ import 'contact_us_page.dart';
 import 'gemini_service.dart';
 import 'l10n/app_localizations.dart';
 import 'main.dart';
-import 'privacy_policy_page.dart'; // 🚀 GİZLİLİK POLİTİKASI SAYFASI EKLENDİ
-// ---------------- BÖLÜM 1 SONU ----------------
+import 'privacy_policy_page.dart';
+import 'lobby_page.dart'; // 🚀 DEEP LINK IŞINLAMASI İÇİN EKLENDİ
+import 'dart:ui';
 
 // ==========================================
 // BÖLÜM 2: SINIF TANIMLAMALARI VE DEĞİŞKENLER (STATE & VARIABLES)
@@ -61,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
     "aq", "mk", "sürtük", "yavşak", "ibne", "kahpe", "gay",
     "porno", "sex", "bok"
   ];
-// ---------------- BÖLÜM 2 SONU ----------------
 
 // ==========================================
 // BÖLÜM 3: YARDIMCI FONKSİYONLAR VE KONTROLLER (HELPER METHODS)
@@ -126,7 +126,6 @@ class _LoginPageState extends State<LoginPage> {
 
     return true;
   }
-// ---------------- BÖLÜM 3 SONU ----------------
 
 // ==========================================
 // BÖLÜM 4: CİHAZ, KAYIT VE FİREBASE İŞLEMLERİ (BACKEND & STORAGE)
@@ -204,6 +203,48 @@ class _LoginPageState extends State<LoginPage> {
       }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
 
       if (mounted) {
+        // 🚀🚀🚀 BÜYÜK SİHİR: OTOMATİK DEEP LINK IŞINLAMASI 🚀🚀🚀
+        if (globalBekleyenOdaKodu != null && globalBekleyenOdaKodu!.isNotEmpty) {
+          String kod = globalBekleyenOdaKodu!;
+          globalBekleyenOdaKodu = null; // Cebi boşalt (Bir daha tetiklenmesin diye)
+
+          var doc = await FirebaseFirestore.instance.collection('odalar').doc(kod).get();
+          if (doc.exists) {
+
+            // 1. Oyuncuyu sessizce odaya ekle
+            await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
+              'oyuncular': FieldValue.arrayUnion([name]),
+              'aktifOyuncular': FieldValue.arrayUnion([name])
+            });
+
+            // 2. Doğrudan Arkadaş Moduyla Lobi Sayfasına Işınla!
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LobbyPage(
+                  oyuncuAdi: name,
+                  yuzIndex: yuz,
+                  aksesuarIndex: aksesuar,
+                  renkIndex: renk,
+                  isFriendMode: true, // 🚀 Direkt arkadaş odası modunda açılır
+                ),
+              ),
+            );
+
+            if (mounted) _loadSavedUser();
+            return; // 🚀 Normal GameModePage sayfasına gitmeyi İPTAL ET, çünkü lobiye geçtik!
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Davet edildiğiniz oda kapanmış veya bulunamadı."), backgroundColor: Colors.red),
+              );
+            }
+          }
+        }
+        // 🚀🚀🚀 DEEP LINK IŞINLAMASI BİTİŞİ 🚀🚀🚀
+
+
+        // EĞER LİNK YOKSA (NORMAL GİRİŞ): Standart mod sayfasına git
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -242,7 +283,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
-// ---------------- BÖLÜM 4 SONU ----------------
 
 // ==========================================
 // BÖLÜM 5: KULLANICI ARAYÜZÜ (BUILD METODU VE WIDGET'LAR)
@@ -259,22 +299,20 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        // 🚀 İŞTE YENİ SOL DİL MENÜSÜ BURADA BAŞLIYOR 🚀
         leading: PopupMenuButton<Locale>(
           icon: const Icon(Icons.language, color: Colors.indigo, size: 28),
           tooltip: "Dil Seçimi / Language",
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           onSelected: (Locale locale) {
-            appLocale.value = locale; // Seçilen dili anında uygular
+            appLocale.value = locale;
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
-            const PopupMenuItem<Locale>(value: Locale('tr'), child: Text("🇹🇷 Türkçe")),
-            const PopupMenuItem<Locale>(value: Locale('de'), child: Text("🇩🇪 Deutsch")),
-            const PopupMenuItem<Locale>(value: Locale('en'), child: Text("🇬🇧 English")),
-            const PopupMenuItem<Locale>(value: Locale('es'), child: Text("🇪🇸 Español")),
+            PopupMenuItem<Locale>(value: const Locale('tr', ''), child: const Text("🇹🇷 Türkçe")),
+            PopupMenuItem<Locale>(value: const Locale('de', ''), child: const Text("🇩🇪 Deutsch")),
+            PopupMenuItem<Locale>(value: const Locale('en', ''), child: const Text("🇬🇧 English")),
+            PopupMenuItem<Locale>(value: const Locale('es', ''), child: const Text("🇪🇸 Español")),
           ],
         ),
-        // 🚀 SOL DİL MENÜSÜ SONU 🚀
         actions: [
           if (hasSavedUser && savedOyuncuAdi != null)
             Builder(
@@ -299,10 +337,6 @@ class _LoginPageState extends State<LoginPage> {
               accountName: Text(mevcutOyuncu, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               accountEmail: Text(AppLocalizations.of(context)!.welcomeContestant),
             ),
-
-
-
-            // --- ESKİ MENÜ ELEMANLARI (Oyun Kuralları, Gizlilik vb.) ---
             ListTile(
               leading: const Icon(Icons.menu_book_rounded, color: Colors.indigo),
               title: Text(AppLocalizations.of(context)!.gameRules, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -312,14 +346,12 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const RulesPage()));
               },
             ),
-
-            // 🚀 GİZLİLİK POLİTİKASI DÜZELTİLDİ 🚀
             ListTile(
               leading: const Icon(Icons.privacy_tip_outlined, color: Colors.indigo),
               title: Text(AppLocalizations.of(context)!.privacyPolicy, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               subtitle: Text(AppLocalizations.of(context)!.privacyPolicySubtitle),
               onTap: () {
-                Navigator.pop(context); // Menüyü kapat
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
@@ -460,11 +492,11 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(width: 10),
                           ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 180), // En fazla 180 piksel genişleyebilir
+                            constraints: const BoxConstraints(maxWidth: 180),
                             child: Text(
                               "${savedOyuncuAdi!} ${AppLocalizations.of(context)!.returnToProfile}",
                               style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.2),
-                              overflow: TextOverflow.ellipsis, // Sığmazsa sonuna 3 nokta (...) koyar
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -586,7 +618,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 35),
 
-                // 🚀 BÜYÜK SİHİR BURADA: YAPAY ZEKA GÜVENLİĞİ EKLENDİ 🚀
                 ElevatedButton(
                   onPressed: _isLoading
                       ? null
