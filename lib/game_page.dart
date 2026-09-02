@@ -1078,12 +1078,36 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
           if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
             await _hostPuanlariHesaplaVeKaydet();
           } else {
+            // --- KATILIMCI (GUEST) MANTIĞI ---
             if (mounted) setState(() { rakipBekleniyor = true; });
 
-            Future.delayed(const Duration(seconds: 15), () async {
+            // 🚀 YENİ: NÖBETÇİ KAPTAN MANTIĞI
+            // Herkes sırasına göre farklı süre bekler (Kurucu koptuysa yığılmayı önleriz)
+            int benimSiraNumaram = masadakiHerkes.indexOf(ben);
+            if (benimSiraNumaram == -1) benimSiraNumaram = 1;
+
+            // 1. sıradaki 15 sn, 2. sıradaki 18 sn, 3. sıradaki 21 sn...
+            int apiBeklemeSuresi = 15 + (benimSiraNumaram * 3);
+
+            Future.delayed(Duration(seconds: apiBeklemeSuresi), () async {
               if (mounted && rakipBekleniyor && !turBittiMi) {
-                setState(() { rakipBekleniyor = false; });
-                await _hostPuanlariHesaplaVeKaydet();
+                try {
+                  // SÜRE BİTTİ AMA KONTROL EDELİM: Benden önceki nöbetçi hesaplamış mı?
+                  var kontrolDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+                  var puanlarMap = kontrolDoc.data()?['puanlar'] as Map<String, dynamic>? ?? {};
+
+                  if (puanlarMap.isEmpty) {
+                    // Kimse hesaplamamış! Demek ki benden öncekiler de koptu.
+                    // Görevi ben devralıyorum ve Gemini'ye yolluyorum.
+                    setState(() { rakipBekleniyor = false; });
+                    await _hostPuanlariHesaplaVeKaydet();
+                  } else {
+                    // Puanlar zaten hesaplanmış! Gemini API kotamı boşuna harcamıyorum.
+                    setState(() { rakipBekleniyor = false; });
+                  }
+                } catch (e) {
+                  if (mounted) setState(() { rakipBekleniyor = false; });
+                }
               }
             });
           }
@@ -1286,15 +1310,19 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
 
 
   // ==========================================
-// ==========================================
-// BÖLÜM 21: Sonraki Tura Yönlendirme (ZAMAN DONDURMA ZIRHLI)
+// BÖLÜM 21: Sonraki Tura Yönlendirme (ZAMAN DONDURMA VE NÖBETÇİ KAPTAN ZIRHI)
 // ==========================================
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
+    _isTransitioning = true; // 🚀 Kilidi anında kapatıyoruz (Çift basmayı engeller)
 
-    // 🚀 ÇÖZÜM: Fonksiyon tetiklendiği anki turu "dondurup" hafızaya alıyoruz!
-    // Firebase arka planda değişkeni güncellese bile, bu işlem sabit sayı üzerinden yürür.
     final int hedeflenenTur = _guncelMevcutTur;
+
+    // 🚀 1. NÖBETÇİ KAPTAN (Host Migration) SÜRESİ HESAPLAMA
+    // Listedeki sıramıza göre bekleme süresi alıyoruz. (Kurucu 0 sn, diğerleri 2-4-6 sn bekler)
+    int benimSiraNumaram = masadakiHerkes.indexOf(ben);
+    if (benimSiraNumaram == -1) benimSiraNumaram = 1;
+    int beklemeSuresi = benimSiraNumaram * 2;
 
     if (!_hukmenGalibiyetGosterildi && !_elenmeGosterildi && widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
       try {
@@ -1304,7 +1332,6 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             .get(const GetOptions(source: Source.server));
 
         List<dynamic> anlikAktifler = odaDoc.data()?['aktifOyuncular'] ?? [];
-
         bool benHalaAktifMiyim = anlikAktifler.any((aktif) => trToLowerCase(aktif.toString().trim()) == trToLowerCase(ben.trim()));
 
         if (!benHalaAktifMiyim) {
@@ -1312,7 +1339,6 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
           return;
         }
 
-        // 🚀 KONTROL 1: Odada 2'den az kişi kaldıysa tur atlatma, hükmeni ver!
         if (anlikAktifler.length <= 1) {
           _hukmenGalibiyetIsleminiBaslat();
           return;
@@ -1322,56 +1348,61 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       }
     }
 
-    _isTransitioning = true;
     _guvenlikTimer?.cancel();
 
-    // 🚀 _guncelMevcutTur yerine dondurduğumuz hedeflenenTur'u kullanıyoruz
     if (hedeflenenTur < widget.toplamTurSayisi) {
       if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
 
-        DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
+        // 🚀 2. KADEMELİ GECİKME DEVREDE! Herkes kendi sırası geldiğinde Firebase'e bakar.
+        Future.delayed(Duration(seconds: beklemeSuresi), () async {
+          if (!mounted) return;
 
-        // 🚀 KONTROL 2: FIREBASE TRANSACTION (Çift Tetikleme Koruması)
-        try {
-          await FirebaseFirestore.instance.runTransaction((transaction) async {
-            DocumentSnapshot snapshot = await transaction.get(odaRef);
-            if (!snapshot.exists) return;
+          DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
 
-            // 🚀 GÜVENLİ OKUMA (SAFE READ) EKLENDİ
-            Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
-            int dbMevcutTur = 1;
-            if (data != null && data.containsKey('mevcutTur')) {
-              dbMevcutTur = data['mevcutTur'] as int;
-            }
+          try {
+            // 🚀 3. TRANSACTION KORUMASI (Eşzamanlı Çakışmaları Engeller)
+            await FirebaseFirestore.instance.runTransaction((transaction) async {
+              DocumentSnapshot snapshot = await transaction.get(odaRef);
+              if (!snapshot.exists) return;
 
-            // 🚀 BÜYÜK ZIRH: Firebase'deki tur, bizim HAFIZAYA ALDIĞIMIZ tura eşitse artırır.
-            if (dbMevcutTur == hedeflenenTur) {
-              final tumHarfler = _getAlfabe();
-              List<String> kullanilabilirHarfler =
-              tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
-              if (kullanilabilirHarfler.isEmpty) {
-                kullanilabilirHarfler = List.from(tumHarfler);
-                kullanilanHarfler.clear();
+              Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+              int dbMevcutTur = 1;
+              if (data != null && data.containsKey('mevcutTur')) {
+                dbMevcutTur = data['mevcutTur'] as int;
               }
-              kullanilabilirHarfler.shuffle();
-              String yeniHarf = kullanilabilirHarfler.first;
 
-              transaction.update(odaRef, {
-                'mevcutTur': hedeflenenTur + 1, // 🚀 Hedeflenen turu 1 artırır
-                'secilenHarf': yeniHarf,
-                'cevaplar': {},
-                'puanlar': {},
-                'hazirOyuncular': [],
-                'erkenBitiren': "",
-              });
-            }
-          });
-        } catch (e) {
-          print("Transaction hatası: $e");
-        }
+              // 🚀 ZIRH: Eğer Firebase'deki tur hala bizim eski (hedeflenen) turumuzda takılıysa:
+              // (Yani bizden önceki kaptanların interneti koptuğu için atlatamamışlarsa)
+              if (dbMevcutTur == hedeflenenTur) {
+
+                final tumHarfler = _getAlfabe();
+                List<String> kullanilabilirHarfler =
+                tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
+                if (kullanilabilirHarfler.isEmpty) {
+                  kullanilabilirHarfler = List.from(tumHarfler);
+                  kullanilanHarfler.clear();
+                }
+                kullanilabilirHarfler.shuffle();
+                String yeniHarf = kullanilabilirHarfler.first;
+
+                transaction.update(odaRef, {
+                  'mevcutTur': hedeflenenTur + 1, // 🚀 increment YERİNE SABİT HEDEF SAYI (+)
+                  'secilenHarf': yeniHarf,
+                  'cevaplar': {},
+                  'puanlar': {},
+                  'hazirOyuncular': [],
+                  'erkenBitiren': "",
+                });
+              }
+            });
+          } catch (e) {
+            print("Transaction hatası: $e");
+            if (mounted) setState(() => _isTransitioning = false); // Hata olursa kilidi aç
+          }
+        });
 
       } else {
-        // Botlu Oyun Mantığı Aynen Korundu
+        // --- BOTLU OYUN MANTIĞI (DEĞİŞMEDİ) ---
         setState(() {
           for (var p in masadakiHerkes) {
             macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
@@ -1384,7 +1415,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         });
       }
     } else {
-      // Oyun Sonu Puanlama Mantığı Aynen Korundu
+      // --- OYUN SONU PUANLAMA MANTIĞI (DEĞİŞMEDİ) ---
       for (var p in masadakiHerkes) {
         macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
         tumTurPuanlari[p] = 0;
@@ -1447,6 +1478,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       }
     }
   }
+// ---------------- BÖLÜM 21 SONU ----------------
 
 // BÖLÜM 22: GÖRSEL TASARIM VE KULLANICI ARAYÜZÜ
 // ==========================================

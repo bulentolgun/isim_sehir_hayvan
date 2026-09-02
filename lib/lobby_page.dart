@@ -396,20 +396,20 @@ class LobbyPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () {
-                      String deepLink = "https://isim-sehir-multiplayer.web.app/join?code=$kod";
-                      String storeLink =
-                          "https://play.google.com/store/apps/details?id=com.tamam.isim_sehir_hayvan";
+                      // l10n değişkeniniz zaten bu fonksiyonun en başında tanımlanmış,
+                      // o yüzden doğrudan kullanabiliyoruz.
 
-                      String mesaj =
-                          "İsim Şehir Hayvan oynamaya davet edildin! 🎮\n\n"
-                          "Sen de gel, yarışalım!\n"
-                          "📌 Oda Kodun: $kod\n\n"
-                          "🔗 Doğrudan Odaya Katılmak İçin Tıkla:\n$deepLink\n\n"
-                          "📲 Uygulama yüklü değilse hemen indir:\n$storeLink";
+                      // Oda kodunu tutan değişkeniniz kodunuzda "kod" olarak geçiyor
+                      String davetMesaji = "${l10n.inviteTitle}\n\n"
+                          "${l10n.inviteBody}\n"
+                          "${l10n.inviteRoomCode} $kod\n\n"
+                          "${l10n.inviteLink}\n"
+                          "https://isim-sehir-multiplayer.web.app/join?code=$kod";
 
-                      Share.share(mesaj,
-                          subject: 'İsim Şehir Hayvan Oyunu Oda Daveti');
+                      Share.share(davetMesaji,
+                          subject: l10n.inviteTitle); // subject kısmı e-posta ile paylaşımlarda başlık olur
                     },
+
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       width: double.infinity,

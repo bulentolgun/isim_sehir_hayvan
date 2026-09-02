@@ -555,4 +555,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get closeButton => 'Kapat ve Geri Dön';
+
+  @override
+  String get inviteTitle => 'İsim Şehir Hayvan oynamaya davet edildin! 🎮';
+
+  @override
+  String get inviteBody => 'Sen de gel, yarışalım!';
+
+  @override
+  String get inviteRoomCode => '📌 Oda Kodun:';
+
+  @override
+  String get inviteLink => '🔗 Hemen Katıl:';
 }

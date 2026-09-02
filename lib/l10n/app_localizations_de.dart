@@ -556,4 +556,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get closeButton => 'Schließen und Zurück';
+
+  @override
+  String get inviteTitle =>
+      'Du bist eingeladen, Stadt Land Fluss zu spielen! 🎮';
+
+  @override
+  String get inviteBody => 'Komm und mach mit!';
+
+  @override
+  String get inviteRoomCode => '📌 Raumcode:';
+
+  @override
+  String get inviteLink => '🔗 Jetzt beitreten:';
 }

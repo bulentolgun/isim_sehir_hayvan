@@ -556,4 +556,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get closeButton => 'Cerrar y Regresar';
+
+  @override
+  String get inviteTitle => '¡Estás invitado a jugar Basta / Tutti Frutti! 🎮';
+
+  @override
+  String get inviteBody => '¡Ven y compite!';
+
+  @override
+  String get inviteRoomCode => '📌 Código de sala:';
+
+  @override
+  String get inviteLink => '🔗 Únete ahora:';
 }

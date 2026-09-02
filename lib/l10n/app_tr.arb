@@ -221,5 +221,9 @@
                 "privacySection3Text": "İsim Şehir oyunu her yaşa hitap eder. Uygulamamız 13 yaşından küçük çocuklardan bilerek herhangi bir kişisel veri (isim, e-posta, konum) toplamaz.",
                 "privacySection4Title": "4. Veri Güvenliği ve İletişim",
                 "privacySection4Text": "Toplanan hiçbir veri pazarlama amacıyla satılmaz ve paylaşılmaz. Sistemdeki takma adlarınızın ve skorlarınızın silinmesini isterseniz, bulentolgun75@gmail.com adresi üzerinden bizimle iletişime geçebilirsiniz.",
-                "closeButton": "Kapat ve Geri Dön"
+                "closeButton": "Kapat ve Geri Dön",
+                "inviteTitle": "İsim Şehir Hayvan oynamaya davet edildin! 🎮",
+                  "inviteBody": "Sen de gel, yarışalım!",
+                  "inviteRoomCode": "📌 Oda Kodun:",
+                  "inviteLink": "🔗 Hemen Katıl:"
 }

@@ -555,4 +555,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get closeButton => 'Close and Return';
+
+  @override
+  String get inviteTitle => 'You are invited to play Name City Animal! 🎮';
+
+  @override
+  String get inviteBody => 'Come and compete!';
+
+  @override
+  String get inviteRoomCode => '📌 Room Code:';
+
+  @override
+  String get inviteLink => '🔗 Join Now:';
 }

@@ -221,5 +221,9 @@
                 "privacySection3Text": "Name City game appeals to all ages. Our app does not knowingly collect any personal data (name, email, location) from children under the age of 13.",
                 "privacySection4Title": "4. Data Security and Contact",
                 "privacySection4Text": "No collected data is sold or shared for marketing purposes. If you wish your nicknames and scores in the system to be deleted, you can contact us via bulentolgun75@gmail.com.",
-                "closeButton": "Close and Return"
+                "closeButton": "Close and Return",
+                "inviteTitle": "You are invited to play Name City Animal! 🎮",
+                  "inviteBody": "Come and compete!",
+                  "inviteRoomCode": "📌 Room Code:",
+                  "inviteLink": "🔗 Join Now:"
 }

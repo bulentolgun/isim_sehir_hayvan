@@ -1091,6 +1091,30 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kapat ve Geri Dön'**
   String get closeButton;
+
+  /// No description provided for @inviteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsim Şehir Hayvan oynamaya davet edildin! 🎮'**
+  String get inviteTitle;
+
+  /// No description provided for @inviteBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sen de gel, yarışalım!'**
+  String get inviteBody;
+
+  /// No description provided for @inviteRoomCode.
+  ///
+  /// In tr, this message translates to:
+  /// **'📌 Oda Kodun:'**
+  String get inviteRoomCode;
+
+  /// No description provided for @inviteLink.
+  ///
+  /// In tr, this message translates to:
+  /// **'🔗 Hemen Katıl:'**
+  String get inviteLink;
 }
 
 class _AppLocalizationsDelegate

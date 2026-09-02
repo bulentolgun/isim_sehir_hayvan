@@ -221,5 +221,9 @@
                 "privacySection3Text": "Nuestro juego es apto para todas las edades. No recopilamos a sabiendas datos personales de niños menores de 13 años.",
                 "privacySection4Title": "4. Seguridad y Contacto",
                 "privacySection4Text": "Ningún dato recopilado se vende o comparte con fines de marketing. Si deseas que tus datos sean eliminados, contáctanos en bulentolgun75@gmail.com.",
-                "closeButton": "Cerrar y Regresar"
+                "closeButton": "Cerrar y Regresar",
+                "inviteTitle": "¡Estás invitado a jugar Basta / Tutti Frutti! 🎮",
+                  "inviteBody": "¡Ven y compite!",
+                  "inviteRoomCode": "📌 Código de sala:",
+                  "inviteLink": "🔗 Únete ahora:"
 }

@@ -221,5 +221,9 @@
                 "privacySection3Text": "Unser Spiel ist für alle Altersgruppen geeignet. Wir sammeln wissentlich keine personenbezogenen Daten von Kindern unter 13 Jahren.",
                 "privacySection4Title": "4. Datensicherheit & Kontakt",
                 "privacySection4Text": "Keine gesammelten Daten werden für Marketingzwecke verkauft oder geteilt. Wenn Sie Ihre Daten löschen lassen möchten, kontaktieren Sie uns unter bulentolgun75@gmail.com.",
-                "closeButton": "Schließen und Zurück"
+                "closeButton": "Schließen und Zurück",
+                "inviteTitle": "Du bist eingeladen, Stadt Land Fluss zu spielen! 🎮",
+                  "inviteBody": "Komm und mach mit!",
+                  "inviteRoomCode": "📌 Raumcode:",
+                  "inviteLink": "🔗 Jetzt beitreten:"
 }
