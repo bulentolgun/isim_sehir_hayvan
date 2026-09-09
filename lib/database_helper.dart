@@ -7,8 +7,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
+// 🚀 YENİ: Web için sqflite çeviricisini ekliyoruz (Sadece web ise çalışacak)
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+
 import 'gemini_service.dart';
-import 'main.dart'; // 🚀 EKLENDİ: O anki aktif dili (appLocale) almak için
+import 'main.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -19,7 +24,7 @@ class DatabaseHelper {
 // ---------------- BÖLÜM 1 SONU ----------------
 
 // ==========================================
-// BÖLÜM 2: Veritabanı Oluşturma ve Bağlantı
+// BÖLÜM 2: Veritabanı Oluşturma ve Bağlantı (WEB DESTEKLİ) 🌐
 // ==========================================
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -28,18 +33,33 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    // 🚀 YENİ YAPI: Eğer oyun WEB üzerinden çalışıyorsa FFI_WEB çeviricisini kullan
+    if (kIsWeb) {
+      // Web tarayıcısında veritabanı yolları (path) kullanılmaz, doğrudan isimle açılır
+      var factory = databaseFactoryFfiWeb;
+      return await factory.openDatabase(
+        filePath,
+        options: OpenDatabaseOptions(
+          version: 33,
+          onCreate: _createDB,
+          onUpgrade: _onUpgrade,
+        ),
+      );
+    }
+    // 📱 EĞER OYUN ANDROID VEYA IOS (TELEFON) İSE NORMAL ÇALIŞMAYA DEVAM ET
+    else {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 33, // 🚀 VERSİYON 33: Otomatik format atıp sıfırlaması için yükselttik
-      onCreate: _createDB,
-      onUpgrade: _onUpgrade,
-    );
+      return await openDatabase(
+        path,
+        version: 33,
+        onCreate: _createDB,
+        onUpgrade: _onUpgrade,
+      );
+    }
   }
 // ---------------- BÖLÜM 2 SONU ----------------
-
 // ==========================================
 // BÖLÜM 3: Tabloların Kurulumu ve Güncellenmesi (Create & Upgrade)
 // ==========================================
@@ -219,8 +239,9 @@ class DatabaseHelper {
 // ==========================================
 // BÖLÜM 7: Kelime Doğruluk Kontrolü (Veritabanı Araması)
 // ==========================================
-  Future<int> checkWordWithToleranceAndTdk(
-      int catId, String harf, String kelime) async {
+  Future<int> checkWordWithToleranceAndTdk(int catId, String harf, String kelime) async {
+    // 🚀 WEB TEST ZIRHINI SİLDİK! ARTIK GERÇEK VERİTABANINA GİDECEK.
+
     String temizKelime = kelime.trim();
     if (temizKelime.isEmpty || temizKelime == "-") return 0;
 
@@ -500,9 +521,11 @@ class DatabaseHelper {
   }
 
 // ==========================================
+// ==========================================
 // BÖLÜM 12: KÜLTÜREL BOT SEÇİMİ 🌍
 // ==========================================
-  Future<Map<String, dynamic>> getRandomBot({List<String>? haricTutulacakBotlar}) async {
+  Future<Map<String, dynamic>?> getRandomBot([List<String>? haricTutulacakBotlar]) async {
+    // 🚀 WEB TEST ZIRHINI SİLDİK! ARTIK WEB'DE DE GERÇEK 1000 BOT ÇALIŞACAK.
     final db = await instance.database;
     String lang = appLocale.value.languageCode;
 

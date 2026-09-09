@@ -4,26 +4,37 @@ import 'package:flutter/material.dart';
 class DeepLinkService {
   static final _appLinks = AppLinks();
 
-  /// Uygulama açılırken veya çalışırken link tıklandığında tetiklenir
+  // =============================================================== //
+  // BÖLÜM 1: LİNK DİNLEME VE BAŞLATMA SERVİSİ
+  // Görevi: Uygulama açıkken veya kapalıyken gelen linkleri yakalamak
+  // =============================================================== //
+
   static void initDeepLinks(Function(String odaKodu) onOdaKoduAlindi) {
-    // 1. Uygulama tamamen KAPALIYKEN (Soğuk Başlangıç) linke tıklanıp açıldıysa
+    // DURUM 1: Uygulama tamamen KAPALIYKEN (Soğuk Başlangıç)
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) {
         _odaKoduAyristir(uri, onOdaKoduAlindi);
       }
     });
 
-    // 2. Uygulama ARKA PLANDAYKEN linke tıklandıysa
+    // DURUM 2: Uygulama ARKA PLANDAYKEN linke tıklandıysa
     _appLinks.uriLinkStream.listen((uri) {
       _odaKoduAyristir(uri, onOdaKoduAlindi);
     });
   }
 
+  // ----------------------- BÖLÜM 1 SONU -------------------------- //
+
+
+  // =============================================================== //
+  // BÖLÜM 2: LİNK AYRIŞTIRMA VE ODA KODU ÇIKARMA
+  // Görevi: Yakalanan linkin içinden oda numarasını ayıklamak
+  // =============================================================== //
+
   static void _odaKoduAyristir(Uri uri, Function(String odaKodu) onOdaKoduAlindi) {
     debugPrint("🔗 SİSTEME GELEN LİNK: ${uri.toString()}");
 
-    // A PLANI: Doğrudan URL parametreleri içinde 'code' var mı?
-    // Yolun (path) ne olduğuna bakmadan doğrudan numarayı arıyoruz.
+    // --- A PLANI: Standart URL Parametresi Kontrolü ---
     if (uri.queryParameters.containsKey('code')) {
       String? code = uri.queryParameters['code'];
       if (code != null && code.isNotEmpty) {
@@ -31,7 +42,8 @@ class DeepLinkService {
         onOdaKoduAlindi(code);
       }
     }
-    // B PLANI: Link bozulmuş veya parametre olarak gelmemişse düz metin olarak içinden söküp al.
+
+    // --- B PLANI: Alternatif Metin Ayrıştırma (Regex) ---
     else if (uri.toString().contains('code=')) {
       try {
         var parts = uri.toString().split('code=');
@@ -48,4 +60,6 @@ class DeepLinkService {
       }
     }
   }
+
+// ----------------------- BÖLÜM 2 SONU -------------------------- //
 }

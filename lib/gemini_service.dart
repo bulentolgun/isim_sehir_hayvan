@@ -1,40 +1,39 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// 🚀 EKLENDİ: Uygulamanın o anki dilini almak için main.dart'a erişim
 import 'main.dart';
 
 class GeminiService {
-  static String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? "";
+
+  // ============================================================================
+  // 🚀 BÖLÜM 1: TOPLU KELİME KONTROL SİSTEMİ BAŞLANGICI
+  // ============================================================================
 
   // 🧠 ÇOK DİLLİ TOPLU KELİME KONTROLÜ
+  // Kullanıcının girdiği kelimeleri önce Firebase hafızasında arar,
+  // bulamazsa Cloud Functions üzerinden Gemini'ye sorar.
   static Future<Map<int, bool>> topluKelimeKontrol(
       Map<int, String> girilenKelimeler) async {
     Map<int, bool> sonuclar = {};
     Map<int, String> geminiyeSorulacaklar = {};
 
-    if (_apiKey.trim().isEmpty) {
-      print("🚨 DİKKAT: Gemini API anahtarı eksik veya .env dosyası okunamadı!");
-      girilenKelimeler.forEach((key, value) => sonuclar[key] = false);
-      return sonuclar;
-    }
-
-    // Uygulamanın o anki dil kodunu alıyoruz (tr, en, de, es)
     String currentLang = appLocale.value.languageCode;
 
-    // 1. ADIM: FİREBASE HAFIZA VE BOŞLUK KONTROLÜ
+    // ---------------------------------------------------------
+    // 📌 ALT BAŞLIK 1.1: FİREBASE HAFIZA VE BOŞLUK KONTROLÜ
+    // ---------------------------------------------------------
     for (var entry in girilenKelimeler.entries) {
       int catId = entry.key;
-      String kelime = entry.value.trim().toLowerCase();
+
+      // 🛡️ ZIRH 1.1: Boşlukları temizle ve '/' işaretini '-' yap (Firestore çökmesini önler)
+      String kelime = entry.value.trim().toLowerCase().replaceAll('/', '-');
 
       if (kelime.isEmpty) {
         sonuclar[catId] = false;
         continue;
       }
 
-      // 🌍 DİKKAT: Artık Firebase hafızasında diller karışmasın diye dil kodunu da ID'ye ekliyoruz!
       String docId = "${currentLang}_${catId}_$kelime";
 
       try {
@@ -53,6 +52,7 @@ class GeminiService {
           geminiyeSorulacaklar[catId] = kelime;
         }
       } catch (e) {
+        // 🛡️ ZIRH 1.2: Hafıza okuma çökse bile oyunu durdurma, kelimeyi Gemini'ye gönder
         print("🚨 Firebase hafıza okuma hatası ($kelime):$e");
         geminiyeSorulacaklar[catId] = kelime;
       }
@@ -62,39 +62,49 @@ class GeminiService {
       return sonuclar;
     }
 
-    // 2. ADIM: FİREBASE'DE OLMAYANLARI GEMİNİ'YE SOR (ÇOK DİLLİ PROMPT)
+    // ---------------------------------------------------------
+    // 📌 ALT BAŞLIK 1.2: CLOUD FUNCTIONS (GEMİNİ) İLE KONTROL
+    // ---------------------------------------------------------
     try {
-      final model =
-      GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
-
       String jsonSoru = "";
       geminiyeSorulacaklar.forEach((catId, kelime) {
-        String kategoriAdi = _getKategoriAdi(catId, currentLang); // 🌍 Dile göre kategori adını al
-        jsonSoru +=
-        '"$catId": { "kategori": "$kategoriAdi", "kelime": "$kelime" },\n';
+        String kategoriAdi = _getKategoriAdi(catId, currentLang);
+        jsonSoru += '"$catId": { "kategori": "$kategoriAdi", "kelime": "$kelime" },\n';
       });
 
-      // 🌍 DİLE GÖRE YERELLEŞTİRİLMİŞ (LOCALIZED) GEMINI PROMPT'U
       String prompt = _getLocalizedPrompt(currentLang, jsonSoru);
 
-      final response = await model.generateContent(
-          [Content.text(prompt)]).timeout(const Duration(seconds: 12));
-      String cevap = response.text?.trim() ?? "{}";
+      // 🚀 YENİ BAĞLANTI: Doğrudan kendi sunucumuzu çağırıyoruz!
+      final callable = FirebaseFunctions.instance.httpsCallable('geminiSorgusu');
+      final response = await callable.call({'prompt': prompt}).timeout(const Duration(seconds: 15));
 
+      String cevap = response.data['cevap']?.toString().trim() ?? "{}";
+
+      // 🛡️ ZIRH 1.3: Gemini'nin Markdown (```json) formatını temizleme
       if (cevap.startsWith("```json")) {
         cevap = cevap.replaceAll("```json", "").replaceAll("```", "").trim();
       } else if (cevap.startsWith("```")) {
         cevap = cevap.replaceAll("```", "").trim();
       }
 
-      print("🤖 Gemini [$currentLang] Cevabı: $cevap");
+      print("🤖 Sunucu Gemini [$currentLang] Cevabı: $cevap");
 
-      Map<String, dynamic> geminiKararlari = jsonDecode(cevap);
+      Map<String, dynamic> geminiKararlari;
+      try {
+        geminiKararlari = jsonDecode(cevap);
+      } catch (formatHatasi) {
+        // 🛡️ ZIRH 1.4: Yapay zeka JSON formatını bozarsa tüm kelimeleri geçersiz say (Oyun çökmesin)
+        print("🚨 Sunucu bozuk JSON gönderdi: $formatHatasi \n Gelen Cevap: $cevap");
+        geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
+        return sonuclar;
+      }
 
-      // 3. ADIM: SONUÇLARI BİRLEŞTİR VE FİREBASE'E KAYDET
+      // ---------------------------------------------------------
+      // 📌 ALT BAŞLIK 1.3: SONUÇLARI BİRLEŞTİR VE HAFIZAYA KAYDET
+      // ---------------------------------------------------------
       for (var entry in geminiyeSorulacaklar.entries) {
         int catId = entry.key;
-        String kucukHarfKelime = entry.value;
+        String kucukHarfKelime = entry.value.replaceAll('/', '-');
         String docId = "${currentLang}_${catId}_$kucukHarfKelime";
 
         bool geminiOnayi = geminiKararlari[catId.toString()] ?? false;
@@ -107,27 +117,40 @@ class GeminiService {
               .set({
             'kelime': kucukHarfKelime,
             'kategoriId': catId,
-            'dil': currentLang, // 🌍 Hangi dilde kaydedildiğini ekledik
+            'dil': currentLang,
             'onaylandiMi': geminiOnayi,
             'eklenmeTarihi': FieldValue.serverTimestamp(),
-            'kaynak': 'Gemini Toplu Analiz'
+            'kaynak': 'Gemini Sunucu Analizi'
           });
         } catch (e) {
+          // 🛡️ ZIRH 1.5: Kayıt başarısız olursa sadece logla, oyunu durdurma
           print("🚨 Firebase hafıza kaydetme hatası: $e");
         }
       }
     } on TimeoutException catch (_) {
-      print("⏳ Gemini API Yanıt Vermedi (Zaman Aşımı)");
+      // 🛡️ ZIRH 1.6: Zaman aşımı durumunda kelimeleri reddet
+      print("⏳ Sunucu API Yanıt Vermedi (Zaman Aşımı)");
       geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
     } catch (e) {
-      print("🚨 Gemini API Genel Hatası: $e");
+      // 🛡️ ZIRH 1.7: Genel API hatalarında çökme engeli
+      print("🚨 Sunucu API Genel Hatası: $e");
       geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
     }
 
     return sonuclar;
   }
 
-  // 🌍 1. YARDIMCI: Dile Göre Kategori İsimleri (Gemini'nin anlaması için)
+  // ============================================================================
+  // 🚀 BÖLÜM 1: TOPLU KELİME KONTROL SİSTEMİ BİTİŞİ
+  // ============================================================================
+
+
+
+  // ============================================================================
+  // 🚀 BÖLÜM 2: YARDIMCI METOTLAR BAŞLANGICI
+  // ============================================================================
+
+  // 🌍 YARDIMCI 2.1: Dile Göre Kategori İsimleri Getirici
   static String _getKategoriAdi(int catId, String lang) {
     if (lang == "en") {
       switch (catId) {
@@ -160,7 +183,6 @@ class GeminiService {
         default: return "Categoría Desconocida";
       }
     } else {
-      // Varsayılan (Türkçe)
       switch (catId) {
         case 1: return "İnsan İsmi (Gerçek bir insan ismi)";
         case 2: return "Şehir veya Ülke İsmi";
@@ -173,7 +195,7 @@ class GeminiService {
     }
   }
 
-  // 🌍 2. YARDIMCI: Gemini'ye verilecek kültür bazlı komutlar
+  // 🌍 YARDIMCI 2.2: Dile Göre Gemini Promtu (Komutu) Oluşturucu
   static String _getLocalizedPrompt(String lang, String jsonSoru) {
     if (lang == "en") {
       return '''
@@ -224,7 +246,6 @@ RESPONDE ESTRICTAMENTE en formato JSON con valores booleanos (true/false) así:
 { "1": true, "3": false }
 ''';
     } else {
-      // Varsayılan (Türkçe)
       return '''
 Sen geleneksel "İsim Şehir Hayvan" oyunu için bir hakemsin.
 Aşağıdaki JSON formatında verilen kelimeleri incele:
@@ -243,11 +264,26 @@ SADECE VE SADECE JSON formatında cevap ver:
     }
   }
 
-  // 🛡️ OYUNCU İSMİ GÜVENLİK KONTROLÜ
-  static Future<bool> isimUygunMu(String oyuncuAdi) async {
-    if (_apiKey.trim().isEmpty) return true;
-    String kucukHarfIsim = oyuncuAdi.trim().toLowerCase();
+  // ============================================================================
+  // 🚀 BÖLÜM 2: YARDIMCI METOTLAR BİTİŞİ
+  // ============================================================================
 
+
+
+  // ============================================================================
+  // 🚀 BÖLÜM 3: OYUNCU İSMİ GÜVENLİK FİLTRESİ BAŞLANGICI
+  // ============================================================================
+
+  // 🛡️ OYUNCU İSMİ GÜVENLİK KONTROLÜ
+  // Yeni kayıt olan oyuncuların isimlerini küfür, argo ve nefret söylemine karşı tarar.
+  static Future<bool> isimUygunMu(String oyuncuAdi) async {
+
+    // 🛡️ ZIRH 3.1: Firestore '/' işaretinde çökmesin diye temizleme
+    String kucukHarfIsim = oyuncuAdi.trim().toLowerCase().replaceAll('/', '-');
+
+    // ---------------------------------------------------------
+    // 📌 ALT BAŞLIK 3.1: KARA LİSTE (BLACKLIST) KONTROLÜ
+    // ---------------------------------------------------------
     try {
       final karaListeDoc = await FirebaseFirestore.instance
           .collection('yasakli_isimler')
@@ -256,13 +292,14 @@ SADECE VE SADECE JSON formatında cevap ver:
 
       if (karaListeDoc.exists) return false;
     } catch (e) {
+      // 🛡️ ZIRH 3.2: Okuma hatası olursa oyunu kitleme, kontrole devam et
       print("🚨 Firebase kara liste okuma hatası: $e");
     }
 
+    // ---------------------------------------------------------
+    // 📌 ALT BAŞLIK 3.2: CLOUD FUNCTIONS İLE YAPAY ZEKA FİLTRESİ
+    // ---------------------------------------------------------
     try {
-      final model =
-      GenerativeModel(model: 'gemini-3.5-flash-lite', apiKey: _apiKey);
-
       final prompt = '''
       Sen uluslararası bir mobil oyun güvenlik filtresisin.
       Kontrol edilecek oyuncu adı: "$oyuncuAdi"
@@ -273,9 +310,10 @@ SADECE VE SADECE JSON formatında cevap ver:
       3. İsim UYGUNSUZSA SADECE "False" yaz.
       ''';
 
-      final response = await model.generateContent(
-          [Content.text(prompt)]).timeout(const Duration(seconds: 5));
-      final cevap = response.text?.trim().toLowerCase() ?? "true";
+      // 🚀 YENİ BAĞLANTI: Sunucuya gönderiyoruz
+      final callable = FirebaseFunctions.instance.httpsCallable('geminiSorgusu');
+      final response = await callable.call({'prompt': prompt}).timeout(const Duration(seconds: 10));
+      final cevap = response.data['cevap']?.toString().trim().toLowerCase() ?? "true";
 
       if (cevap.contains("false")) {
         try {
@@ -289,14 +327,22 @@ SADECE VE SADECE JSON formatında cevap ver:
             'kaynak': 'Gemini Otomatik Engel'
           });
         } catch (e) {
+          // 🛡️ ZIRH 3.3: Kayıt hatası çökme yapmasın
           print("🚨 Firebase kara liste kaydetme hatası: $e");
         }
-        return false;
+        return false; // İsim reddedildi
       }
-      return true;
+      return true; // İsim onaylandı
+
     } catch (e) {
+      // 🛡️ ZIRH 3.4: API hata verirse, iyi niyet kuralı gereği oyuncuyu içeri al
       print("🚨 İsim kontrolü hatası: $e");
       return true;
     }
   }
+
+// ============================================================================
+// 🚀 BÖLÜM 3: OYUNCU İSMİ GÜVENLİK FİLTRESİ BİTİŞİ
+// ============================================================================
+
 }

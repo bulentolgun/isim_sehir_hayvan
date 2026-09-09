@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 // ---------------- BÖLÜM 1 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 2: Ana Sınıf ve Platform Tespit Motoru (currentPlatform)
 // ==========================================
@@ -52,7 +51,6 @@ class DefaultFirebaseOptions {
   }
 // ---------------- BÖLÜM 2 SONU ----------------
 
-
 // ==========================================
 // BÖLÜM 3: Platformlara Özel Bağlantı Kimlikleri (API Keys)
 // ==========================================
@@ -73,15 +71,15 @@ class DefaultFirebaseOptions {
   // ----------------------------------------
   // ALT BÖLÜM 3.2: Android Ayarları (Google Play Store)
   // ----------------------------------------
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDMdVzNAPVDVD8qY1NOM9_wXWMcJOndTjA',
     appId: '1:617858400184:android:9e75b5cc98c3fb7acd594d',
     messagingSenderId: '617858400184',
     projectId: 'isim-sehir-multiplayer',
+    databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
-      databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
   );
-
   // ----------------------------------------
   // ALT BÖLÜM 3.3: iOS Ayarları (Apple App Store)
   // ----------------------------------------

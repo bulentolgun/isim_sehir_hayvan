@@ -145,6 +145,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _loadSavedUser() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('saved_oyuncu_adi');
+
     if (name != null && name.isNotEmpty && mounted) {
       setState(() {
         savedOyuncuAdi = name;
@@ -153,6 +154,26 @@ class _LoginPageState extends State<LoginPage> {
         savedRenkIndex = (prefs.getInt('saved_renk_index') ?? 0).clamp(0, renkler.length - 1);
         hasSavedUser = true;
       });
+
+      // 🚀 OTOMATİK KAPI AÇICI (AUTO-LOGIN) BURADA BAŞLIYOR 🚀
+      // Eğer bir davet linkiyle geldiysek ve zaten kayıtlıysak, beklemeden içeri dal!
+      if (globalBekleyenOdaKodu != null && globalBekleyenOdaKodu!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Davet algılandı! Odaya yönlendiriliyorsunuz..."),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        // 🚀 YENİ EKLENEN KISIM: Arka planda girerken ekranı kilitle ve dönen animasyonu başlat
+        setState(() {
+          _isLoading = true;
+        });
+
+        // Kullanıcının butona basmasını beklemeden _girisYap fonksiyonunu biz tetikliyoruz!
+        _girisYap(savedOyuncuAdi!, savedYuzIndex!, savedAksesuarIndex!, savedRenkIndex!);
+      }
     }
   }
 
@@ -208,41 +229,24 @@ class _LoginPageState extends State<LoginPage> {
           String kod = globalBekleyenOdaKodu!;
           globalBekleyenOdaKodu = null; // Cebi boşalt (Bir daha tetiklenmesin diye)
 
-          var doc = await FirebaseFirestore.instance.collection('odalar').doc(kod).get();
-          if (doc.exists) {
-
-            // 1. Oyuncuyu sessizce odaya ekle
-            await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
-              'oyuncular': FieldValue.arrayUnion([name]),
-              'aktifOyuncular': FieldValue.arrayUnion([name])
-            });
-
-            // 2. Doğrudan Arkadaş Moduyla Lobi Sayfasına Işınla!
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LobbyPage(
-                  oyuncuAdi: name,
-                  yuzIndex: yuz,
-                  aksesuarIndex: aksesuar,
-                  renkIndex: renk,
-                  isFriendMode: true, // 🚀 Direkt arkadaş odası modunda açılır
-                ),
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LobbyPage(
+                oyuncuAdi: name,
+                yuzIndex: yuz,
+                aksesuarIndex: aksesuar,
+                renkIndex: renk,
+                isFriendMode: true,
+                gelenOdaKodu: kod, // 🚀 TEK YAPMAMIZ GEREKEN KODU LOBİYE TESLİM ETMEK!
               ),
-            );
+            ),
+          );
 
-            if (mounted) _loadSavedUser();
-            return; // 🚀 Normal GameModePage sayfasına gitmeyi İPTAL ET, çünkü lobiye geçtik!
-          } else {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Davet edildiğiniz oda kapanmış veya bulunamadı."), backgroundColor: Colors.red),
-              );
-            }
-          }
+          if (mounted) _loadSavedUser();
+          return; // 🚀 Normal GameModePage sayfasına gitmeyi İPTAL ET
         }
         // 🚀🚀🚀 DEEP LINK IŞINLAMASI BİTİŞİ 🚀🚀🚀
-
 
         // EĞER LİNK YOKSA (NORMAL GİRİŞ): Standart mod sayfasına git
         await Navigator.push(
@@ -283,7 +287,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
-
 // ==========================================
 // BÖLÜM 5: KULLANICI ARAYÜZÜ (BUILD METODU VE WIDGET'LAR)
 // ==========================================

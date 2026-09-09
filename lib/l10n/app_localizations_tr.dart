@@ -9,7 +9,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get gameTitle => 'İsim Şehir Hayvan';
+  String get gameTitle => 'İsim Şehir Hayvan Oyunu';
 
   @override
   String get gameSubtitle => 'Zekanı yarıştır, rakibini geride bırak!';

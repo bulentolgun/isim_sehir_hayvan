@@ -1,54 +1,25 @@
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-admin.initializeApp();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 🎯 GMAIL SMTP TAŞIYICI TANIMI
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "bulentolgun75@gmail.com",
-    pass: "fful kdpj bbvu sajw", // 16 haneli Uygulama Şifreniz
-  },
+exports.geminiSorgusu = functions.https.onCall(async (data, context) => {
+  try {
+    // 🛡️ ZIRH: Firebase veriyi nereye saklarsa saklasın, iki ihtimali de kontrol et!
+    const prompt = data.prompt || (data.data && data.data.prompt);
+
+    if (!prompt) {
+      throw new Error("Sunucuya giden soru boş ulaştı! Gelen paket: " + JSON.stringify(data));
+    }
+
+    // 🚀 2026 yılına uygun, emekli olmamış güncel model:
+    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+
+    return { cevap: response.text() };
+  } catch (error) {
+    throw new functions.https.HttpsError('internal', 'Gemini Sunucu Hatası: ' + error.message);
+  }
 });
-
-// 🎯 FIRESTORE'A YENİ GERİ BİLDİRİM EKLENDİĞİNDE OTOMATİK ÇALIŞAN FONKSİYON
-exports.sendFeedbackEmail = functions.firestore
-  .document("geri_bildirimler/{docId}")
-  .onCreate(async (snap, context) => {
-    const data = snap.data();
-
-    if (!data) {
-      console.log("Veri bulunamadı.");
-      return null;
-    }
-
-    const mailOptions = {
-      from: "İsim Şehir Hayvan <bulentolgun75@gmail.com>",
-      to: "bulentolgun75@gmail.com",
-      subject: `🎮 İsim Şehir Hayvan - ${data.tur || "Geri Bildirim"} (${data.kullaniciAdi || "Anonim"})`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px;">
-          <h2 style="color: #8e24aa;">Yeni Bir Geri Bildirim Aldınız! 🎉</h2>
-          <p><b>Oyuncu Adı:</b> ${data.kullaniciAdi || "Belirtilmedi"}</p>
-          <p><b>E-Posta Adresi:</b> ${data.ePosta || "Belirtilmedi"}</p>
-          <p><b>Bildirim Türü:</b> ${data.tur || "Öneri"}</p>
-          <hr style="border: 0.5px solid #eee;" />
-          <h3>Mesaj:</h3>
-          <p style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; color: #4a148c; font-size: 15px;">
-            ${data.mesaj || "Mesaj içeriği boş"}
-          </p>
-        </div>
-      `,
-    };
-
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log("E-posta başarıyla bulentolgun75@gmail.com adresine gönderildi.");
-    } catch (error) {
-      console.error("E-posta gönderilirken hata oluştu:", error);
-    }
-
-    return null;
-  });

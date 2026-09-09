@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// No description provided for @gameTitle.
   ///
   /// In tr, this message translates to:
-  /// **'İsim Şehir Hayvan'**
+  /// **'İsim Şehir Hayvan Oyunu'**
   String get gameTitle;
 
   /// No description provided for @gameSubtitle.

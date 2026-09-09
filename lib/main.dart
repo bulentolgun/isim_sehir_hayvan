@@ -17,6 +17,9 @@ import 'ad_service.dart'; // 🔴 YENİ EKLENDİ: Reklam ve İzin Servisimizi Ta
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'main.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
+
 
 
 // ---------------- BÖLÜM 1 SONU ----------------
@@ -32,7 +35,7 @@ Future<void> main() async {
 
   // 2. GİZLİ KASA (.env) YÜKLEMESİ
   try {
-    await dotenv.load(fileName: ".env");
+    //await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("🚨 .env dosyası bulunamadı: $e");
   }
@@ -50,7 +53,22 @@ Future<void> main() async {
   } catch (e) {
     debugPrint("⚠️ Firebase zaten çalışıyor (Android Otomatik Başlatma). Hata yoksayıldı!");
   }
+  await FirebaseAppCheck.instance.activate(
+    // Eğer uygulama canlıdaysa PlayIntegrity (Gerçek Kullanıcı Güvenliği) kullan,
+    // Eğer emülatördeysek Debug (Geliştirici) şifresini kullan.
+    androidProvider: kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
+    appleProvider: kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
 
+    // 🌐 YENİ EKLENEN KISIM: WEB RECAPTCHA GÜVENLİĞİ
+    webProvider: ReCaptchaV3Provider('6Leg57AtAAAAANZYzuP-O02ti22BL9lG8ow7Drfa'),
+  );
+// 🌟 ŞOK DALGASI: Eski bozuk jetonu çöpe at ve zorla yenisini al!
+  try {
+    final appCheckToken = await FirebaseAppCheck.instance.getToken();
+    debugPrint("🛡️ App Check Jetonu başarıyla alındı: $appCheckToken");
+  } catch (e) {
+    debugPrint("🚨 App Check Jeton HATA: $e");
+  }
   // 4. FIREBASE CRASHLYTICS (Hata Yakalayıcılar)
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -69,11 +87,13 @@ Future<void> main() async {
 // ==========================================
 // BÖLÜM 4: REKLAM MOTORU, YEREL VERİTABANI VE UYGULAMA BAŞLATMA
 // ==========================================
-  AdService.instance.initializeAds().then((_) {
-    debugPrint("✅ AdMob Başarılı!");
-  }).catchError((e) {
-    debugPrint("🚨 AdMob Hatası: $e");
-  });
+  if (!kIsWeb) {
+    AdService.instance.initializeAds().then((_) {
+      debugPrint("✅ AdMob Başarılı!");
+    }).catchError((e) {
+      debugPrint("❌ AdMob Hatası: $e");
+    });
+  }
 
   try {
     DatabaseHelper.instance.database;
@@ -130,6 +150,49 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: navigatorKey,
           title: 'İsim Şehir',
           debugShowCheckedModeBanner: false,
+          // ============================================================================
+          // 🚀 EKLENEN KISIM BAŞLANGICI: WEB İÇİN TELEFON ÇERÇEVESİ TASARIMI
+          // ============================================================================
+          builder: (context, child) {
+            // Eğer oyun WEB'de çalışıyorsa bu şık çerçeveyi çiz:
+            if (kIsWeb) {
+              return Container(
+                color: Colors.blueGrey.shade50, // Masaüstündeki geniş boşluğun rengi (Hafif kırık beyaz/gri)
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 430), // İdeal telefon genişliği
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 24), // Üstten ve alttan boşluk
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(36), // Telefon gibi yuvarlak köşeler
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.indigo.withOpacity(0.15), // Temanıza uygun tatlı bir gölge
+                            blurRadius: 30,
+                            spreadRadius: 8,
+                            offset: const Offset(0, 15), // Gölgeyi hafif aşağı vererek 3D hissi katar
+                          ),
+                        ],
+                        border: Border.all(color: Colors.white, width: 4), // Telefon kasası hissi
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32), // İçerik köşelerden taşmasın diye kırpıyoruz
+                        child: child,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // Eğer oyun gerçek bir MOBİL cihazda (Android/iOS) çalışıyorsa,
+            // çerçeve ekleme ve direkt tam ekran yap:
+            return child!;
+          },
+          // ============================================================================
+          // 🚀 EKLENEN KISIM BİTİŞİ
+          // ============================================================================
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.indigo,

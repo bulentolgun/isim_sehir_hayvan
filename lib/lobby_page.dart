@@ -18,15 +18,20 @@ class LobbyPage extends StatelessWidget {
   final int aksesuarIndex;
   final int renkIndex;
   final bool isFriendMode;
+  final String? gelenOdaKodu; // 🚀 1. YENİ EKLENEN DEĞİŞKEN
 
-  const LobbyPage({
+  // 'const' kelimesini sildik
+  LobbyPage({
     super.key,
     required this.oyuncuAdi,
     required this.yuzIndex,
     required this.aksesuarIndex,
     required this.renkIndex,
     this.isFriendMode = false,
+    this.gelenOdaKodu, // 🚀 2. CONSTRUCTOR'A EKLENDİ
   });
+
+  bool _otomatikGirisTetiktendi = false; // 🚀 3. ÇOKLU ÇALIŞMAYI ÖNLEYEN KİLİT
 
 // ---------------- BÖLÜM 1 SONU ----------------
 
@@ -67,8 +72,17 @@ class LobbyPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final String mevcutOyuncu = oyuncuAdi.isEmpty ? l10n.defaultPlayerName : oyuncuAdi;
 
+    // 🚀 SİHİRLİ DOKUNUŞ: Linkten kod geldiyse ve henüz işlenmediyse otomatik katıl
+    if (gelenOdaKodu != null && gelenOdaKodu!.isNotEmpty && !_otomatikGirisTetiktendi) {
+      _otomatikGirisTetiktendi = true; // Sistemin sadece bir kere çalışmasını kilitliyoruz
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _otomatikLinktenOdayaKatil(context, mevcutOyuncu, gelenOdaKodu!);
+      });
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
+      // ... (Kodunuzun geri kalanı tamamen aynı kalacak)
       body: SafeArea(
         child: Stack(
           children: [
@@ -655,6 +669,51 @@ class LobbyPage extends StatelessWidget {
     );
   }
 
+  // 🚀 YENİ: Arayüze dokunmadan arka planda odaya sokan motor
+  Future<void> _otomatikLinktenOdayaKatil(BuildContext context, String mevcutOyuncu, String kod) async {
+    // Kullanıcıya bağlandığını hissettirelim
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Odaya bağlanılıyor: $kod..."), backgroundColor: Colors.orange, duration: const Duration(seconds: 2)),
+    );
+
+    var doc = await FirebaseFirestore.instance.collection('odalar').doc(kod).get();
+
+    if (doc.exists) {
+      String odaDili = doc.data()?['odaDili'] ?? 'tr';
+      String benimDilim = appLocale.value.languageCode;
+
+      if (odaDili != benimDilim) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Oda ($odaDili) dilinde. Oyun dilinizi değiştirmelisiniz!"), backgroundColor: Colors.red),
+          );
+        }
+        return; // Diller uyuşmuyorsa kes
+      }
+
+      List<dynamic> odadakiOyuncular = doc.data()?['oyuncular'] ?? [];
+      if (odadakiOyuncular.length >= 10) return; // Oda doluysa kes
+
+      // Başarılıysa Firebase'e oyuncuyu ekle
+      await FirebaseFirestore.instance.collection('odalar').doc(kod).update({
+        'oyuncular': FieldValue.arrayUnion([mevcutOyuncu]),
+        'aktifOyuncular': FieldValue.arrayUnion([mevcutOyuncu])
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        // Sizin yazdığınız bekleme ekranı popup'ını doğrudan aç
+        _canliOdaLobiEkraniGoster(context, mevcutOyuncu, kod, isHost: false);
+      }
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Oda bulunamadı veya süresi dolmuş!"), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
 // ---------------- BÖLÜM 5 SONU ----------------
 
 // ==========================================
@@ -746,7 +805,7 @@ class LobbyPage extends StatelessWidget {
 
                       final randomBot =
                       await DatabaseHelper.instance.getRandomBot();
-                      secilenRakip = randomBot['bot_adi'] ?? "Ahmet_34";
+                      secilenRakip = randomBot?['bot_adi'] ?? "Ahmet_34";
 
                       if (dialogContext.mounted) Navigator.pop(dialogContext);
                       if (context.mounted) {

@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb; // Web çökmesini önlemek için eklendi
 import 'package:app_tracking_transparency/app_tracking_transparency.dart'; // 🔴 EKLENDİ: Apple İzin Paketi
+import 'adsense_stub.dart' if (dart.library.html) 'adsense_web.dart';
 
 // ==========================================
 // ==========================================
@@ -222,11 +223,15 @@ class _BottomBannerAdWidgetState extends State<BottomBannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // 🚀 YENİ EKLENEN SATIR: Eğer Web ise direkt hayalet kutu döndür
+    if (kIsWeb) return const SizedBox.shrink();
+
     // 🛡️ Hata Kalkanı: Widget klavye açıkken, henüz yüklenmemişken veya null ise çizilmez
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     if (keyboardHeight > 0 || !_isAdLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }
+    // ... kodun devamı aynı kalacak ...
 
     return Container(
       width: double.infinity,
@@ -294,6 +299,10 @@ class _MediumRectangleAdWidgetState extends State<MediumRectangleAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // 🚀 YENİ EKLENEN SATIR: Eğer Web ise mor kutuyu hiç çizme!
+    // 🚀 YENİ EKLENEN SATIR: Eğer Web ise artık hayalet kutu değil, AdSense'i göster!
+    if (kIsWeb) return const AdSenseWidget();
+
     if (!_isAdLoaded || _mediumAd == null) {
       return Container(
         width: 300,
@@ -323,5 +332,5 @@ class _MediumRectangleAdWidgetState extends State<MediumRectangleAdWidget> {
       ),
     );
   }
-}
+} // 🚀 İŞTE EKSİK OLAN VE SINIFI KAPATAN SÜSLÜ PARANTEZ BURASI!
 // ---------------- BÖLÜM 5 SONU ----------------
