@@ -8,6 +8,7 @@ import 'database_helper.dart';
 import 'result_page.dart';
 import 'ad_service.dart';
 import 'main.dart'; // 🚀 DİL KONTROLÜ İÇİN EKLENDİ
+import 'package:flutter/foundation.dart'; // kIsWeb komutu için gerekli
 
 class GamePage extends StatefulWidget {
   final String oyuncuAdi;
@@ -223,16 +224,21 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   /// ==========================================
 // BÖLÜM 3.5: Uygulama Yaşam Döngüsü (Gizli Kopya Koruması)
 // ==========================================
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
+@override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+super.didChangeAppLifecycleState(state);
 
-    if (state == AppLifecycleState.paused &&
-        _kalanSure > 0 &&
-        !turBittiMi &&
-        !isLoading &&
-        !rakipBekleniyor &&
-        !_reklamAcik) {
+// 🚀 YENİ EKLENEN KOD: Eğer platform Web ise, kopya korumasını çalıştırma!
+if (kIsWeb) return;
+
+if (state == AppLifecycleState.paused &&
+_kalanSure > 0 &&
+!turBittiMi &&
+!isLoading &&
+!rakipBekleniyor &&
+!_reklamAcik) {
+
+// ... (Kopya koruması kodlarınızın geri kalanı aynen kalacak) ...
 
       _kopyaTimer?.cancel();
       _kopyaTimer = Timer(const Duration(seconds: 5), () {
@@ -662,19 +668,27 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     if (!benHazirMiyim) {
       await _hazirButonunaBasildi();
     }
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
+    // Gecikme (uyku) yok. Direkt otorite kontrolüne gidiyoruz.
     await _zorlaTuruAtlatKontrolu();
   }
 
   Future<void> _zorlaTuruAtlatKontrolu() async {
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-    // 🚀 YENİ MANTIK: Artık "Kurucu muyum?" diye kontrol etmiyoruz.
-    // Süre bittiğinde odadaki HERKES turu atlatma isteği gönderebilir.
-    // Ancak BÖLÜM 21'de kurduğumuz Transaction (Şartlı Güncelleme) sayesinde
-    // sadece İLK ulaşan komut işlenecek, diğerleri reddedilecek.
-    _sonrakiTuraGec();
+    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+    String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+
+    // 👑 TEK OTORİTE KURALI DEVREDE:
+    // Sadece odayı kuran kişi (Host) veritabanına "turu atlat" emri verebilir.
+    if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
+      _sonrakiTuraGec();
+    } else {
+      // Misafir oyuncular hiçbir şey yapmaz! Sadece bekler.
+      // Host turu atlatınca BÖLÜM 5 (canlı oda dinleyici) misafirlerin ekranını otomatik 2. tura geçirir.
+      if (mounted) {
+        setState(() { rakipBekleniyor = true; });
+      }
+    }
   }
 // BÖLÜM 7: Hazır Butonuna Tıklandığında
 // ==========================================
@@ -1312,94 +1326,47 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
   // ==========================================
 // BÖLÜM 21: Sonraki Tura Yönlendirme (ZAMAN DONDURMA VE NÖBETÇİ KAPTAN ZIRHI)
 // ==========================================
+  // ==========================================
+// BÖLÜM 21: Sonraki Tura Yönlendirme (YENİ VE TEMİZ DİKTATÖR MANTIĞI)
+// ==========================================
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
-    _isTransitioning = true; // 🚀 Kilidi anında kapatıyoruz (Çift basmayı engeller)
+    _isTransitioning = true;
 
     final int hedeflenenTur = _guncelMevcutTur;
-
-    // 🚀 1. NÖBETÇİ KAPTAN (Host Migration) SÜRESİ HESAPLAMA
-    // Listedeki sıramıza göre bekleme süresi alıyoruz. (Kurucu 0 sn, diğerleri 2-4-6 sn bekler)
-    int benimSiraNumaram = masadakiHerkes.indexOf(ben);
-    if (benimSiraNumaram == -1) benimSiraNumaram = 1;
-    int beklemeSuresi = benimSiraNumaram * 2;
-
-    if (!_hukmenGalibiyetGosterildi && !_elenmeGosterildi && widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-      try {
-        var odaDoc = await FirebaseFirestore.instance
-            .collection('odalar')
-            .doc(widget.odaKodu)
-            .get(const GetOptions(source: Source.server));
-
-        List<dynamic> anlikAktifler = odaDoc.data()?['aktifOyuncular'] ?? [];
-        bool benHalaAktifMiyim = anlikAktifler.any((aktif) => trToLowerCase(aktif.toString().trim()) == trToLowerCase(ben.trim()));
-
-        if (!benHalaAktifMiyim) {
-          _oyundanElendimIsleminiBaslat();
-          return;
-        }
-
-        if (anlikAktifler.length <= 1) {
-          _hukmenGalibiyetIsleminiBaslat();
-          return;
-        }
-      } catch (e) {
-        print("Tur atlama aktif oyuncu kontrol hatası: $e");
-      }
-    }
 
     _guvenlikTimer?.cancel();
 
     if (hedeflenenTur < widget.toplamTurSayisi) {
       if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
 
-        // 🚀 2. KADEMELİ GECİKME DEVREDE! Herkes kendi sırası geldiğinde Firebase'e bakar.
-        Future.delayed(Duration(seconds: beklemeSuresi), () async {
-          if (!mounted) return;
+        // 🚀 Kurucu olduğumuz için hiç beklemeden direkt yeni turu yazıyoruz
+        DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
 
-          DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
+        final tumHarfler = _getAlfabe();
+        List<String> kullanilabilirHarfler = tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
 
-          try {
-            // 🚀 3. TRANSACTION KORUMASI (Eşzamanlı Çakışmaları Engeller)
-            await FirebaseFirestore.instance.runTransaction((transaction) async {
-              DocumentSnapshot snapshot = await transaction.get(odaRef);
-              if (!snapshot.exists) return;
+        if (kullanilabilirHarfler.isEmpty) {
+          kullanilabilirHarfler = List.from(tumHarfler);
+          kullanilanHarfler.clear();
+        }
+        kullanilabilirHarfler.shuffle();
+        String yeniHarf = kullanilabilirHarfler.first;
 
-              Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
-              int dbMevcutTur = 1;
-              if (data != null && data.containsKey('mevcutTur')) {
-                dbMevcutTur = data['mevcutTur'] as int;
-              }
-
-              // 🚀 ZIRH: Eğer Firebase'deki tur hala bizim eski (hedeflenen) turumuzda takılıysa:
-              // (Yani bizden önceki kaptanların interneti koptuğu için atlatamamışlarsa)
-              if (dbMevcutTur == hedeflenenTur) {
-
-                final tumHarfler = _getAlfabe();
-                List<String> kullanilabilirHarfler =
-                tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
-                if (kullanilabilirHarfler.isEmpty) {
-                  kullanilabilirHarfler = List.from(tumHarfler);
-                  kullanilanHarfler.clear();
-                }
-                kullanilabilirHarfler.shuffle();
-                String yeniHarf = kullanilabilirHarfler.first;
-
-                transaction.update(odaRef, {
-                  'mevcutTur': hedeflenenTur + 1, // 🚀 increment YERİNE SABİT HEDEF SAYI (+)
-                  'secilenHarf': yeniHarf,
-                  'cevaplar': {},
-                  'puanlar': {},
-                  'hazirOyuncular': [],
-                  'erkenBitiren': "",
-                });
-              }
-            });
-          } catch (e) {
-            print("Transaction hatası: $e");
-            if (mounted) setState(() => _isTransitioning = false); // Hata olursa kilidi aç
-          }
-        });
+        try {
+          await odaRef.update({
+            'mevcutTur': hedeflenenTur + 1,
+            'secilenHarf': yeniHarf,
+            'cevaplar': {},
+            'puanlar': {},
+            'hazirOyuncular': [],
+            'erkenBitiren': "",
+          });
+        } catch (e) {
+          print("Tur atlatma hatası: $e");
+        } finally {
+          if (mounted) setState(() => _isTransitioning = false);
+        }
 
       } else {
         // --- BOTLU OYUN MANTIĞI (DEĞİŞMEDİ) ---
@@ -1415,7 +1382,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         });
       }
     } else {
-      // --- OYUN SONU PUANLAMA MANTIĞI (DEĞİŞMEDİ) ---
+      // --- OYUN SONU PUANLAMA MANTIĞI (BURASI AYNI KALIYOR) ---
       for (var p in masadakiHerkes) {
         macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
         tumTurPuanlari[p] = 0;
@@ -1432,33 +1399,13 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
 
       int safKazanilanPuan = benimMacSkorum + (birinciMiyim ? 100 : 0);
       int eskiGenelPuan = await DatabaseHelper.instance.getOyuncuSkor();
-      Map<String, int> eskiSiraVerisi = await DatabaseHelper.instance
-          .getHizliSiralamaVeToplamOyuncu(eskiGenelPuan);
+      Map<String, int> eskiSiraVerisi = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(eskiGenelPuan);
       int gercekEskiSiralama = eskiSiraVerisi['sira'] ?? 1000;
 
       await DatabaseHelper.instance.saveOyuncuSkor(ben, safKazanilanPuan);
 
-      if (widget.odaKodu == null || widget.odaKodu!.isEmpty) {
-        for (var rakipAdi in masadakiHerkes) {
-          if (rakipAdi != ben) {
-            int botMacPuan = macSkorlari[rakipAdi] ?? 0;
-            bool botBirinci = true;
-            for (var diger in masadakiHerkes) {
-              if (diger != rakipAdi && (macSkorlari[diger] ?? 0) > botMacPuan) {
-                botBirinci = false;
-                break;
-              }
-            }
-            int botSafKazanilanPuan = botMacPuan + (botBirinci ? 100 : 0);
-            await DatabaseHelper.instance
-                .saveBotSkor(rakipAdi, botSafKazanilanPuan);
-          }
-        }
-      }
-
       int yeniGenelPuan = await DatabaseHelper.instance.getOyuncuSkor();
-      Map<String, int> yeniSiraVerisi = await DatabaseHelper.instance
-          .getHizliSiralamaVeToplamOyuncu(yeniGenelPuan);
+      Map<String, int> yeniSiraVerisi = await DatabaseHelper.instance.getHizliSiralamaVeToplamOyuncu(yeniGenelPuan);
       int gercekYeniSiralama = yeniSiraVerisi['sira'] ?? 1000;
 
       if (context.mounted) {
@@ -2197,36 +2144,49 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
 // ==========================================
 // BÖLÜM 23: Firebase Presence API (Gerçek Zamanlı Kopma Tespiti)
 // ==========================================
-  Future<void> _presenceSisteminiBaslat() async {
-    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+// ==========================================
+// BÖLÜM 23: Firebase Presence API (Gerçek Zamanlı Kopma Tespiti)
+// ==========================================
+Future<void> _presenceSisteminiBaslat() async {
+if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-    _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
-    await _benimPresenceRef!.onDisconnect().remove();
-    await _benimPresenceRef!.set(true);
+_benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
+await _benimPresenceRef!.onDisconnect().remove();
+await _benimPresenceRef!.set(true);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
-        if (!mounted) return;
-        var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+// 🚀 Web gecikmelerini tolere etmek için süreyi 2'den 4 saniyeye çıkardık
+Future.delayed(const Duration(seconds: 4), () {
+if (!mounted) return;
+_presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
+if (!mounted) return;
+var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
 
-        List<String> rtdbDusenler = [];
-        for (String oyuncu in masadakiHerkes) {
-          if (oyuncu != ben && !aktifler.containsKey(oyuncu)) {
-            rtdbDusenler.add(oyuncu);
-          }
-        }
+List<String> rtdbDusenler = [];
+for (String oyuncu in masadakiHerkes) {
+if (oyuncu != ben && !aktifler.containsKey(oyuncu)) {
+rtdbDusenler.add(oyuncu);
+}
+}
 
-        if (rtdbDusenler.isNotEmpty) {
-          try {
-            await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-              'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)
-            });
-          } catch (e) {
-            print("Presence Firestore güncelleme hatası: $e");
-          }
-        }
-      });
-    });
-  }
+if (rtdbDusenler.isNotEmpty) {
+try {
+var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+
+// 🚀 YENİ KONTROL: Kopan kişi kurucunun ta kendisi mi?
+bool kurucuDustuMu = rtdbDusenler.any((k) => trToLowerCase(k.trim()) == trToLowerCase(kurucu));
+
+// Eğer ben kurucuysam HERKESİ silebilirim.
+// Eğer misafirsem ve KURUCU düştüyse, onu silip kaptanlığı ele alabilirim!
+if (trToLowerCase(kurucu) == trToLowerCase(ben) || kurucuDustuMu) {
+await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)
+});
+}
+} catch (e) {
+print("Presence Firestore güncelleme hatası: $e");
+}
+}
+});
+});
 }

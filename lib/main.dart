@@ -214,10 +214,69 @@ class _MyAppState extends State<MyApp> {
             Locale('en', ''),
             Locale('es', ''),
           ],
-          home: const LoginPage(),
+          home: const YnlendirmePolisi(), // 🚀 YENİ POLİSİMİZ BURADA
         );
       },
     );
   }
 }
 // ---------------- BÖLÜM 5 SONU ----------------
+// ==========================================
+// BÖLÜM 6: WEB & MOBİL ÇAKIŞMA POLİSİ (YENİ)
+// ==========================================
+class YnlendirmePolisi extends StatelessWidget {
+  const YnlendirmePolisi({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 🚀 KURAL: Eğer kullanıcı WEB tarayıcısından giriyorsa VE cihazı bir telefon/tablet ise:
+    if (kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android)) {
+      return Scaffold(
+        backgroundColor: Colors.purple.shade900,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.phonelink_ring_rounded, color: Colors.greenAccent, size: 80),
+                const SizedBox(height: 20),
+                const Text(
+                  "Uygulamaya Yönlendiriliyorsunuz...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 15),
+                const Text(
+                  "Bağlantı çakışmasını önlemek için oyunun tarayıcı sürümü duraklatıldı. Lütfen açılan yerel uygulamadan devam edin.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.purple.shade900,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    // Eğer arkadaşınızda uygulama yüklü değilse mecburen web'den oynayabilmesi için manuel izin butonu
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                    );
+                  },
+                  child: const Text("Uygulama Açılmadıysa Tarayıcıdan Devam Et", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 🟢 KURAL 2: Eğer gerçek bir PC'den (Windows/Mac) web'e giriyorsa veya doğrudan uygulamanın kendisindeyse normal başlat:
+    return const LoginPage();
+  }
+}
