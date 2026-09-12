@@ -1698,6 +1698,7 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   }
 
   // ==========================================
+  // ==========================================
   // BÖLÜM 23: Firebase Presence API
   // ==========================================
   Future<void> _presenceSisteminiBaslat() async {
@@ -1707,7 +1708,9 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     await _benimPresenceRef!.onDisconnect().remove();
     await _benimPresenceRef!.set(true);
 
-    Future.delayed(const Duration(seconds: 4), () {
+    // 🚀 SÜRE UZATILDI: Mobil cihazların internete bağlanması ve sayfayı yüklemesi
+    // daha uzun sürebileceği için, kopma kontrolüne başlamadan önce 15 saniye müsamaha tanıyoruz.
+    Future.delayed(const Duration(seconds: 15), () {
       if (!mounted) return;
       _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
         if (!mounted) return;
