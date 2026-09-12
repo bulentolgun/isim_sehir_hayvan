@@ -83,6 +83,7 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
   int _kalanSure = 90;
   Timer? _timer;
   Timer? _guvenlikTimer;
+  Timer? _heartbeatTimer; // 🚀 EKLENDİ
   Timer? _kopyaTimer;
   bool isLoading = false;
   int hazirOyuncuSayisi = 0;
@@ -311,6 +312,30 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
       }
     }
   }
+
+
+// 🚀 EKLENEN 2. ADIM: SAYFA KAPANDIĞINDA SAYAÇLARI TEMİZLEME
+@override
+void dispose() {
+  WidgetsBinding.instance.removeObserver(this);
+  _timer?.cancel();
+  _guvenlikTimer?.cancel();
+  _odaSubscription?.cancel();
+  _kopyaTimer?.cancel();
+  _heartbeatTimer?.cancel(); // Kalp atışını durdur
+  _presenceSubscription?.cancel();
+  _benimPresenceRef?.remove();
+  _inputController.dispose();
+
+  if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
+    FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+      'aktifOyuncular': FieldValue.arrayRemove([ben])
+    }).catchError((e) => print("Çıkış bildirimi gönderilemedi: $e"));
+  }
+  super.dispose();
+}
+
+
 
   // ==========================================
   // BÖLÜM 4: Rakiplerin ve Sizin Genel Skorunuzu Çeken Kod
@@ -1070,34 +1095,28 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     }
   }
   // ==========================================
+  // ==========================================
   // BÖLÜM 19: Kurucunun Puanları İşlemesi
   // ==========================================
   Future<void> _hostPuanlariHesaplaVeKaydet() async {
     var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
     var anlikCevaplar = doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
 
-    List<String> bosKagitVerenler = [];
+    // 🚀 DÜZELTME: Boş kağıt verenleri atma mantığı tamamen SİLİNDİ!
+    // Artık kimse oyundan atılmıyor, sadece o tur 0 puan alıyorlar.
 
     anlikCevaplar.forEach((kullanici, cevaplar) {
       String kName = kullanici.toString().trim();
       if (masadakiHerkes.contains(kName)) {
         Map<dynamic, dynamic> rawCevap = cevaplar as Map<dynamic, dynamic>;
-        bool hepsiBos = true;
+
         rawCevap.forEach((k, v) {
-          if (v.toString().trim() != "-") hepsiBos = false;
           if (trToLowerCase(kName) != trToLowerCase(ben)) {
             tumCevaplar.putIfAbsent(kName, () => {})[int.parse(k.toString())] = v.toString();
           }
         });
-        if (hepsiBos) bosKagitVerenler.add(kName);
       }
     });
-
-    if (bosKagitVerenler.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-        'aktifOyuncular': FieldValue.arrayRemove(bosKagitVerenler)
-      });
-    }
 
     await topluDegerlendir();
 
@@ -1110,7 +1129,6 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
 
     await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'puanlar': tumPuanlarFirebase});
   }
-
   // ==========================================
   // BÖLÜM 20: Gemini ve TDK Kullanarak Puan Hesaplama
   // ==========================================
@@ -1699,42 +1717,74 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
 
   // ==========================================
   // ==========================================
-  // BÖLÜM 23: Firebase Presence API
-  // ==========================================
-  Future<void> _presenceSisteminiBaslat() async {
-    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+// ==========================================
+// BÖLÜM 23: Firebase Presence API (30 SN + KALP ATIŞI)
+// ==========================================
+Future<void> _presenceSisteminiBaslat() async {
+  if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-    _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
-    await _benimPresenceRef!.onDisconnect().remove();
-    await _benimPresenceRef!.set(true);
+  _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
+  await _benimPresenceRef!.onDisconnect().remove();
+  await _benimPresenceRef!.set(true);
 
-    // 🚀 SÜRE UZATILDI: Mobil cihazların internete bağlanması ve sayfayı yüklemesi
-    // daha uzun sürebileceği için, kopma kontrolüne başlamadan önce 15 saniye müsamaha tanıyoruz.
-    Future.delayed(const Duration(seconds: 15), () {
+  // 🚀 YENİ: KALP ATIŞI SİSTEMİ (Heartbeat)
+  // Web bağlantısı anlık kopup geri gelirse kendini RTDB'den siliyor.
+  // Bunun önüne geçmek için her 10 saniyede bir ismimizi zorla geri yazdırıyoruz!
+  _heartbeatTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    if (mounted) _benimPresenceRef!.set(true);
+  });
+
+  Map<String, Timer> toleransZamanlayicilari = {};
+
+  // 🚀 DEVASA DÜZELTME: İlk açılış telaşında kimseyi atmamak için 30 saniye bekle
+  Future.delayed(const Duration(seconds: 30), () {
+    if (!mounted) return;
+
+    _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
       if (!mounted) return;
-      _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
-        if (!mounted) return;
-        var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+      var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
 
-        List<String> rtdbDusenler = [];
-        for (String oyuncu in masadakiHerkes) {
-          if (oyuncu != ben && !aktifler.containsKey(oyuncu)) rtdbDusenler.add(oyuncu);
-        }
+      for (String oyuncu in masadakiHerkes) {
+        if (oyuncu == ben) continue;
 
-        if (rtdbDusenler.isNotEmpty) {
-          try {
-            var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-            String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+        // 🚀 DÜZELTME: İsimleri büyük/küçük harf duyarsız arıyoruz (iOS ve Web uyuşmazlığına karşı)
+        bool isOnline = false;
+        aktifler.forEach((key, value) {
+          if (trToLowerCase(key.toString().trim()) == trToLowerCase(oyuncu.trim())) {
+            isOnline = true;
+          }
+        });
 
-            bool kurucuDustuMu = rtdbDusenler.any((k) => trToLowerCase(k.trim()) == trToLowerCase(kurucu));
-            if (trToLowerCase(kurucu) == trToLowerCase(ben) || kurucuDustuMu) {
-              await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)});
-            }
-          } catch (e) {
-            print("Presence Firestore güncelleme hatası: $e");
+        if (!isOnline) {
+          // Sinyal kesildi. 20 saniyelik tolerans başlasın (15 idi, web için 20 yaptık)
+          if (!toleransZamanlayicilari.containsKey(oyuncu)) {
+            toleransZamanlayicilari[oyuncu] = Timer(const Duration(seconds: 20), () async {
+              try {
+                var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+                if (!doc.exists) return;
+
+                String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+                bool dusenKisiKurucuMu = (trToLowerCase(oyuncu) == trToLowerCase(kurucu));
+
+                if (trToLowerCase(kurucu) == trToLowerCase(ben) || dusenKisiKurucuMu) {
+                  await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+                    'aktifOyuncular': FieldValue.arrayRemove([oyuncu])
+                  });
+                }
+              } catch (e) {
+                print("Presence Firestore güncelleme hatası: $e");
+              }
+            });
+          }
+        } else {
+          // 🟢 Sinyal geri geldi veya kalp atışı duyuldu!
+          if (toleransZamanlayicilari.containsKey(oyuncu)) {
+            toleransZamanlayicilari[oyuncu]?.cancel();
+            toleransZamanlayicilari.remove(oyuncu);
           }
         }
-      });
+      }
     });
-  }
+  });
+}
 }
