@@ -3,39 +3,46 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'l10n/app_localizations.dart'; // 🚀 Doğru Çeviri Yolu
+import 'package:flutter/foundation.dart'; // kIsWeb komutu için gerekli
+import 'package:url_launcher/url_launcher.dart'; // 🚀 MAĞAZAYA YÖNLENDİRME İÇİN EKLENDİ
+
+import 'ad_service.dart';
+import 'main.dart';
 import 'database_helper.dart';
 import 'result_page.dart';
-import 'ad_service.dart';
-import 'main.dart'; // 🚀 DİL KONTROLÜ İÇİN EKLENDİ
-import 'package:flutter/foundation.dart'; // kIsWeb komutu için gerekli
+import 'l10n/app_localizations.dart';
 
 class GamePage extends StatefulWidget {
-  final String oyuncuAdi;
-  final String rakipAdi;
-  final int yuzIndex;
-  final int aksesuarIndex;
-  final int renkIndex;
-  final int mevcutTur;
+  final String? isim;
+  final String? odaKodu;
   final int toplamTurSayisi;
+  final Map<String, dynamic>? misafirMevcutOdaVerisi;
+
+  final int? yuzIndex;
+  final int? aksesuarIndex;
+  final int? renkIndex; // 🚀 LOBİDEN GELEN SON EKSİK (RENK) EKLENDİ
+  final String? oyuncuAdi;
+  final String? rakipAdi;
+  final int mevcutTur;
   final int oyuncuKumulatifSkor;
   final int rakip1KumulatifSkor;
   final String? secilenHarf;
-  final String? odaKodu;
 
   const GamePage({
     super.key,
-    required this.oyuncuAdi,
-    required this.rakipAdi,
-    required this.yuzIndex,
-    required this.aksesuarIndex,
-    required this.renkIndex,
-    required this.mevcutTur,
-    required this.toplamTurSayisi,
-    required this.oyuncuKumulatifSkor,
-    required this.rakip1KumulatifSkor,
-    this.secilenHarf,
+    this.isim,
     this.odaKodu,
+    required this.toplamTurSayisi,
+    this.misafirMevcutOdaVerisi,
+    this.yuzIndex,
+    this.aksesuarIndex,
+    this.renkIndex, // 🚀 BURAYA DA EKLENDİ
+    this.oyuncuAdi,
+    this.rakipAdi,
+    this.mevcutTur = 1,
+    this.oyuncuKumulatifSkor = 0,
+    this.rakip1KumulatifSkor = 0,
+    this.secilenHarf,
   });
 
   @override
@@ -43,83 +50,66 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
-
-// ==========================================
-// BÖLÜM 1: Temel Değişkenler ve Oyun Durumları
-// ==========================================
-  final List<Map<String, dynamic>> kategoriler = const [
-    {"id": 1, "isim": "İsim", "icon": Icons.groups},
-    {"id": 2, "isim": "Şehir", "icon": Icons.home},
-    {"id": 3, "isim": "Hayvan", "icon": Icons.pets},
-    {"id": 4, "isim": "Bitki", "icon": Icons.eco},
-    {"id": 5, "isim": "Eşya", "icon": Icons.handyman},
-    {"id": 6, "isim": "Ülke", "icon": Icons.flag},
-  ];
-
-  String getKategoriIsmi(int id, AppLocalizations l10n) {
-    switch (id) {
-      case 1: return l10n.catName;
-      case 2: return l10n.catCity;
-      case 3: return l10n.catAnimal;
-      case 4: return l10n.catPlant;
-      case 5: return l10n.catObject;
-      case 6: return l10n.catCountry;
-      default: return "";
-    }
-  }
-
-  int aktifKategoriIndex = 0;
-  final TextEditingController _inputController = TextEditingController();
+  // ==========================================
+  // BÖLÜM 1: DEĞİŞKENLER VE LİSTELER
+  // ==========================================
 
   late String ben;
   List<String> masadakiHerkes = [];
-  Map<String, Map<int, String>> tumCevaplar = {};
-  Map<String, Map<int, int>> tumKategoriPuanlari = {};
+  Map<String, int> macSkorlari = {};
   Map<String, int> tumTurPuanlari = {};
   Map<int, Map<String, int>> gecmisTurPuanlari = {};
   Map<String, int> genelKumulatifSkorlar = {};
-  Map<String, int> macSkorlari = {};
+  Map<String, Map<int, String>> tumCevaplar = {};
+  Map<String, Map<int, int>> tumKategoriPuanlari = {};
 
-  List<int> botTurBasariOranlari = [];
-
+  int _guncelMevcutTur = 1;
+  int aktifKategoriIndex = 0;
   bool turBittiMi = false;
-  bool erkenBitirmeBonusuKazandiMi = false;
-  bool rakipBekleniyor = false;
-  bool isLoading = false;
-  bool _hukmenGalibiyetGosterildi = false;
-  bool _elenmeGosterildi = false;
-  final List<String> _toleransBeklenenler = [];
   bool benHazirMiyim = false;
-  int hazirOyuncuSayisi = 0;
+  bool rakipBekleniyor = false;
+  String secilenHarf = "A";
+
+  final TextEditingController _inputController = TextEditingController();
+  DatabaseReference? _benimPresenceRef;
+  bool _reklamAcik = false;
+  bool _kopyaIcinArkaPlanaGitti = false;
   bool _isTransitioning = false;
+  int _kalanGuvenlikSaniyesi = 30;
+  List<int> botTurBasariOranlari = [];
+  List<String> kullanilanHarfler = [];
+  List<String> yasakliKelimeler = [];
+
+  int _kalanSure = 90;
+  Timer? _timer;
   Timer? _guvenlikTimer;
   Timer? _kopyaTimer;
-  int _kalanGuvenlikSaniyesi = 30;
+  bool isLoading = false;
+  int hazirOyuncuSayisi = 0;
 
-  bool _kopyaIcinArkaPlanaGitti = false;
-  bool _reklamAcik = false;
-
-  String odadakiErkenBitirenKisi = "";
-  String secilenHarf = "A";
-  Timer? _timer;
-
-  DatabaseReference? _benimPresenceRef;
   StreamSubscription<DatabaseEvent>? _presenceSubscription;
   StreamSubscription<DocumentSnapshot>? _odaSubscription;
 
-  int _kalanSure = 90;
-  late int _guncelMevcutTur;
+  bool erkenBitirmeBonusuKazandiMi = false;
+  String odadakiErkenBitirenKisi = "";
   int _seciliRakipIndex = 1;
+  bool _hukmenGalibiyetGosterildi = false;
+  bool _elenmeGosterildi = false;
 
-  final List<String> yasakliKelimeler = const [
-    "amk", "sik", "piç", "orospu", "oç", "sg", "yarrak",
-    "göt", "meme", "dalyarak", "pezevenk", "kaltak", "fahişe"
+  final List<Map<String, dynamic>> kategoriler = [
+    {"id": 1, "isim": "İsim", "renk": Colors.blue, "icon": Icons.person},
+    {"id": 2, "isim": "Şehir", "renk": Colors.green, "icon": Icons.location_city},
+    {"id": 3, "isim": "Hayvan", "renk": Colors.orange, "icon": Icons.pets},
+    {"id": 4, "isim": "Bitki", "renk": Colors.teal, "icon": Icons.local_florist},
+    {"id": 5, "isim": "Eşya", "renk": Colors.brown, "icon": Icons.chair},
+    {"id": 6, "isim": "Ülke", "renk": Colors.purple, "icon": Icons.public},
   ];
-  List<String> kullanilanHarfler = [];
 
-// ==========================================
-// BÖLÜM 2: Türkçe Karakterleri Düzeltme Kodları
-// ==========================================
+  Map<int, FocusNode> focusNodes = {};
+
+  // ==========================================
+  // BÖLÜM 2: Türkçe Karakterleri Düzeltme Kodları
+  // ==========================================
   String trToLowerCase(String text) {
     return text
         .replaceAll('İ', 'i')
@@ -144,27 +134,21 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
         .toUpperCase();
   }
 
-// ==========================================
-  // ==========================================
-// BÖLÜM 2.5: ÇOK DİLLİ ALFABE SİSTEMİ 🌍
-// ==========================================
-  List<String> _getAlfabe() {
-    String lang = appLocale.value.languageCode;
-
-    if (lang == 'en') {
-      return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-    } else if (lang == 'de') {
-      return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Ä", "Ö", "Ü"];
-    } else if (lang == 'es') {
-      return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Ñ"];
-    } else {
-      // Varsayılan (Türkçe)
-      return ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
-    }
+  String getKategoriIsmi(int id, AppLocalizations l10n) {
+    var kat = kategoriler.firstWhere((k) => k["id"] == id, orElse: () => {"isim": ""});
+    return kat["isim"] as String;
   }
-// ---------------- BÖLÜM 2.5 SONU ----------------
-// BÖLÜM 3: Sayfa İlk Açıldığında Çalışan Kurallar (initState)
-// ==========================================
+
+  // ==========================================
+  // BÖLÜM 2.5: ÇOK DİLLİ ALFABE SİSTEMİ 🌍
+  // ==========================================
+  List<String> _getAlfabe() {
+    return ["A", "B", "C", "Ç", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P", "R", "S", "Ş", "T", "U", "Ü", "V", "Y", "Z"];
+  }
+
+  // ==========================================
+  // BÖLÜM 3: Sayfa İlk Açıldığında Çalışan Kurallar (initState)
+  // ==========================================
   @override
   void initState() {
     super.initState();
@@ -172,12 +156,16 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
 
     _guncelMevcutTur = widget.mevcutTur;
 
-    ben = widget.oyuncuAdi.trim().isEmpty ? "Tokatlı60" : widget.oyuncuAdi.trim();
-    List<String> rakipler = widget.rakipAdi
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
+    // 🚀 Lobi'den gelen verileri dinamik alan kod eklendi
+    String geciciBen = (widget.oyuncuAdi != null && widget.oyuncuAdi!.trim().isNotEmpty)
+        ? widget.oyuncuAdi!
+        : (widget.isim != null && widget.isim!.trim().isNotEmpty ? widget.isim! : "Oyuncu");
+    ben = geciciBen.trim();
+
+    List<String> rakipler = [];
+    if (widget.rakipAdi != null && widget.rakipAdi!.trim().isNotEmpty) {
+      rakipler = widget.rakipAdi!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    }
     if (rakipler.isEmpty) rakipler = ["Rakip"];
 
     masadakiHerkes = [ben, ...rakipler];
@@ -187,8 +175,7 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
       tumKategoriPuanlari[p] = {};
       tumTurPuanlari[p] = 0;
       macSkorlari[p] = 0;
-      genelKumulatifSkorlar[p] =
-      (p == ben) ? widget.oyuncuKumulatifSkor : widget.rakip1KumulatifSkor;
+      genelKumulatifSkorlar[p] = (p == ben) ? widget.oyuncuKumulatifSkor : widget.rakip1KumulatifSkor;
     }
 
     _gercekSkorlariYukle();
@@ -196,49 +183,99 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
     _canliOdaDinle();
     _presenceSisteminiBaslat();
     _yeniTurBaslat(ilkBaslangic: true);
-  }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-
-    _timer?.cancel();
-    _guvenlikTimer?.cancel();
-    _odaSubscription?.cancel();
-    _kopyaTimer?.cancel();
-
-    _presenceSubscription?.cancel();
-    _benimPresenceRef?.remove();
-
-    _inputController.dispose();
-
-    if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-      FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-        'aktifOyuncular': FieldValue.arrayRemove([ben])
-      }).catchError((e) => print("Çıkış bildirimi gönderilemedi: $e"));
+    // 🚀 SADECE WEB'DE ÇALIŞAN AKILLI İNDİRME UYARISI
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _uygulamaIndirTavsiyesiGoster();
+      });
     }
-
-    super.dispose();
   }
 
-  /// ==========================================
-// BÖLÜM 3.5: Uygulama Yaşam Döngüsü (Gizli Kopya Koruması)
-// ==========================================
-@override
-void didChangeAppLifecycleState(AppLifecycleState state) {
-super.didChangeAppLifecycleState(state);
+  // ==========================================
+  // WEB KULLANICILARINI MAĞAZAYA YÖNLENDİRME DİYALOĞU
+  // ==========================================
+  void _uygulamaIndirTavsiyesiGoster() {
+    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
+      bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
 
-// 🚀 YENİ EKLENEN KOD: Eğer platform Web ise, kopya korumasını çalıştırma!
-if (kIsWeb) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.purple.shade900,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Column(
+            children: [
+              Icon(Icons.phone_android_rounded, color: Colors.amber, size: 50),
+              SizedBox(height: 10),
+              Text("Uygulamamızı Denediniz mi?", style: TextStyle(color: Colors.white, fontSize: 18), textAlign: TextAlign.center),
+            ],
+          ),
+          content: const Text(
+            "Daha hızlı ve kesintisiz bir oyun deneyimi için İsim Şehir Hayvan uygulamasını cihazınıza indirebilirsiniz.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.purple.shade900,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: Icon(isIOS ? Icons.apple : Icons.shop),
+                  label: Text(isIOS ? "App Store'dan İndir" : "Google Play'den İndir", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  onPressed: () async {
+                    // 🚀 DİKKAT: BURADAKİ LİNKLERİ KENDİ UYGULAMANIZIN LİNKLERİYLE DEĞİŞTİRİN
+                    final String storeUrl = isIOS
+                        ? 'https://apps.apple.com/app/idSİZİN_APP_ID'
+                        : 'https://play.google.com/store/apps/details?id=com.sizin.paket.adiniz';
 
-if (state == AppLifecycleState.paused &&
-_kalanSure > 0 &&
-!turBittiMi &&
-!isLoading &&
-!rakipBekleniyor &&
-!_reklamAcik) {
+                    if (await canLaunchUrl(Uri.parse(storeUrl))) {
+                      await launchUrl(Uri.parse(storeUrl), mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Tarayıcıdan Devam Et"),
+                ),
+              ],
+            )
+          ],
+        ),
+      );
+    }
+  }
 
-// ... (Kopya koruması kodlarınızın geri kalanı aynen kalacak) ...
+  // ==========================================
+  // BÖLÜM 3.5: Uygulama Yaşam Döngüsü (Gizli Kopya Koruması)
+  // ==========================================
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (kIsWeb) return;
+
+    if (state == AppLifecycleState.paused &&
+        _kalanSure > 0 &&
+        !turBittiMi &&
+        !isLoading &&
+        !rakipBekleniyor &&
+        !_reklamAcik) {
 
       _kopyaTimer?.cancel();
       _kopyaTimer = Timer(const Duration(seconds: 5), () {
@@ -274,16 +311,14 @@ _kalanSure > 0 &&
       }
     }
   }
-// ---------------- BÖLÜM 3.5 SONU ----------------
-// ==========================================
-// BÖLÜM 4: Rakiplerin ve Sizin Genel Skorunuzu Çeken Kod
-// ==========================================
+
+  // ==========================================
+  // BÖLÜM 4: Rakiplerin ve Sizin Genel Skorunuzu Çeken Kod
+  // ==========================================
   Future<void> _gercekSkorlariYukle() async {
     int benimGuncelSkorum = await DatabaseHelper.instance.getOyuncuSkor();
     if (mounted) {
-      setState(() {
-        genelKumulatifSkorlar[ben] = benimGuncelSkorum;
-      });
+      setState(() { genelKumulatifSkorlar[ben] = benimGuncelSkorum; });
     }
 
     final db = await DatabaseHelper.instance.database;
@@ -294,33 +329,27 @@ _kalanSure > 0 &&
 
         if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
           try {
-            var doc = await FirebaseFirestore.instance
-                .collection('liderlik_tablosu')
-                .doc(p)
-                .get();
+            var doc = await FirebaseFirestore.instance.collection('liderlik_tablosu').doc(p).get();
             if (doc.exists) rakipSkor = doc.data()?['skor'] ?? 0;
           } catch (e) {
             print("Rakip skoru çekilemedi: $e");
           }
         } else {
           var res = await db.query('botlar', where: 'bot_adi = ?', whereArgs: [p]);
-          if (res.isNotEmpty) {
-            rakipSkor = res.first['skor'] as int;
-          }
+          if (res.isNotEmpty) rakipSkor = res.first['skor'] as int;
         }
 
         if (mounted) {
-          setState(() {
-            genelKumulatifSkorlar[p] = rakipSkor;
-          });
+          setState(() { genelKumulatifSkorlar[p] = rakipSkor; });
         }
       }
     }
   }
 
-// ==========================================
-// BÖLÜM 5: Firebase Üzerinden Canlı Odayı Dinleyen Kod
-// ==========================================
+  // ==========================================
+  // ==========================================
+  // BÖLÜM 5: Firebase Üzerinden Canlı Odayı Dinleyen Kod
+  // ==========================================
   void _canliOdaDinle() {
     if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
@@ -335,8 +364,8 @@ _kalanSure > 0 &&
       List<dynamic> dbAktifOyuncular = data['aktifOyuncular'] ?? [];
       String anlikKurucu = data['kurucu']?.toString().trim() ?? "";
 
+      // --- KOPMA VE ELENME KONTROLLERİ ---
       if (dbAktifOyuncular.length < masadakiHerkes.length) {
-
         List<String> dusenler = masadakiHerkes.where((p) {
           String cleanP = trToLowerCase(p.trim());
           return !dbAktifOyuncular.any((aktif) => trToLowerCase(aktif.toString().trim()) == cleanP);
@@ -350,9 +379,7 @@ _kalanSure > 0 &&
             return;
           }
 
-          setState(() {
-            masadakiHerkes.remove(dusenKisi);
-          });
+          setState(() => masadakiHerkes.remove(dusenKisi));
 
           final l10n = AppLocalizations.of(context);
           if (l10n != null && mounted) {
@@ -363,16 +390,12 @@ _kalanSure > 0 &&
             ));
           }
 
-          if (odadakiErkenBitirenKisi == dusenKisi) {
-            setState(() => odadakiErkenBitirenKisi = "");
-          }
+          if (odadakiErkenBitirenKisi == dusenKisi) setState(() => odadakiErkenBitirenKisi = "");
 
           if (trToLowerCase(dusenKisi.trim()) == trToLowerCase(anlikKurucu) && dbAktifOyuncular.isNotEmpty) {
             String yeniKurucu = dbAktifOyuncular.first.toString();
             if (trToLowerCase(yeniKurucu.trim()) == trToLowerCase(ben.trim())) {
-              await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-                'kurucu': ben
-              });
+              await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'kurucu': ben});
               anlikKurucu = ben;
               if (mounted && l10n != null) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -386,7 +409,11 @@ _kalanSure > 0 &&
         }
 
         if (masadakiHerkes.length <= 1) {
-          _hukmenGalibiyetIsleminiBaslat();
+          if (_guncelMevcutTur >= widget.toplamTurSayisi && turBittiMi) {
+            _sonrakiTuraGec();
+          } else {
+            _hukmenGalibiyetIsleminiBaslat();
+          }
           return;
         }
 
@@ -400,10 +427,7 @@ _kalanSure > 0 &&
           var anlikCevaplar = data['cevaplar'] as Map<String, dynamic>? ?? {};
           bool herkesCevapVerdiMi = true;
           for (var p in masadakiHerkes) {
-            if (!anlikCevaplar.containsKey(p)) {
-              herkesCevapVerdiMi = false;
-              break;
-            }
+            if (!anlikCevaplar.containsKey(p)) { herkesCevapVerdiMi = false; break; }
           }
           String kurucuGuncel = (data['kurucu'] ?? anlikKurucu).toString().trim();
           if (herkesCevapVerdiMi && (trToLowerCase(kurucuGuncel) == trToLowerCase(ben) || trToLowerCase(anlikKurucu) == trToLowerCase(ben))) {
@@ -428,27 +452,6 @@ _kalanSure > 0 &&
         });
       }
 
-      if (odaTur > _guncelMevcutTur) {
-        if (_hukmenGalibiyetGosterildi || _elenmeGosterildi) return;
-
-        _guvenlikTimer?.cancel();
-        setState(() {
-          for (var p in masadakiHerkes) {
-            macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
-            genelKumulatifSkorlar[p] = (genelKumulatifSkorlar[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
-            tumTurPuanlari[p] = 0;
-          }
-          _guncelMevcutTur = odaTur;
-          aktifKategoriIndex = 0;
-          benHazirMiyim = false;
-          secilenHarf = yeniHarf;
-          odadakiErkenBitirenKisi = "";
-          _seciliRakipIndex = 1;
-          _yeniTurBaslat(ilkBaslangic: false, firebaseHarfi: yeniHarf);
-        });
-        return;
-      }
-
       cevaplarMap.forEach((kullanici, cevaplar) {
         String kName = kullanici.toString().trim();
         if (trToLowerCase(kName) != trToLowerCase(ben) && masadakiHerkes.contains(kName)) {
@@ -468,7 +471,10 @@ _kalanSure > 0 &&
         }
       }
 
-      if (puanlarMap.isNotEmpty && trToLowerCase(kurucu) != trToLowerCase(ben)) {
+      // 🚀 MİSAFİRLERİ KİLİTLEYEN EGO SAVAŞI HATASI BURADA ÇÖZÜLDÜ!
+      // Eski Kod: if (puanlarMap.isNotEmpty && trToLowerCase(kurucu) != trToLowerCase(ben))
+      // Yeni Kod: Artık kim hesaplamışsa hesaplasın, eğer ben sonuç ekranına geçmediysem direkt geçiyorum!
+      if (puanlarMap.isNotEmpty && !turBittiMi) {
         puanlarMap.forEach((kullanici, pMap) {
           String kName = kullanici.toString().trim();
           if (masadakiHerkes.contains(kName)) {
@@ -497,6 +503,26 @@ _kalanSure > 0 &&
           });
           _guvenlikSayaciniBaslat();
         }
+      }
+
+      if (odaTur > _guncelMevcutTur) {
+        if (_hukmenGalibiyetGosterildi || _elenmeGosterildi) return;
+
+        _guvenlikTimer?.cancel();
+        setState(() {
+          for (var p in masadakiHerkes) {
+            macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
+            genelKumulatifSkorlar[p] = (genelKumulatifSkorlar[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
+            tumTurPuanlari[p] = 0;
+          }
+          _guncelMevcutTur = odaTur;
+          aktifKategoriIndex = 0;
+          benHazirMiyim = false;
+          secilenHarf = yeniHarf;
+          odadakiErkenBitirenKisi = "";
+          _seciliRakipIndex = 1;
+          _yeniTurBaslat(ilkBaslangic: false, firebaseHarfi: yeniHarf);
+        });
         return;
       }
 
@@ -507,91 +533,74 @@ _kalanSure > 0 &&
       }
     });
   }
+  // ==========================================
+  // BÖLÜM 5.5: Hükmen Galibiyet Operasyonu
+  // ==========================================
+  Future<void> _hukmenGalibiyetIsleminiBaslat() async {
+    if (!mounted || _hukmenGalibiyetGosterildi) return;
+    _hukmenGalibiyetGosterildi = true;
+    _isTransitioning = true;
 
-// ==========================================
-/// ==========================================
-// BÖLÜM 5.5: Hükmen Galibiyet Operasyonu (GÜNCELLENDİ)
-// ==========================================
-Future<void> _hukmenGalibiyetIsleminiBaslat() async {
-if (!mounted || _hukmenGalibiyetGosterildi) return;
-_hukmenGalibiyetGosterildi = true;
-_isTransitioning = true;
+    _timer?.cancel();
+    _guvenlikTimer?.cancel();
+    _kopyaTimer?.cancel();
 
-_timer?.cancel();
-_guvenlikTimer?.cancel();
-_kopyaTimer?.cancel();
+    setState(() {
+      isLoading = false;
+      rakipBekleniyor = false;
+    });
 
-// 🚀 KRİTİK MÜDAHALE: Ekran kilitlenmesini önlemek için tüm beklemeleri iptal et!
-setState(() {
-isLoading = false;
-rakipBekleniyor = false;
-});
+    final l10n = AppLocalizations.of(context)!;
 
-final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.purple.shade900,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            const Icon(Icons.emoji_events, color: Colors.amber, size: 50),
+            const SizedBox(height: 10),
+            Text(l10n.winByForfeitTitle, style: const TextStyle(color: Colors.amber)),
+          ],
+        ),
+        content: Text(l10n.winByForfeitDesc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.greenAccent.shade700,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _guncelMevcutTur = widget.toplamTurSayisi;
+                int enYuksekRakipPuan = 0;
+                macSkorlari.forEach((key, value) {
+                  if (key != ben && value > enYuksekRakipPuan) enYuksekRakipPuan = value;
+                });
+                int benimGuncelSkorum = macSkorlari[ben] ?? 0;
+                macSkorlari[ben] = benimGuncelSkorum <= enYuksekRakipPuan ? enYuksekRakipPuan + 10 : benimGuncelSkorum + 10;
+              });
+              _isTransitioning = false;
+              _sonrakiTuraGec();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
 
-showDialog(
-context: context,
-barrierDismissible: false,
-builder: (context) => AlertDialog(
-backgroundColor: Colors.purple.shade900,
-shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-title: Column(
-children: [
-const Icon(Icons.emoji_events, color: Colors.amber, size: 50),
-const SizedBox(height: 10),
-Text(l10n.winByForfeitTitle, style: const TextStyle(color: Colors.amber)),
-],
-),
-content: Text(
-l10n.winByForfeitDesc,
-textAlign: TextAlign.center,
-style: const TextStyle(color: Colors.white, fontSize: 16),
-),
-actionsAlignment: MainAxisAlignment.center,
-actions: [
-ElevatedButton(
-style: ElevatedButton.styleFrom(
-backgroundColor: Colors.greenAccent.shade700,
-foregroundColor: Colors.white,
-shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-),
-onPressed: () {
-Navigator.pop(context);
-setState(() {
-_guncelMevcutTur = widget.toplamTurSayisi;
-
-int enYuksekRakipPuan = 0;
-macSkorlari.forEach((key, value) {
-if (key != ben && value > enYuksekRakipPuan) {
-enYuksekRakipPuan = value;
-}
-});
-
-int benimGuncelSkorum = macSkorlari[ben] ?? 0;
-
-if (benimGuncelSkorum <= enYuksekRakipPuan) {
-macSkorlari[ben] = enYuksekRakipPuan + 10;
-} else {
-macSkorlari[ben] = benimGuncelSkorum + 10;
-}
-});
-
-_isTransitioning = false;
-_sonrakiTuraGec();
-},
-child: Padding(
-padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-),
-)
-],
-),
-);
-}
-// ---------------- BÖLÜM 5.5 SONU ----------------
-// ==========================================
-// BÖLÜM 5.6: Oyundan Elenme (Boş Kağıt veya Kopma)
-// ==========================================
+  // ==========================================
+  // BÖLÜM 5.6: Oyundan Elenme (Boş Kağıt veya Kopma)
+  // ==========================================
   Future<void> _oyundanElendimIsleminiBaslat() async {
     if (!mounted || _elenmeGosterildi) return;
     _elenmeGosterildi = true;
@@ -616,11 +625,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             Text(l10n.eliminatedTitle, style: const TextStyle(color: Colors.white)),
           ],
         ),
-        content: Text(
-          l10n.eliminatedDesc,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
-        ),
+        content: Text(l10n.eliminatedDesc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 16)),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
           ElevatedButton(
@@ -629,9 +634,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
               foregroundColor: Colors.red.shade900,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Text(l10n.returnToMainMenuButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -642,17 +645,14 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     );
   }
 
-// ==========================================
-// BÖLÜM 6: Zombi Koruması (Güvenlik Sayacı) GÜNCELLENDİ
-// ==========================================
+  // ==========================================
+  // BÖLÜM 6: Zombi Koruması (Güvenlik Sayacı)
+  // ==========================================
   void _guvenlikSayaciniBaslat() {
     _guvenlikTimer?.cancel();
     _kalanGuvenlikSaniyesi = 30;
     _guvenlikTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+      if (!mounted) { timer.cancel(); return; }
       setState(() {
         if (_kalanGuvenlikSaniyesi > 1) {
           _kalanGuvenlikSaniyesi--;
@@ -665,46 +665,47 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
   }
 
   Future<void> _zamanAsimiKurtarmaOperasyonu() async {
-    if (!benHazirMiyim) {
-      await _hazirButonunaBasildi();
-    }
-    // Gecikme (uyku) yok. Direkt otorite kontrolüne gidiyoruz.
     await _zorlaTuruAtlatKontrolu();
   }
 
   Future<void> _zorlaTuruAtlatKontrolu() async {
-    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+    // 🚀 BOT OYUNLARI İÇİN DÜZELTME: Eğer oda kodu yoksa (bot oyunuysa) direkt turu atla!
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) {
+      _sonrakiTuraGec();
+      return;
+    }
+
+    if (_guncelMevcutTur >= widget.toplamTurSayisi) {
+      _sonrakiTuraGec();
+      return;
+    }
 
     var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
     String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
 
-    // 👑 TEK OTORİTE KURALI DEVREDE:
-    // Sadece odayı kuran kişi (Host) veritabanına "turu atlat" emri verebilir.
     if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
       _sonrakiTuraGec();
     } else {
-      // Misafir oyuncular hiçbir şey yapmaz! Sadece bekler.
-      // Host turu atlatınca BÖLÜM 5 (canlı oda dinleyici) misafirlerin ekranını otomatik 2. tura geçirir.
-      if (mounted) {
-        setState(() { rakipBekleniyor = true; });
+      if (mounted && !benHazirMiyim) {
+        _hazirButonunaBasildi();
       }
     }
   }
-// BÖLÜM 7: Hazır Butonuna Tıklandığında
-// ==========================================
+
+  // ==========================================
+  // BÖLÜM 7: Hazır Butonuna Tıklandığında
+  // ==========================================
   Future<void> _hazirButonunaBasildi() async {
     if (benHazirMiyim) return;
-    if (mounted) {
-      setState(() {
-        benHazirMiyim = true;
-      });
+    if (mounted) setState(() => benHazirMiyim = true);
+
+    if (_guncelMevcutTur >= widget.toplamTurSayisi) {
+      _sonrakiTuraGec();
+      return;
     }
 
     if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-      await FirebaseFirestore.instance
-          .collection('odalar')
-          .doc(widget.odaKodu)
-          .update({
+      await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
         'hazirOyuncular': FieldValue.arrayUnion([ben]),
       });
     } else {
@@ -712,9 +713,9 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
   }
 
-// ==========================================
-// BÖLÜM 8: Yeni Turu Başlatan ve Temizleyen Kod
-// ==========================================
+  // ==========================================
+  // BÖLÜM 8: Yeni Turu Başlatan ve Temizleyen Kod
+  // ==========================================
   void _yeniTurBaslat({bool ilkBaslangic = false, String? firebaseHarfi}) {
     _isTransitioning = false;
     _timer?.cancel();
@@ -726,20 +727,13 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
 
     if (firebaseHarfi != null && firebaseHarfi.isNotEmpty) {
       secilenHarf = firebaseHarfi;
-      if (!kullanilanHarfler.contains(secilenHarf)) {
-        kullanilanHarfler.add(secilenHarf);
-      }
-    } else if (widget.secilenHarf != null &&
-        widget.secilenHarf!.isNotEmpty &&
-        ilkBaslangic) {
+      if (!kullanilanHarfler.contains(secilenHarf)) kullanilanHarfler.add(secilenHarf);
+    } else if (widget.secilenHarf != null && widget.secilenHarf!.isNotEmpty && ilkBaslangic) {
       secilenHarf = widget.secilenHarf!;
-      if (!kullanilanHarfler.contains(secilenHarf)) {
-        kullanilanHarfler.add(secilenHarf);
-      }
+      if (!kullanilanHarfler.contains(secilenHarf)) kullanilanHarfler.add(secilenHarf);
     } else {
-      final tumHarfler = _getAlfabe(); // 🚀 ÇOK DİLLİ ALFABE DEVREDE
-      List<String> kullanilabilirHarfler =
-      tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
+      final tumHarfler = _getAlfabe();
+      List<String> kullanilabilirHarfler = tumHarfler.where((h) => !kullanilanHarfler.contains(h)).toList();
       if (kullanilabilirHarfler.isEmpty) {
         kullanilabilirHarfler = List.from(tumHarfler);
         kullanilanHarfler.clear();
@@ -750,8 +744,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
 
     if (ilkBaslangic || botTurBasariOranlari.isEmpty) {
-      botTurBasariOranlari =
-      List<int>.filled(widget.toplamTurSayisi, 90, growable: true);
+      botTurBasariOranlari = List<int>.filled(widget.toplamTurSayisi, 90, growable: true);
     }
 
     for (var p in masadakiHerkes) {
@@ -766,26 +759,19 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     benHazirMiyim = false;
     hazirOyuncuSayisi = 0;
     _kalanSure = 90;
-
     odadakiErkenBitirenKisi = "";
 
     _zamanlayiciyiBaslat();
-
-    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) {
-      _botCevaplariniHazirla();
-    }
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) _botCevaplariniHazirla();
   }
 
-// ==========================================
-// BÖLÜM 9: Ana 90 Saniyelik Geri Sayım
-// ==========================================
+  // ==========================================
+  // BÖLÜM 9: Ana 90 Saniyelik Geri Sayım
+  // ==========================================
   void _zamanlayiciyiBaslat() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+      if (!mounted) { timer.cancel(); return; }
       setState(() {
         if (_kalanSure > 0) {
           _kalanSure--;
@@ -798,9 +784,9 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     });
   }
 
-// ==========================================
-// BÖLÜM 10: Botların Cevaplarını Hazırlayan Kod
-// ==========================================
+  // ==========================================
+  // BÖLÜM 10: Botların Cevaplarını Hazırlayan Kod
+  // ==========================================
   Future<void> _botCevaplariniHazirla() async {
     final random = Random();
     int basariYuzdesi = 90;
@@ -812,25 +798,19 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       for (var kat in kategoriler) {
         int catId = kat["id"];
         if (random.nextInt(100) < basariYuzdesi) {
-          String? botKelime =
-          await DatabaseHelper.instance.getBotKelime(catId, secilenHarf);
+          String? botKelime = await DatabaseHelper.instance.getBotKelime(catId, secilenHarf);
           geciciCevaplar[catId] = botKelime ?? "-";
         } else {
           geciciCevaplar[catId] = "-";
         }
       }
-
-      if (mounted) {
-        setState(() {
-          tumCevaplar[botName] = geciciCevaplar;
-        });
-      }
+      if (mounted) setState(() { tumCevaplar[botName] = geciciCevaplar; });
     }
   }
 
-// ==========================================
-// BÖLÜM 11: İlk Harf Doğruluğu
-// ==========================================
+  // ==========================================
+  // BÖLÜM 11: İlk Harf Doğruluğu
+  // ==========================================
   bool _harfDogruMu(String kelime) {
     if (kelime.isEmpty || kelime == "-") return true;
     return trToLowerCase(kelime[0]) == trToLowerCase(secilenHarf);
@@ -844,9 +824,9 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     ));
   }
 
-// ==========================================
-// BÖLÜM 12: Kurallara Uygunluk ve Küfür Kontrolü
-// ==========================================
+  // ==========================================
+  // BÖLÜM 12: Kurallara Uygunluk
+  // ==========================================
   bool _girdiGecerliMi() {
     final l10n = AppLocalizations.of(context)!;
     String metin = trToLowerCase(_inputController.text.trim());
@@ -888,43 +868,33 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     return true;
   }
 
-// ==========================================
-// BÖLÜM 13: Turu Bitir Aktiflik Kontrolü
-// ==========================================
+  // ==========================================
+  // BÖLÜM 13: Turu Bitir Aktiflik Kontrolü
+  // ==========================================
   bool turuBitirAktifMi() {
-    if (erkenBitirmeBonusuKazandiMi || rakipBekleniyor || _kalanSure < 20) {
-      return false;
-    }
+    if (erkenBitirmeBonusuKazandiMi || rakipBekleniyor || _kalanSure < 20) return false;
     String anlikKelime = _inputController.text.trim();
     int mevcutCatId = kategoriler[aktifKategoriIndex]["id"];
     int bosKutuSayisi = 0;
 
     for (var kat in kategoriler) {
       int id = kat["id"];
-      String cevap =
-      (id == mevcutCatId) ? anlikKelime : (tumCevaplar[ben]?[id] ?? "-");
-      if (cevap == "-" || cevap.trim().isEmpty || cevap.trim().length < 2) {
-        bosKutuSayisi++;
-      }
+      String cevap = (id == mevcutCatId) ? anlikKelime : (tumCevaplar[ben]?[id] ?? "-");
+      if (cevap == "-" || cevap.trim().isEmpty || cevap.trim().length < 2) bosKutuSayisi++;
     }
     return bosKutuSayisi <= 1;
   }
 
-// ==========================================
-// BÖLÜM 14: Turu Erken Bitir (20 SN BAŞLATICI)
-// ==========================================
+  // ==========================================
+  // BÖLÜM 14: Turu Erken Bitir
+  // ==========================================
   void turuErkenBitirIstegi() async {
     if (erkenBitirmeBonusuKazandiMi) return;
     if (!_girdiGecerliMi()) return;
     _mevcutKelimeyiKaydet();
 
     if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-      await FirebaseFirestore.instance
-          .collection('odalar')
-          .doc(widget.odaKodu)
-          .update({
-        'erkenBitiren': ben,
-      });
+      await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'erkenBitiren': ben});
     } else {
       setState(() {
         odadakiErkenBitirenKisi = ben;
@@ -954,23 +924,20 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     });
   }
 
-// ==========================================
-// BÖLÜM 15: TDK Kontrolü
-// ==========================================
+  // ==========================================
+  // BÖLÜM 15: TDK Kontrolü
+  // ==========================================
   void _arkaplanTdkKontrol(int catId, String kelime) {
     if (kelime.length >= 2 && kelime != "-") {
-      DatabaseHelper.instance
-          .checkWordWithToleranceAndTdk(catId, secilenHarf, kelime);
+      DatabaseHelper.instance.checkWordWithToleranceAndTdk(catId, secilenHarf, kelime);
     }
   }
 
-// ==========================================
-// BÖLÜM 16: Mevcut Kelimeyi Kaydetme
-// ==========================================
+  // ==========================================
+  // BÖLÜM 16: Mevcut Kelimeyi Kaydetme
+  // ==========================================
   void _mevcutKelimeyiKaydet() {
-    if (!_girdiGecerliMi()) {
-      _inputController.clear();
-    }
+    if (!_girdiGecerliMi()) _inputController.clear();
 
     String girilenKelime = _inputController.text.trim();
     int currentCatId = kategoriler[aktifKategoriIndex]["id"];
@@ -983,9 +950,9 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
   }
 
-// ==========================================
-// BÖLÜM 17: Kategori Değiştirme
-// ==========================================
+  // ==========================================
+  // BÖLÜM 17: Kategori Değiştirme
+  // ==========================================
   void kategoriDegistir(int yeniIndex) {
     if (!_girdiGecerliMi()) return;
     _mevcutKelimeyiKaydet();
@@ -997,10 +964,10 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     });
   }
 
-/// ==========================================
-// ==========================================
-// BÖLÜM 18: Süre Bittiğinde Cevapları Gönder
-// ==========================================
+  // ==========================================
+  // ==========================================
+  // BÖLÜM 18: Süre Bittiğinde Cevapları Gönder
+  // ==========================================
   Future<void> _cevaplariFirebaseeGonderAndDegerlendir() async {
     final l10n = AppLocalizations.of(context)!;
     _timer?.cancel();
@@ -1015,116 +982,56 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
           stringMap[id.toString()] = cevap.trim().isEmpty ? "-" : cevap;
         }
 
-        await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-          'cevaplar.$ben': stringMap,
-        });
+        await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'cevaplar.$ben': stringMap});
 
-        // 🚀 KRİTİK MÜDAHALE: Eğer masada yalnız kaldıysam, hemen işlemi iptal et ve hükmeni bekle!
-        if (masadakiHerkes.length <= 1) {
-          return;
-        }
+        if (masadakiHerkes.length <= 1) return;
 
         var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
         var anlikCevaplar = doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
+        String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
 
-        if (anlikCevaplar.length < masadakiHerkes.length) {
-          if (mounted) setState(() { rakipBekleniyor = true; });
+        if (mounted) setState(() { rakipBekleniyor = true; });
 
-          String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-          if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
-            int beklemeSuresi = _kalanSure > 0 ? (_kalanSure + 7) : 7;
-            Future.delayed(Duration(seconds: beklemeSuresi), () async {
+        if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
+          // 👑 KURUCU MANTIĞI
+          if (anlikCevaplar.length < masadakiHerkes.length) {
+            Future.delayed(const Duration(seconds: 20), () async {
               if (mounted && rakipBekleniyor && !turBittiMi) {
-                try {
-                  var guncelDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-                  var guncelCevaplar = guncelDoc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
-
-                  bool eksikVarMi = false;
-                  Map<String, dynamic> tamamlanmisCevaplar = Map.from(guncelCevaplar);
-                  for (var p in masadakiHerkes) {
-                    if (!tamamlanmisCevaplar.containsKey(p)) {
-                      eksikVarMi = true;
-                      Map<String, String> bosCevap = {};
-                      for (var kat in kategoriler) bosCevap[kat["id"].toString()] = "-";
-                      tamamlanmisCevaplar[p] = bosCevap;
-                    }
-                  }
-                  if (eksikVarMi) {
-                    await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'cevaplar': tamamlanmisCevaplar});
-                  }
-                } catch (e) {
-                  if (mounted) setState(() => rakipBekleniyor = false);
-                }
+                setState(() { rakipBekleniyor = false; });
+                await _hostPuanlariHesaplaVeKaydet();
               }
             });
+          } else {
+            await _hostPuanlariHesaplaVeKaydet();
           }
+        } else {
+          // 🚀 MİSAFİR (NÖBETÇİ KAPTAN) MANTIĞI - ARTIK HER DURUMDA ÇALIŞIYOR!
+          int benimSiraNumaram = masadakiHerkes.indexOf(ben);
+          if (benimSiraNumaram == -1) benimSiraNumaram = 1;
 
-          Future.delayed(const Duration(seconds: 15), () async {
+          // Kurucu eksik kağıtları bekliyorsa misafir 25 sn bekler (Host'a şans tanır).
+          // Herkes kağıt verdiyse misafir sadece 15 sn bekler.
+          int apiBeklemeSuresi = (anlikCevaplar.length < masadakiHerkes.length)
+              ? 25 + (benimSiraNumaram * 3)
+              : 15 + (benimSiraNumaram * 3);
+
+          Future.delayed(Duration(seconds: apiBeklemeSuresi), () async {
             if (mounted && rakipBekleniyor && !turBittiMi) {
               try {
-                var zDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-                var zCevaplar = zDoc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
+                var kontrolDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+                var puanlarMap = kontrolDoc.data()?['puanlar'] as Map<String, dynamic>? ?? {};
 
-                bool zEksik = false;
-                Map<String, dynamic> zTamam = Map.from(zCevaplar);
-                for (var p in masadakiHerkes) {
-                  if (!zTamam.containsKey(p)) {
-                    zEksik = true;
-                    Map<String, String> bos = {};
-                    for (var kat in kategoriler) bos[kat["id"].toString()] = "-";
-                    zTamam[p] = bos;
-                  }
-                }
-                if (zEksik) await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'cevaplar': zTamam});
-
-                if (mounted && rakipBekleniyor) {
+                if (puanlarMap.isEmpty) {
                   setState(() { rakipBekleniyor = false; });
                   await _hostPuanlariHesaplaVeKaydet();
+                } else {
+                  setState(() { rakipBekleniyor = false; });
                 }
-              } catch(e) {
+              } catch (e) {
                 if (mounted) setState(() { rakipBekleniyor = false; });
               }
             }
           });
-          return;
-        } else {
-          String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-          if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
-            await _hostPuanlariHesaplaVeKaydet();
-          } else {
-            // --- KATILIMCI (GUEST) MANTIĞI ---
-            if (mounted) setState(() { rakipBekleniyor = true; });
-
-            // 🚀 YENİ: NÖBETÇİ KAPTAN MANTIĞI
-            // Herkes sırasına göre farklı süre bekler (Kurucu koptuysa yığılmayı önleriz)
-            int benimSiraNumaram = masadakiHerkes.indexOf(ben);
-            if (benimSiraNumaram == -1) benimSiraNumaram = 1;
-
-            // 1. sıradaki 15 sn, 2. sıradaki 18 sn, 3. sıradaki 21 sn...
-            int apiBeklemeSuresi = 15 + (benimSiraNumaram * 3);
-
-            Future.delayed(Duration(seconds: apiBeklemeSuresi), () async {
-              if (mounted && rakipBekleniyor && !turBittiMi) {
-                try {
-                  // SÜRE BİTTİ AMA KONTROL EDELİM: Benden önceki nöbetçi hesaplamış mı?
-                  var kontrolDoc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-                  var puanlarMap = kontrolDoc.data()?['puanlar'] as Map<String, dynamic>? ?? {};
-
-                  if (puanlarMap.isEmpty) {
-                    // Kimse hesaplamamış! Demek ki benden öncekiler de koptu.
-                    // Görevi ben devralıyorum ve Gemini'ye yolluyorum.
-                    setState(() { rakipBekleniyor = false; });
-                    await _hostPuanlariHesaplaVeKaydet();
-                  } else {
-                    // Puanlar zaten hesaplanmış! Gemini API kotamı boşuna harcamıyorum.
-                    setState(() { rakipBekleniyor = false; });
-                  }
-                } catch (e) {
-                  if (mounted) setState(() { rakipBekleniyor = false; });
-                }
-              }
-            });
-          }
         }
       } catch (e) {
         if (mounted) {
@@ -1133,6 +1040,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         }
       }
     } else {
+      // BOT OYUNU MANTIĞI...
       int oyuncuDoluKelime = 0;
       tumCevaplar[ben]?.forEach((key, value) { if (value != "-") oyuncuDoluKelime++; });
       final random = Random();
@@ -1161,14 +1069,11 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       await topluDegerlendir();
     }
   }
-// ---------------- BÖLÜM 18 SONU ----------------
-// BÖLÜM 19: Kurucunun Puanları İşlemesi
-// ==========================================
+  // ==========================================
+  // BÖLÜM 19: Kurucunun Puanları İşlemesi
+  // ==========================================
   Future<void> _hostPuanlariHesaplaVeKaydet() async {
-    var doc = await FirebaseFirestore.instance
-        .collection('odalar')
-        .doc(widget.odaKodu)
-        .get();
+    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
     var anlikCevaplar = doc.data()?['cevaplar'] as Map<String, dynamic>? ?? {};
 
     List<String> bosKagitVerenler = [];
@@ -1177,16 +1082,13 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       String kName = kullanici.toString().trim();
       if (masadakiHerkes.contains(kName)) {
         Map<dynamic, dynamic> rawCevap = cevaplar as Map<dynamic, dynamic>;
-
         bool hepsiBos = true;
         rawCevap.forEach((k, v) {
           if (v.toString().trim() != "-") hepsiBos = false;
-
           if (trToLowerCase(kName) != trToLowerCase(ben)) {
             tumCevaplar.putIfAbsent(kName, () => {})[int.parse(k.toString())] = v.toString();
           }
         });
-
         if (hepsiBos) bosKagitVerenler.add(kName);
       }
     });
@@ -1206,17 +1108,12 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       tumPuanlarFirebase[p] = pPuan;
     }
 
-    await FirebaseFirestore.instance
-        .collection('odalar')
-        .doc(widget.odaKodu)
-        .update({
-      'puanlar': tumPuanlarFirebase,
-    });
+    await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'puanlar': tumPuanlarFirebase});
   }
 
-// ==========================================
-// BÖLÜM 20: Gemini ve TDK Kullanarak Puan Hesaplama
-// ==========================================
+  // ==========================================
+  // BÖLÜM 20: Gemini ve TDK Kullanarak Puan Hesaplama
+  // ==========================================
   Future<void> topluDegerlendir() async {
     _timer?.cancel();
     if (mounted) setState(() { isLoading = true; });
@@ -1236,7 +1133,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
 
       List<int> sonuclar = await DatabaseHelper.instance
           .topluDegerlendirmeMotoru(sorgular, secilenHarf)
-          .timeout(const Duration(seconds: 15), onTimeout: () {
+          .timeout(const Duration(seconds: 40), onTimeout: () {
         return List.filled(sorgular.length, 0);
       });
 
@@ -1260,9 +1157,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         cevaplar[id]![p] = cvp;
         dogruluklar[id]![p] = sonuc;
 
-        if (sonuc > 0 && cvp.length > enUzunDogruKelime[id]!) {
-          enUzunDogruKelime[id] = cvp.length;
-        }
+        if (sonuc > 0 && cvp.length > enUzunDogruKelime[id]!) enUzunDogruKelime[id] = cvp.length;
       }
 
       for (var p in masadakiHerkes) { tumTurPuanlari[p] = 0; }
@@ -1270,9 +1165,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       for (var kat in kategoriler) {
         int id = kat["id"];
         int dogruBilenSayisi = 0;
-        for (var p in masadakiHerkes) {
-          if (dogruluklar[id]![p]! > 0) dogruBilenSayisi++;
-        }
+        for (var p in masadakiHerkes) { if (dogruluklar[id]![p]! > 0) dogruBilenSayisi++; }
 
         for (var p in masadakiHerkes) {
           int puan = 0;
@@ -1284,17 +1177,12 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
               bool pistiOlduMu = false;
               for (var diger in masadakiHerkes) {
                 if (diger != p && dogruluklar[id]![diger]! > 0) {
-                  if (trToLowerCase(cevaplar[id]![diger]!) == benimCevap) {
-                    pistiOlduMu = true;
-                    break;
-                  }
+                  if (trToLowerCase(cevaplar[id]![diger]!) == benimCevap) { pistiOlduMu = true; break; }
                 }
               }
               puan = pistiOlduMu ? 5 : 10;
             }
-            if (cevaplar[id]![p]!.length == enUzunDogruKelime[id]! && enUzunDogruKelime[id]! > 0) {
-              puan += 2;
-            }
+            if (cevaplar[id]![p]!.length == enUzunDogruKelime[id]! && enUzunDogruKelime[id]! > 0) puan += 2;
           }
           tumKategoriPuanlari.putIfAbsent(p, () => {})[id] = puan;
           tumTurPuanlari[p] = (tumTurPuanlari[p] ?? 0) + puan;
@@ -1322,25 +1210,18 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     }
   }
 
-
   // ==========================================
-// BÖLÜM 21: Sonraki Tura Yönlendirme (ZAMAN DONDURMA VE NÖBETÇİ KAPTAN ZIRHI)
-// ==========================================
+  // BÖLÜM 21: Sonraki Tura Yönlendirme
   // ==========================================
-// BÖLÜM 21: Sonraki Tura Yönlendirme (YENİ VE TEMİZ DİKTATÖR MANTIĞI)
-// ==========================================
   Future<void> _sonrakiTuraGec() async {
     if (_isTransitioning) return;
     _isTransitioning = true;
 
     final int hedeflenenTur = _guncelMevcutTur;
-
     _guvenlikTimer?.cancel();
 
     if (hedeflenenTur < widget.toplamTurSayisi) {
       if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-
-        // 🚀 Kurucu olduğumuz için hiç beklemeden direkt yeni turu yazıyoruz
         DocumentReference odaRef = FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu);
 
         final tumHarfler = _getAlfabe();
@@ -1367,9 +1248,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         } finally {
           if (mounted) setState(() => _isTransitioning = false);
         }
-
       } else {
-        // --- BOTLU OYUN MANTIĞI (DEĞİŞMEDİ) ---
         setState(() {
           for (var p in masadakiHerkes) {
             macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
@@ -1382,7 +1261,6 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
         });
       }
     } else {
-      // --- OYUN SONU PUANLAMA MANTIĞI (BURASI AYNI KALIYOR) ---
       for (var p in masadakiHerkes) {
         macSkorlari[p] = (macSkorlari[p] ?? 0) + (tumTurPuanlari[p] ?? 0);
         tumTurPuanlari[p] = 0;
@@ -1391,10 +1269,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       int benimMacSkorum = macSkorlari[ben] ?? 0;
       bool birinciMiyim = true;
       for (var p in masadakiHerkes) {
-        if (p != ben && (macSkorlari[p] ?? 0) > benimMacSkorum) {
-          birinciMiyim = false;
-          break;
-        }
+        if (p != ben && (macSkorlari[p] ?? 0) > benimMacSkorum) { birinciMiyim = false; break; }
       }
 
       int safKazanilanPuan = benimMacSkorum + (birinciMiyim ? 100 : 0);
@@ -1425,10 +1300,10 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
       }
     }
   }
-// ---------------- BÖLÜM 21 SONU ----------------
 
-// BÖLÜM 22: GÖRSEL TASARIM VE KULLANICI ARAYÜZÜ
-// ==========================================
+  // ==========================================
+  // BÖLÜM 22: GÖRSEL TASARIM VE KULLANICI ARAYÜZÜ
+  // ==========================================
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1442,14 +1317,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             children: [
               const CircularProgressIndicator(color: Colors.white, strokeWidth: 5),
               const SizedBox(height: 25),
-              Text(
-                l10n.checkingWords,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-              ),
+              Text(l10n.checkingWords, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -1467,12 +1335,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             children: [
               const CircularProgressIndicator(color: Colors.white),
               const SizedBox(height: 20),
-              Text(l10n.answersSavedWaiting,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold)),
+              Text(l10n.answersSavedWaiting, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -1483,13 +1346,10 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     if (turBittiMi) {
       bool sonTurMu = (_guncelMevcutTur >= widget.toplamTurSayisi);
       List<String> rakipler = masadakiHerkes.where((p) => p != ben).toList();
-      String seciliRakip = rakipler.isNotEmpty
-          ? rakipler[(_seciliRakipIndex - 1) % rakipler.length]
-          : l10n.noOpponent;
+      String seciliRakip = rakipler.isNotEmpty ? rakipler[(_seciliRakipIndex - 1) % rakipler.length] : l10n.noOpponent;
 
       int benimSkorum = (macSkorlari[ben] ?? 0) + (tumTurPuanlari[ben] ?? 0);
-      int rakipSkorum =
-          (macSkorlari[seciliRakip] ?? 0) + (tumTurPuanlari[seciliRakip] ?? 0);
+      int rakipSkorum = (macSkorlari[seciliRakip] ?? 0) + (tumTurPuanlari[seciliRakip] ?? 0);
 
       return Scaffold(
         backgroundColor: Colors.purple.shade900,
@@ -1498,10 +1358,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             children: [
               Container(
                 height: 75,
-                decoration: const BoxDecoration(
-                  color: Colors.purple,
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
-                ),
+                decoration: const BoxDecoration(color: Colors.purple, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)]),
                 child: Row(
                   children: [
                     Expanded(
@@ -1510,37 +1367,17 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("$benimSkorum",
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold)),
-                            Text(trToUpperCase(ben),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold)),
+                            Text("$benimSkorum", style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                            Text(trToUpperCase(ben), overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
                     ),
                     Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black26, blurRadius: 4)
-                        ],
-                      ),
+                      width: 40, height: 40,
+                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]),
                       alignment: Alignment.center,
-                      child: Text("VS",
-                          style: TextStyle(
-                              color: Colors.purple.shade800,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14)),
+                      child: Text("VS", style: TextStyle(color: Colors.purple.shade800, fontWeight: FontWeight.bold, fontSize: 14)),
                     ),
                     Expanded(
                       child: Container(
@@ -1551,21 +1388,10 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("$rakipSkorum",
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold)),
+                                Text("$rakipSkorum", style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 25),
-                                  child: Text(trToUpperCase(seciliRakip),
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                                  child: Text(trToUpperCase(seciliRakip), textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -1574,35 +1400,16 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                                 left: 0,
                                 child: IconButton(
                                   padding: EdgeInsets.zero,
-                                  icon: const Icon(Icons.arrow_back_ios_rounded,
-                                      color: Colors.white70, size: 18),
-                                  onPressed: () {
-                                    setState(() {
-                                      _seciliRakipIndex =
-                                      _seciliRakipIndex - 1 < 1
-                                          ? rakipler.length
-                                          : _seciliRakipIndex - 1;
-                                    });
-                                  },
+                                  icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white70, size: 18),
+                                  onPressed: () { setState(() { _seciliRakipIndex = _seciliRakipIndex - 1 < 1 ? rakipler.length : _seciliRakipIndex - 1; }); },
                                 ),
                               ),
                               Positioned(
                                 right: 0,
                                 child: IconButton(
                                   padding: EdgeInsets.zero,
-                                  icon: const Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      color: Colors.white70,
-                                      size: 18),
-                                  onPressed: () {
-                                    setState(() {
-                                      _seciliRakipIndex =
-                                      _seciliRakipIndex + 1 >
-                                          rakipler.length
-                                          ? 1
-                                          : _seciliRakipIndex + 1;
-                                    });
-                                  },
+                                  icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 18),
+                                  onPressed: () { setState(() { _seciliRakipIndex = _seciliRakipIndex + 1 > rakipler.length ? 1 : _seciliRakipIndex + 1; }); },
                                 ),
                               ),
                             ]
@@ -1613,15 +1420,10 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                   ],
                 ),
               ),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade800,
-                  border: const Border(
-                      bottom: BorderSide(color: Colors.white24, width: 1)),
-                ),
+                decoration: BoxDecoration(color: Colors.purple.shade800, border: const Border(bottom: BorderSide(color: Colors.white24, width: 1))),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -1630,35 +1432,19 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                     child: Row(
                       children: List.generate(_guncelMevcutTur, (index) {
                         int turNo = index + 1;
-                        int benimOturkiPuanim =
-                            gecmisTurPuanlari[turNo]?[ben] ?? 0;
-                        int rakipOturkiPuani =
-                            gecmisTurPuanlari[turNo]?[seciliRakip] ?? 0;
+                        int benimOturkiPuanim = gecmisTurPuanlari[turNo]?[ben] ?? 0;
+                        int rakipOturkiPuani = gecmisTurPuanlari[turNo]?[seciliRakip] ?? 0;
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Column(
                             children: [
-                              Text(l10n.roundNumberLabel(turNo),
-                                  style: const TextStyle(
-                                      color: Colors.white54,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold)),
+                              Text(l10n.roundNumberLabel(turNo), style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 2),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.black26,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  "$benimOturkiPuanim - $rakipOturkiPuani",
-                                  style: const TextStyle(
-                                      color: Colors.amberAccent,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8)),
+                                child: Text("$benimOturkiPuanim - $rakipOturkiPuani", style: const TextStyle(color: Colors.amberAccent, fontSize: 13, fontWeight: FontWeight.bold)),
                               ),
                             ],
                           ),
@@ -1668,84 +1454,48 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                   ),
                 ),
               ),
-
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   itemCount: kategoriler.length + 1,
                   itemBuilder: (context, index) {
                     if (index == kategoriler.length) {
-                      int benimBonus =
-                      (odadakiErkenBitirenKisi == ben) ? 10 : 0;
-                      int rakipBonus =
-                      (odadakiErkenBitirenKisi == seciliRakip) ? 10 : 0;
+                      int benimBonus = (odadakiErkenBitirenKisi == ben) ? 10 : 0;
+                      int rakipBonus = (odadakiErkenBitirenKisi == seciliRakip) ? 10 : 0;
 
-                      if (benimBonus == 0 && rakipBonus == 0)
-                        return const SizedBox.shrink();
+                      if (benimBonus == 0 && rakipBonus == 0) return const SizedBox.shrink();
 
                       return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6.0),
                           child: Row(children: [
-                            Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(l10n.timeBonus,
-                                        style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 2),
-                                    Text("+$benimBonus",
-                                        style: TextStyle(
-                                            color: benimBonus > 0
-                                                ? Colors.greenAccent
-                                                : Colors.white24,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                )),
+                            Expanded(child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(l10n.timeBonus, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 2),
+                                Text("+$benimBonus", style: TextStyle(color: benimBonus > 0 ? Colors.greenAccent : Colors.white24, fontSize: 16, fontWeight: FontWeight.bold)),
+                              ],
+                            )),
                             Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                  color: Colors.purple.shade700,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: Colors.white24, width: 1.5)),
-                              child: const Icon(Icons.timer,
-                                  color: Colors.white, size: 18),
+                              width: 38, height: 38,
+                              decoration: BoxDecoration(color: Colors.purple.shade700, shape: BoxShape.circle, border: Border.all(color: Colors.white24, width: 1.5)),
+                              child: const Icon(Icons.timer, color: Colors.white, size: 18),
                             ),
-                            Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(l10n.timeBonus,
-                                        style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 2),
-                                    Text("+$rakipBonus",
-                                        style: TextStyle(
-                                            color: rakipBonus > 0
-                                                ? Colors.greenAccent
-                                                : Colors.white24,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                )),
+                            Expanded(child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(l10n.timeBonus, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 2),
+                                Text("+$rakipBonus", style: TextStyle(color: rakipBonus > 0 ? Colors.greenAccent : Colors.white24, fontSize: 16, fontWeight: FontWeight.bold)),
+                              ],
+                            )),
                           ]));
                     }
 
                     int id = kategoriler[index]["id"];
-                    String benimKelime =
-                    trToUpperCase(tumCevaplar[ben]?[id] ?? "-");
+                    String benimKelime = trToUpperCase(tumCevaplar[ben]?[id] ?? "-");
                     int benimPuan = tumKategoriPuanlari[ben]?[id] ?? 0;
-
-                    String rakipKelime =
-                    trToUpperCase(tumCevaplar[seciliRakip]?[id] ?? "-");
+                    String rakipKelime = trToUpperCase(tumCevaplar[seciliRakip]?[id] ?? "-");
                     int rakipPuan = tumKategoriPuanlari[seciliRakip]?[id] ?? 0;
 
                     return Padding(
@@ -1757,61 +1507,26 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  benimKelime,
-                                  textAlign: TextAlign.center,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                Text(benimKelime, textAlign: TextAlign.center, softWrap: true, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 2),
-                                Text(
-                                  "+$benimPuan",
-                                  style: TextStyle(
-                                      color: benimPuan > 0
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                Text("+$benimPuan", style: TextStyle(color: benimPuan > 0 ? Colors.greenAccent : Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
                           Padding(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 4.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: BoxDecoration(
-                                    color: Colors.purple.shade700,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white24, width: 1.5),
-                                  ),
-                                  child: Icon(kategoriler[index]["icon"],
-                                      color: Colors.white, size: 18),
+                                  width: 38, height: 38,
+                                  decoration: BoxDecoration(color: Colors.purple.shade700, shape: BoxShape.circle, border: Border.all(color: Colors.white24, width: 1.5)),
+                                  child: Icon(kategoriler[index]["icon"], color: Colors.white, size: 18),
                                 ),
                                 const SizedBox(height: 2),
                                 SizedBox(
                                   width: 75,
-                                  child: Text(
-                                    trToUpperCase(getKategoriIsmi(id, l10n)),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
+                                  child: Text(trToUpperCase(getKategoriIsmi(id, l10n)), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.2)),
                                 ),
                               ],
                             ),
@@ -1820,25 +1535,9 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  rakipKelime,
-                                  textAlign: TextAlign.center,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                Text(rakipKelime, textAlign: TextAlign.center, softWrap: true, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 2),
-                                Text(
-                                  "+$rakipPuan",
-                                  style: TextStyle(
-                                      color: rakipPuan > 0
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                                Text("+$rakipPuan", style: TextStyle(color: rakipPuan > 0 ? Colors.greenAccent : Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -1848,65 +1547,31 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
                   },
                 ),
               ),
-
               Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                 child: Column(
                   children: [
-                    if (widget.odaKodu != null &&
-                        widget.odaKodu!.isNotEmpty &&
-                        !sonTurMu)
+                    if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty && !sonTurMu)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4.0),
                         child: Text(
-                          hazirOyuncuSayisi >= masadakiHerkes.length
-                              ? l10n.everyoneReady
-                              : l10n.playersReady(hazirOyuncuSayisi, masadakiHerkes.length),
-                          style: const TextStyle(
-                              color: Colors.greenAccent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold),
+                          hazirOyuncuSayisi >= masadakiHerkes.length ? l10n.everyoneReady : l10n.playersReady(hazirOyuncuSayisi, masadakiHerkes.length),
+                          style: const TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
                     SizedBox(
-                      width: double.infinity,
-                      height: 45,
+                      width: double.infinity, height: 45,
                       child: ElevatedButton.icon(
-                        onPressed: benHazirMiyim
-                            ? null
-                            : () => _hazirButonunaBasildi(),
-                        icon: Icon(
-                          benHazirMiyim
-                              ? Icons.check_circle_rounded
-                              : (sonTurMu
-                              ? Icons.emoji_events_rounded
-                              : Icons.play_arrow_rounded),
-                          color: benHazirMiyim
-                              ? Colors.green
-                              : Colors.purple.shade900,
-                          size: 22,
-                        ),
+                        onPressed: benHazirMiyim ? null : () => _hazirButonunaBasildi(),
+                        icon: Icon(benHazirMiyim ? Icons.check_circle_rounded : (sonTurMu ? Icons.emoji_events_rounded : Icons.play_arrow_rounded), color: benHazirMiyim ? Colors.green : Colors.purple.shade900, size: 22),
                         label: Text(
-                          benHazirMiyim
-                              ? l10n.waitingReady
-                              : (sonTurMu
-                              ? l10n.seeResultsWithTimer(_kalanGuvenlikSaniyesi)
-                              : l10n.readyWithTimer(_kalanGuvenlikSaniyesi)),
-                          style: TextStyle(
-                              color: benHazirMiyim
-                                  ? Colors.white70
-                                  : Colors.purple.shade900,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold),
+                          benHazirMiyim ? l10n.waitingReady : (sonTurMu ? l10n.seeResultsWithTimer(_kalanGuvenlikSaniyesi) : l10n.readyWithTimer(_kalanGuvenlikSaniyesi)),
+                          style: TextStyle(color: benHazirMiyim ? Colors.white70 : Colors.purple.shade900, fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: benHazirMiyim
-                              ? Colors.green.shade800
-                              : Colors.white,
+                          backgroundColor: benHazirMiyim ? Colors.green.shade800 : Colors.white,
                           disabledBackgroundColor: Colors.purple.shade800,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           elevation: benHazirMiyim ? 0 : 4,
                         ),
                       ),
@@ -1926,12 +1591,7 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(45.0),
-        child: AppBar(
-            title: Text(l10n.appTitle,
-                style: const TextStyle(fontSize: 18)),
-            backgroundColor: Colors.purple,
-            foregroundColor: Colors.white,
-            centerTitle: true),
+        child: AppBar(title: Text(l10n.appTitle, style: const TextStyle(fontSize: 18)), backgroundColor: Colors.purple, foregroundColor: Colors.white, centerTitle: true),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -1940,78 +1600,42 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.tourProgress(_guncelMevcutTur, widget.toplamTurSayisi),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(l10n.tourProgress(_guncelMevcutTur, widget.toplamTurSayisi), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                      color: _kalanSure <= 20
-                          ? Colors.red.shade100
-                          : Colors.purple.shade50,
-                      borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: _kalanSure <= 20 ? Colors.red.shade100 : Colors.purple.shade50, borderRadius: BorderRadius.circular(10)),
                   child: Row(children: [
-                    Icon(Icons.timer,
-                        color: _kalanSure <= 20 ? Colors.red : Colors.purple,
-                        size: 15),
+                    Icon(Icons.timer, color: _kalanSure <= 20 ? Colors.red : Colors.purple, size: 15),
                     const SizedBox(width: 4),
                     Text(l10n.secondsLeft(_kalanSure), style: const TextStyle(fontSize: 13))
                   ]),
                 ),
-                Text(l10n.currentLetterLabel(secilenHarf),
-                    style: const TextStyle(
-                        color: Colors.purple,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13)),
+                Text(l10n.currentLetterLabel(secilenHarf), style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 13)),
               ],
             ),
             const SizedBox(height: 15),
-            CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.purple.shade100,
-                child: Text(secilenHarf,
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple))),
+            CircleAvatar(radius: 20, backgroundColor: Colors.purple.shade100, child: Text(secilenHarf, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.purple))),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: List.generate(kategoriler.length, (index) {
-                  String cevap =
-                      tumCevaplar[ben]?[kategoriler[index]["id"]] ?? "";
-                  bool dolumu =
-                  (cevap.isNotEmpty && cevap != "-" && cevap.length >= 2);
+                  String cevap = tumCevaplar[ben]?[kategoriler[index]["id"]] ?? "";
+                  bool dolumu = (cevap.isNotEmpty && cevap != "-" && cevap.length >= 2);
                   return InkWell(
-                    onTap: () {
-                      if (_kalanSure > 0) kategoriDegistir(index);
-                    },
+                    onTap: () { if (_kalanSure > 0) kategoriDegistir(index); },
                     borderRadius: BorderRadius.circular(10),
                     child: Padding(
                         padding: const EdgeInsets.all(6.0),
-                        child: Icon(kategoriler[index]["icon"],
-                            size: 24,
-                            color: index == aktifKategoriIndex
-                                ? Colors.purple
-                                : (dolumu
-                                ? Colors.blue
-                                : Colors.grey.shade400))),
+                        child: Icon(kategoriler[index]["icon"], size: 24, color: index == aktifKategoriIndex ? Colors.purple : (dolumu ? Colors.blue : Colors.grey.shade400))),
                   );
                 }),
               ),
             ),
             const SizedBox(height: 16),
-            Text(l10n.categoryLabel(getKategoriIsmi(mevcutKategori["id"], l10n)),
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple)),
+            Text(l10n.categoryLabel(getKategoriIsmi(mevcutKategori["id"], l10n)), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple)),
             const SizedBox(height: 10),
             TextField(
               controller: _inputController,
@@ -2021,45 +1645,22 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
               keyboardType: TextInputType.text,
               enabled: _kalanSure > 0,
               onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                  labelText: l10n.typeYourWordHint,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  prefixIcon:
-                  Icon(mevcutKategori["icon"], color: Colors.purple)),
+              decoration: InputDecoration(labelText: l10n.typeYourWordHint, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), prefixIcon: Icon(mevcutKategori["icon"], color: Colors.purple)),
             ),
             const SizedBox(height: 16),
             if (erkenBitirmeBonusuKazandiMi)
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                    color: Colors.purple.shade900,
-                    borderRadius: BorderRadius.circular(20)),
+                width: double.infinity, padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: Colors.purple.shade900, borderRadius: BorderRadius.circular(20)),
                 child: Column(
                   children: [
-                    Text(l10n.twentySecondsRule,
-                        style: const TextStyle(
-                            color: Colors.amber,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)),
+                    Text(l10n.twentySecondsRule, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 12),
                     Stack(
                       alignment: Alignment.center,
                       children: [
-                        SizedBox(
-                            width: 75,
-                            height: 75,
-                            child: CircularProgressIndicator(
-                                value: _kalanSure / 20,
-                                strokeWidth: 6,
-                                color: Colors.amber,
-                                backgroundColor: Colors.purple.shade700)),
-                        Text("$_kalanSure",
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold)),
+                        SizedBox(width: 75, height: 75, child: CircularProgressIndicator(value: _kalanSure / 20, strokeWidth: 6, color: Colors.amber, backgroundColor: Colors.purple.shade700)),
+                        Text("$_kalanSure", style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ],
@@ -2069,124 +1670,68 @@ child: Text(l10n.goToResultsButton, style: const TextStyle(fontSize: 16, fontWei
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: SizedBox(
-                  width: double.infinity,
-                  height: 48,
+                  width: double.infinity, height: 48,
                   child: ElevatedButton.icon(
-                    onPressed:
-                    turuBitirBtnAktif ? () => turuErkenBitirIstegi() : null,
+                    onPressed: turuBitirBtnAktif ? () => turuErkenBitirIstegi() : null,
                     icon: const Icon(Icons.flag_rounded, color: Colors.white),
                     label: Text(
-                      erkenBitirmeBonusuKazandiMi
-                          ? l10n.waitingForTimeEnd
-                          : (_kalanSure < 20
-                          ? l10n.last20SecondsNoBonus
-                          : (turuBitirBtnAktif
-                          ? l10n.finishTurnWithBonus
-                          : l10n.finishTurnMinWords)),
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold),
+                      erkenBitirmeBonusuKazandiMi ? l10n.waitingForTimeEnd : (_kalanSure < 20 ? l10n.last20SecondsNoBonus : (turuBitirBtnAktif ? l10n.finishTurnWithBonus : l10n.finishTurnMinWords)),
+                      style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold),
                     ),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: turuBitirBtnAktif
-                            ? Colors.redAccent.shade200
-                            : Colors.grey.shade400,
-                        disabledBackgroundColor: Colors.grey.shade400,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12))),
+                    style: ElevatedButton.styleFrom(backgroundColor: turuBitirBtnAktif ? Colors.redAccent.shade200 : Colors.grey.shade400, disabledBackgroundColor: Colors.grey.shade400, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                   ),
                 ),
               ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(
-                    child: ElevatedButton(
-                        onPressed: (aktifKategoriIndex > 0 && _kalanSure > 0)
-                            ? () => kategoriDegistir(aktifKategoriIndex - 1)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade300,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12))),
-                        child: Text(l10n.previousButton,
-                            style: const TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold)))),
+                Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex > 0 && _kalanSure > 0) ? () => kategoriDegistir(aktifKategoriIndex - 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade300, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: Text(l10n.previousButton, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)))),
                 const SizedBox(width: 10),
-                Expanded(
-                    child: ElevatedButton(
-                        onPressed:
-                        (aktifKategoriIndex < kategoriler.length - 1 &&
-                            _kalanSure > 0)
-                            ? () => kategoriDegistir(aktifKategoriIndex + 1)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12))),
-                        child: Text(l10n.nextButton,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold)))),
+                Expanded(child: ElevatedButton(onPressed: (aktifKategoriIndex < kategoriler.length - 1 && _kalanSure > 0) ? () => kategoriDegistir(aktifKategoriIndex + 1) : null, style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: Text(l10n.nextButton, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
               ],
             ),
           ],
         ),
       ),
-      bottomNavigationBar: erkenBitirmeBonusuKazandiMi
-          ? const SizedBox.shrink()
-          : const SafeArea(child: BottomBannerAdWidget()),
+      bottomNavigationBar: erkenBitirmeBonusuKazandiMi ? const SizedBox.shrink() : const SafeArea(child: BottomBannerAdWidget()),
     );
   }
 
-// ==========================================
-// BÖLÜM 23: Firebase Presence API (Gerçek Zamanlı Kopma Tespiti)
-// ==========================================
-// ==========================================
-// BÖLÜM 23: Firebase Presence API (Gerçek Zamanlı Kopma Tespiti)
-// ==========================================
-Future<void> _presenceSisteminiBaslat() async {
-if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+  // ==========================================
+  // BÖLÜM 23: Firebase Presence API
+  // ==========================================
+  Future<void> _presenceSisteminiBaslat() async {
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-_benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
-await _benimPresenceRef!.onDisconnect().remove();
-await _benimPresenceRef!.set(true);
+    _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
+    await _benimPresenceRef!.onDisconnect().remove();
+    await _benimPresenceRef!.set(true);
 
-// 🚀 Web gecikmelerini tolere etmek için süreyi 2'den 4 saniyeye çıkardık
-Future.delayed(const Duration(seconds: 4), () {
-if (!mounted) return;
-_presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
-if (!mounted) return;
-var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+    Future.delayed(const Duration(seconds: 4), () {
+      if (!mounted) return;
+      _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
+        if (!mounted) return;
+        var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
 
-List<String> rtdbDusenler = [];
-for (String oyuncu in masadakiHerkes) {
-if (oyuncu != ben && !aktifler.containsKey(oyuncu)) {
-rtdbDusenler.add(oyuncu);
-}
-}
+        List<String> rtdbDusenler = [];
+        for (String oyuncu in masadakiHerkes) {
+          if (oyuncu != ben && !aktifler.containsKey(oyuncu)) rtdbDusenler.add(oyuncu);
+        }
 
-if (rtdbDusenler.isNotEmpty) {
-try {
-var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+        if (rtdbDusenler.isNotEmpty) {
+          try {
+            var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+            String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
 
-// 🚀 YENİ KONTROL: Kopan kişi kurucunun ta kendisi mi?
-bool kurucuDustuMu = rtdbDusenler.any((k) => trToLowerCase(k.trim()) == trToLowerCase(kurucu));
-
-// Eğer ben kurucuysam HERKESİ silebilirim.
-// Eğer misafirsem ve KURUCU düştüyse, onu silip kaptanlığı ele alabilirim!
-if (trToLowerCase(kurucu) == trToLowerCase(ben) || kurucuDustuMu) {
-await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)
-});
-}
-} catch (e) {
-print("Presence Firestore güncelleme hatası: $e");
-}
-}
-});
-});
+            bool kurucuDustuMu = rtdbDusenler.any((k) => trToLowerCase(k.trim()) == trToLowerCase(kurucu));
+            if (trToLowerCase(kurucu) == trToLowerCase(ben) || kurucuDustuMu) {
+              await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({'aktifOyuncular': FieldValue.arrayRemove(rtdbDusenler)});
+            }
+          } catch (e) {
+            print("Presence Firestore güncelleme hatası: $e");
+          }
+        }
+      });
+    });
+  }
 }
