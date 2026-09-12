@@ -1717,74 +1717,86 @@ void dispose() {
 
   // ==========================================
   // ==========================================
-// ==========================================
-// BÖLÜM 23: Firebase Presence API (30 SN + KALP ATIŞI)
-// ==========================================
-Future<void> _presenceSisteminiBaslat() async {
-  if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
+  // BÖLÜM 23: Firebase Presence API (KUSURSUZ ZIRH)
+  // ==========================================
+  Future<void> _presenceSisteminiBaslat() async {
+    if (widget.odaKodu == null || widget.odaKodu!.isEmpty) return;
 
-  _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$ben');
-  await _benimPresenceRef!.onDisconnect().remove();
-  await _benimPresenceRef!.set(true);
+    // 🚀 DÜZELTME 1: İsimlerdeki RTDB yasaklı karakterlerini temizle (. # $ [ ])
+    String safeBen = ben.replaceAll(RegExp(r'[.#$\[\]]'), '_');
 
-  // 🚀 YENİ: KALP ATIŞI SİSTEMİ (Heartbeat)
-  // Web bağlantısı anlık kopup geri gelirse kendini RTDB'den siliyor.
-  // Bunun önüne geçmek için her 10 saniyede bir ismimizi zorla geri yazdırıyoruz!
-  _heartbeatTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-    if (mounted) _benimPresenceRef!.set(true);
-  });
+    _benimPresenceRef = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}/$safeBen');
 
-  Map<String, Timer> toleransZamanlayicilari = {};
+    try {
+      await _benimPresenceRef!.onDisconnect().remove();
+      await _benimPresenceRef!.set(true);
+    } catch (e) {
+      print("RTDB İlk Yazma Hatası: $e"); // Web hata verirse sessizce yutsun
+    }
 
-  // 🚀 DEVASA DÜZELTME: İlk açılış telaşında kimseyi atmamak için 30 saniye bekle
-  Future.delayed(const Duration(seconds: 30), () {
-    if (!mounted) return;
-
-    _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
-      if (!mounted) return;
-      var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
-
-      for (String oyuncu in masadakiHerkes) {
-        if (oyuncu == ben) continue;
-
-        // 🚀 DÜZELTME: İsimleri büyük/küçük harf duyarsız arıyoruz (iOS ve Web uyuşmazlığına karşı)
-        bool isOnline = false;
-        aktifler.forEach((key, value) {
-          if (trToLowerCase(key.toString().trim()) == trToLowerCase(oyuncu.trim())) {
-            isOnline = true;
-          }
-        });
-
-        if (!isOnline) {
-          // Sinyal kesildi. 20 saniyelik tolerans başlasın (15 idi, web için 20 yaptık)
-          if (!toleransZamanlayicilari.containsKey(oyuncu)) {
-            toleransZamanlayicilari[oyuncu] = Timer(const Duration(seconds: 20), () async {
-              try {
-                var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
-                if (!doc.exists) return;
-
-                String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
-                bool dusenKisiKurucuMu = (trToLowerCase(oyuncu) == trToLowerCase(kurucu));
-
-                if (trToLowerCase(kurucu) == trToLowerCase(ben) || dusenKisiKurucuMu) {
-                  await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-                    'aktifOyuncular': FieldValue.arrayRemove([oyuncu])
-                  });
-                }
-              } catch (e) {
-                print("Presence Firestore güncelleme hatası: $e");
-              }
-            });
-          }
-        } else {
-          // 🟢 Sinyal geri geldi veya kalp atışı duyuldu!
-          if (toleransZamanlayicilari.containsKey(oyuncu)) {
-            toleransZamanlayicilari[oyuncu]?.cancel();
-            toleransZamanlayicilari.remove(oyuncu);
-          }
-        }
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        try { _benimPresenceRef!.set(true); } catch(e){}
       }
     });
-  });
-}
+
+    Map<String, Timer> toleransZamanlayicilari = {};
+    Map<String, bool> rtdbGorulduMu = {}; // 🚀 DÜZELTME 2: GÖRÜLME GEÇMİŞİ HAFIZASI
+
+    Future.delayed(const Duration(seconds: 30), () {
+      if (!mounted) return;
+
+      _presenceSubscription = FirebaseDatabase.instance.ref('oda_presence/${widget.odaKodu}').onValue.listen((event) async {
+        if (!mounted) return;
+        var aktifler = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+
+        for (String oyuncu in masadakiHerkes) {
+          if (oyuncu == ben) continue;
+
+          String safeOyuncu = oyuncu.replaceAll(RegExp(r'[.#$\[\]]'), '_');
+
+          bool isOnline = false;
+          aktifler.forEach((key, value) {
+            if (trToLowerCase(key.toString().trim()) == trToLowerCase(safeOyuncu.trim())) {
+              isOnline = true;
+            }
+          });
+
+          if (isOnline) {
+            // 🟢 Oyuncu RTDB'de var! Sağlıklı çalışıyor demektir. Hafızaya al:
+            rtdbGorulduMu[oyuncu] = true;
+
+            if (toleransZamanlayicilari.containsKey(oyuncu)) {
+              toleransZamanlayicilari[oyuncu]?.cancel();
+              toleransZamanlayicilari.remove(oyuncu);
+            }
+          } else {
+            // 🔴 Sinyal yok!
+            // 🚀 HAYAT KURTARAN KONTROL: Eğer bu adamı daha önce hiç görmediysek, ATMA!
+            if (rtdbGorulduMu[oyuncu] == true) {
+              if (!toleransZamanlayicilari.containsKey(oyuncu)) {
+                toleransZamanlayicilari[oyuncu] = Timer(const Duration(seconds: 20), () async {
+                  try {
+                    var doc = await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).get();
+                    if (!doc.exists) return;
+
+                    String kurucu = doc.data()?['kurucu']?.toString().trim() ?? "";
+                    bool dusenKisiKurucuMu = (trToLowerCase(oyuncu) == trToLowerCase(kurucu));
+
+                    if (trToLowerCase(kurucu) == trToLowerCase(ben) || dusenKisiKurucuMu) {
+                      await FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
+                        'aktifOyuncular': FieldValue.arrayRemove([oyuncu])
+                      });
+                    }
+                  } catch (e) {
+                    print("Presence Firestore güncelleme hatası: $e");
+                  }
+                });
+              }
+            }
+          }
+        }
+      });
+    });
+  }
 }
