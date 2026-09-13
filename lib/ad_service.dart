@@ -43,14 +43,14 @@ class AdService {
   String get bannerAdUnitId {
     if (kIsWeb) return '';
     if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/6431616325';
-    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/2934735716';
+    if (Platform.isIOS) return 'ca-app-pub-1815802672526148/6619379627';
     return '';
   }
 
   String get mediumRectangleAdUnitId {
     if (kIsWeb) return '';
     if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/4022103076';
-    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/2934735716';
+    if (Platform.isIOS) return 'ca-app-pub-1815802672526148/1842916854';
     return '';
   }
 
@@ -59,7 +59,7 @@ class AdService {
     if (Platform.isAndroid) return 'ca-app-pub-1815802672526148/2648283988';
 
     // 🟢 2. DEĞİŞİKLİK BURADA: iOS Geçiş (Interstitial) Test ID'si düzeltildi
-    if (Platform.isIOS) return 'ca-app-pub-3940256099942544/4411468910';
+    if (Platform.isIOS) return 'ca-app-pub-1815802672526148/4852223570';
     return '';
   }
 
