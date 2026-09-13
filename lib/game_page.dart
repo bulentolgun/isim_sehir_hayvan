@@ -315,25 +315,23 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
 
 
 // 🚀 EKLENEN 2. ADIM: SAYFA KAPANDIĞINDA SAYAÇLARI TEMİZLEME
-@override
-void dispose() {
-  WidgetsBinding.instance.removeObserver(this);
-  _timer?.cancel();
-  _guvenlikTimer?.cancel();
-  _odaSubscription?.cancel();
-  _kopyaTimer?.cancel();
-  _heartbeatTimer?.cancel(); // Kalp atışını durdur
-  _presenceSubscription?.cancel();
-  _benimPresenceRef?.remove();
-  _inputController.dispose();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    _guvenlikTimer?.cancel();
+    _odaSubscription?.cancel();
+    _kopyaTimer?.cancel();
+    _heartbeatTimer?.cancel();
+    _presenceSubscription?.cancel();
+    _benimPresenceRef?.remove();
+    _inputController.dispose();
 
-  if (widget.odaKodu != null && widget.odaKodu!.isNotEmpty) {
-    FirebaseFirestore.instance.collection('odalar').doc(widget.odaKodu).update({
-      'aktifOyuncular': FieldValue.arrayRemove([ben])
-    }).catchError((e) => print("Çıkış bildirimi gönderilemedi: $e"));
+    // 🚀 DÜZELTME: Butona basıp Sonuç Sayfasına (ResultPage) geçerken
+    // kendi kendini oyundan atma mantığı TAMAMEN SİLİNDİ!
+
+    super.dispose();
   }
-  super.dispose();
-}
 
 
 
@@ -400,8 +398,13 @@ void dispose() {
           if (!masadakiHerkes.contains(dusenKisi)) continue;
 
           if (trToLowerCase(dusenKisi.trim()) == trToLowerCase(ben.trim())) {
-            _oyundanElendimIsleminiBaslat();
-            return;
+            // 🚀 DÜZELTME: Eğer son turdaysak ve puanlar ekrandaysa, beni haksız yere elendi diyerek atma!
+            if (_guncelMevcutTur >= widget.toplamTurSayisi && turBittiMi) {
+              continue; // 🚀 Atılmayı görmezden gel, döngüyü atla, sonuçları göstermeye devam et!
+            } else {
+              _oyundanElendimIsleminiBaslat();
+              return;
+            }
           }
 
           setState(() => masadakiHerkes.remove(dusenKisi));
@@ -497,8 +500,6 @@ void dispose() {
       }
 
       // 🚀 MİSAFİRLERİ KİLİTLEYEN EGO SAVAŞI HATASI BURADA ÇÖZÜLDÜ!
-      // Eski Kod: if (puanlarMap.isNotEmpty && trToLowerCase(kurucu) != trToLowerCase(ben))
-      // Yeni Kod: Artık kim hesaplamışsa hesaplasın, eğer ben sonuç ekranına geçmediysem direkt geçiyorum!
       if (puanlarMap.isNotEmpty && !turBittiMi) {
         puanlarMap.forEach((kullanici, pMap) {
           String kName = kullanici.toString().trim();
@@ -558,7 +559,6 @@ void dispose() {
       }
     });
   }
-  // ==========================================
   // BÖLÜM 5.5: Hükmen Galibiyet Operasyonu
   // ==========================================
   Future<void> _hukmenGalibiyetIsleminiBaslat() async {
@@ -1020,7 +1020,7 @@ void dispose() {
         if (trToLowerCase(kurucu) == trToLowerCase(ben)) {
           // 👑 KURUCU MANTIĞI
           if (anlikCevaplar.length < masadakiHerkes.length) {
-            Future.delayed(const Duration(seconds: 20), () async {
+            Future.delayed(const Duration(seconds: 45), () async {
               if (mounted && rakipBekleniyor && !turBittiMi) {
                 setState(() { rakipBekleniyor = false; });
                 await _hostPuanlariHesaplaVeKaydet();
