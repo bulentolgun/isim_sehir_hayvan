@@ -44,6 +44,26 @@ class _LoginPageState extends State<LoginPage> {
   bool hasSavedUser = false;
 
   bool _isLoading = false;
+  bool _kullanimSartlariKabulEdildi = false; // 🚀 YENİ EKLENDİ: Apple EULA Onayı
+
+  final Map<String, Map<String, String>> _eulaCeviri = {
+    'tr': {
+      'text': 'Kullanıcı Sözleşmesini okudum. Uygulama içinde uygunsuz, küfürlü veya rahatsız edici içeriklere kesinlikle tolerans gösterilmeyeceğini kabul ediyorum.',
+      'error': 'Oyuna girmek için Kullanıcı Sözleşmesini kabul etmelisiniz.'
+    },
+    'en': {
+      'text': 'I have read the User Agreement. I accept that there is strictly zero tolerance for objectionable, abusive, or offensive content.',
+      'error': 'You must accept the User Agreement to enter the game.'
+    },
+    'de': {
+      'text': 'Ich habe die Nutzungsbedingungen gelesen. Ich akzeptiere, dass es null Toleranz für anstößige oder beleidigende Inhalte gibt.',
+      'error': 'Sie müssen die Nutzungsbedingungen akzeptieren, um zu spielen.'
+    },
+    'es': {
+      'text': 'He leído el Acuerdo de Usuario. Acepto que hay tolerancia cero para contenido objetable, abusivo u ofensivo.',
+      'error': 'Debes aceptar el Acuerdo de Usuario para entrar al juego.'
+    }
+  };
 
   final List<String> yuzler = ["😀", "😎", "🦊", "🐱", "🦁", "🐻"];
   final List<String> aksesuarlar = ["👑", "🕶️", "🎧", "🎩", "🎀", "⭐"];
@@ -292,6 +312,10 @@ class _LoginPageState extends State<LoginPage> {
 // ==========================================
   @override
   Widget build(BuildContext context) {
+    // 🚀 DİL ALGILAYICI BURAYA EKLENDİ
+    String dil = Localizations.localeOf(context).languageCode;
+    var eulaMetinleri = _eulaCeviri[dil] ?? _eulaCeviri['en']!;
+
     final Color activeColor = renkler[(savedRenkIndex ?? 0).clamp(0, renkler.length - 1)];
     final String mevcutOyuncu = savedOyuncuAdi ??
         (_nameController.text.trim().isEmpty ? AppLocalizations.of(context)!.defaultPlayerName : _nameController.text.trim());
@@ -621,10 +645,58 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 35),
 
+                // 🚀 YENİ EKLENEN EULA (KULLANIM ŞARTLARI) ONAY KUTUSU (Bağımsız Widget)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: Checkbox(
+                        value: _kullanimSartlariKabulEdildi,
+                        activeColor: Colors.indigo,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _kullanimSartlariKabulEdildi = value ?? false;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _kullanimSartlariKabulEdildi = !_kullanimSartlariKabulEdildi;
+                          });
+                        },
+                        child: Text(
+                          eulaMetinleri['text']!,
+                          style: const TextStyle(fontSize: 12, color: Colors.black87),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // OYUNA BAŞLA / GİRİŞ YAP BUTONU
                 ElevatedButton(
                   onPressed: _isLoading
                       ? null
                       : () async {
+                    // 🚀 YENİ EKLENEN EULA KONTROLÜ
+                    if (!_kullanimSartlariKabulEdildi) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(eulaMetinleri['error']!),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+                    // 🚀 KONTROL BİTİŞİ
+
                     final name = _nameController.text.trim();
 
                     if (!_isimUygunMu(name)) return;

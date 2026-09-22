@@ -60,11 +60,12 @@ Future<void> main() async {
     appleProvider: kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
 
     // 🌐 YENİ EKLENEN KISIM: WEB RECAPTCHA GÜVENLİĞİ
-    webProvider: ReCaptchaV3Provider('6Leg57AtAAAAANZYzuP-O02ti22BL9lG8ow7Drfa'),
+    webProvider: ReCaptchaEnterpriseProvider('6Leg57AtAAAAAE9ASbQffXkOM9aI0JWN96jFmp5E'),
   );
+
 // 🌟 ŞOK DALGASI: Eski bozuk jetonu çöpe at ve zorla yenisini al!
   try {
-    final appCheckToken = await FirebaseAppCheck.instance.getToken();
+    final appCheckToken = await FirebaseAppCheck.instance.getToken(true); // İçine 'true' eklerseniz eski v3 jetonunu silip yenisini almaya zorlar
     debugPrint("🛡️ App Check Jetonu başarıyla alındı: $appCheckToken");
   } catch (e) {
     debugPrint("🚨 App Check Jeton HATA: $e");

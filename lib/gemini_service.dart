@@ -7,54 +7,49 @@ import 'main.dart';
 class GeminiService {
 
   // ============================================================================
-  // 🚀 BÖLÜM 1: TOPLU KELİME KONTROL SİSTEMİ BAŞLANGICI
+  // 🚀 BÖLÜM 1: TOPLU KELİME KONTROL SİSTEMİ (V2 - OPTİMİZE EDİLMİŞ)
   // ============================================================================
 
-  // 🧠 ÇOK DİLLİ TOPLU KELİME KONTROLÜ
-  // Kullanıcının girdiği kelimeleri önce Firebase hafızasında arar,
-  // bulamazsa Cloud Functions üzerinden Gemini'ye sorar.
-  static Future<Map<int, bool>> topluKelimeKontrol(
-      Map<int, String> girilenKelimeler) async {
-    Map<int, bool> sonuclar = {};
-    Map<int, String> geminiyeSorulacaklar = {};
+  static Future<Map<String, bool>> topluKelimeKontrolV2(
+      List<Map<String, dynamic>> girilenKelimeler, String secilenHarf) async {
+    Map<String, bool> sonuclar = {};
+    List<Map<String, dynamic>> geminiyeSorulacaklar = [];
 
     String currentLang = appLocale.value.languageCode;
 
     // ---------------------------------------------------------
-    // 📌 ALT BAŞLIK 1.1: FİREBASE HAFIZA VE BOŞLUK KONTROLÜ
+    // 📌 ADIM 1: FİREBASE HAFIZA KONTROLÜ
     // ---------------------------------------------------------
-    for (var entry in girilenKelimeler.entries) {
-      int catId = entry.key;
+    for (var item in girilenKelimeler) {
+      int catId = item["kategori_id"];
+      // 🛡️ ZIRH: Boşlukları temizle ve '/' işaretini '-' yap
+      String kelime = item["kelime"].toString().trim().toLowerCase().replaceAll('/', '-');
 
-      // 🛡️ ZIRH 1.1: Boşlukları temizle ve '/' işaretini '-' yap (Firestore çökmesini önler)
-      String kelime = entry.value.trim().toLowerCase().replaceAll('/', '-');
+      // 🚀 YENİ SİSTEM: Artık anahtarımız Kategori ID'si değil, Kategori+Kelime kombinasyonu
+      String anahtar = "${catId}_$kelime";
 
       if (kelime.isEmpty) {
-        sonuclar[catId] = false;
+        sonuclar[anahtar] = false;
         continue;
       }
 
       String docId = "${currentLang}_${catId}_$kelime";
 
       try {
-        final hafizaDoc = await FirebaseFirestore.instance
-            .collection('kelime_hafizasi')
-            .doc(docId)
-            .get();
+        final hafizaDoc = await FirebaseFirestore.instance.collection('kelime_hafizasi').doc(docId).get();
 
         if (hafizaDoc.exists) {
           bool onayDurumu = hafizaDoc.data()?['onaylandiMi'] ?? false;
-          sonuclar[catId] = onayDurumu;
+          sonuclar[anahtar] = onayDurumu;
           print(onayDurumu
               ? "⚡ Hafızadan Onaylandı [$currentLang]: $kelime (Kategori:$catId)"
               : "🛑 Hafızadan Reddedildi [$currentLang]: $kelime (Kategori:$catId)");
         } else {
-          geminiyeSorulacaklar[catId] = kelime;
+          geminiyeSorulacaklar.add({"kategori_id": catId, "kelime": kelime, "anahtar": anahtar});
         }
       } catch (e) {
-        // 🛡️ ZIRH 1.2: Hafıza okuma çökse bile oyunu durdurma, kelimeyi Gemini'ye gönder
         print("🚨 Firebase hafıza okuma hatası ($kelime):$e");
-        geminiyeSorulacaklar[catId] = kelime;
+        geminiyeSorulacaklar.add({"kategori_id": catId, "kelime": kelime, "anahtar": anahtar});
       }
     }
 
@@ -63,24 +58,26 @@ class GeminiService {
     }
 
     // ---------------------------------------------------------
-    // 📌 ALT BAŞLIK 1.2: CLOUD FUNCTIONS (GEMİNİ) İLE KONTROL
+    // 📌 ADIM 2: CLOUD FUNCTIONS İLE TEK SEFERDE KONTROL
     // ---------------------------------------------------------
     try {
       String jsonSoru = "";
-      geminiyeSorulacaklar.forEach((catId, kelime) {
-        String kategoriAdi = _getKategoriAdi(catId, currentLang);
-        jsonSoru += '"$catId": { "kategori": "$kategoriAdi", "kelime": "$kelime" },\n';
-      });
+      for (var item in geminiyeSorulacaklar) {
+        String kategoriAdi = _getKategoriAdi(item["kategori_id"], currentLang);
+        // JSON'a eşsiz anahtarı ekliyoruz
+        jsonSoru += '"${item["anahtar"]}": { "kategori": "$kategoriAdi", "kelime": "${item["kelime"]}" },\n';
+      }
 
       String prompt = _getLocalizedPrompt(currentLang, jsonSoru);
 
-      // 🚀 YENİ BAĞLANTI: Doğrudan kendi sunucumuzu çağırıyoruz!
+      // 🚀 ZIRH: Prompt'un sonuna tur harfini de ekliyoruz
+      prompt += "\nÖNEMLİ KURAL: Kelimelerin '$secilenHarf' harfi ile başlayıp başlamadığını KESİNLİKLE kontrol et. Başlamıyorsa false dön.";
+
       final callable = FirebaseFunctions.instance.httpsCallable('geminiSorgusu');
       final response = await callable.call({'prompt': prompt}).timeout(const Duration(seconds: 15));
 
       String cevap = response.data['cevap']?.toString().trim() ?? "{}";
 
-      // 🛡️ ZIRH 1.3: Gemini'nin Markdown (```json) formatını temizleme
       if (cevap.startsWith("```json")) {
         cevap = cevap.replaceAll("```json", "").replaceAll("```", "").trim();
       } else if (cevap.startsWith("```")) {
@@ -93,29 +90,27 @@ class GeminiService {
       try {
         geminiKararlari = jsonDecode(cevap);
       } catch (formatHatasi) {
-        // 🛡️ ZIRH 1.4: Yapay zeka JSON formatını bozarsa tüm kelimeleri geçersiz say (Oyun çökmesin)
-        print("🚨 Sunucu bozuk JSON gönderdi: $formatHatasi \n Gelen Cevap: $cevap");
-        geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
+        print("🚨 Sunucu bozuk JSON gönderdi: $formatHatasi");
+        for (var item in geminiyeSorulacaklar) {
+          sonuclar[item["anahtar"]] = false;
+        }
         return sonuclar;
       }
 
       // ---------------------------------------------------------
-      // 📌 ALT BAŞLIK 1.3: SONUÇLARI BİRLEŞTİR VE HAFIZAYA KAYDET
+      // 📌 ADIM 3: SONUÇLARI BİRLEŞTİR VE HAFIZAYA KAYDET
       // ---------------------------------------------------------
-      for (var entry in geminiyeSorulacaklar.entries) {
-        int catId = entry.key;
-        String kucukHarfKelime = entry.value.replaceAll('/', '-');
-        String docId = "${currentLang}_${catId}_$kucukHarfKelime";
+      for (var item in geminiyeSorulacaklar) {
+        String anahtar = item["anahtar"];
+        int catId = item["kategori_id"];
+        String kelime = item["kelime"];
 
-        bool geminiOnayi = geminiKararlari[catId.toString()] ?? false;
-        sonuclar[catId] = geminiOnayi;
+        bool geminiOnayi = geminiKararlari[anahtar] ?? false;
+        sonuclar[anahtar] = geminiOnayi;
 
         try {
-          await FirebaseFirestore.instance
-              .collection('kelime_hafizasi')
-              .doc(docId)
-              .set({
-            'kelime': kucukHarfKelime,
+          await FirebaseFirestore.instance.collection('kelime_hafizasi').doc("${currentLang}_${catId}_$kelime").set({
+            'kelime': kelime,
             'kategoriId': catId,
             'dil': currentLang,
             'onaylandiMi': geminiOnayi,
@@ -123,18 +118,15 @@ class GeminiService {
             'kaynak': 'Gemini Sunucu Analizi'
           });
         } catch (e) {
-          // 🛡️ ZIRH 1.5: Kayıt başarısız olursa sadece logla, oyunu durdurma
           print("🚨 Firebase hafıza kaydetme hatası: $e");
         }
       }
     } on TimeoutException catch (_) {
-      // 🛡️ ZIRH 1.6: Zaman aşımı durumunda kelimeleri reddet
       print("⏳ Sunucu API Yanıt Vermedi (Zaman Aşımı)");
-      geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
+      for (var item in geminiyeSorulacaklar) sonuclar[item["anahtar"]] = false;
     } catch (e) {
-      // 🛡️ ZIRH 1.7: Genel API hatalarında çökme engeli
       print("🚨 Sunucu API Genel Hatası: $e");
-      geminiyeSorulacaklar.forEach((k, v) => sonuclar[k] = false);
+      for (var item in geminiyeSorulacaklar) sonuclar[item["anahtar"]] = false;
     }
 
     return sonuclar;
@@ -142,6 +134,7 @@ class GeminiService {
 
   // ============================================================================
   // 🚀 BÖLÜM 1: TOPLU KELİME KONTROL SİSTEMİ BİTİŞİ
+  // ============================================================================
   // ============================================================================
 
 

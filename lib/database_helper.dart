@@ -349,13 +349,22 @@ class DatabaseHelper {
       if (tdkOnayi) {
         sonuclar[i] = 1;
       } else if (catId != 2 && catId != 6) {
-        geminiyeGidecekler
-            .add({"index": i, "catId": catId, "kelime": smartToLowerCase(kelime)});
+
+        // 🚀 ZIRH: Anlamsız metinleri (Fuzzing) ve çok kısa kelimeleri API'ye yollamadan reddet
+        String temizlenmis = smartToLowerCase(kelime);
+        bool icindeRakamVarMi = RegExp(r'[0-9]').hasMatch(temizlenmis);
+        bool ayniHarfTekrari = RegExp(r'(.)\1{3,}').hasMatch(temizlenmis); // Örn: assssdf
+
+        // Sadece geçerli formattaki kelimeleri Gemini'ye gitmesi için listeye ekle
+        if (temizlenmis.length >= 2 && !icindeRakamVarMi && !ayniHarfTekrari) {
+          geminiyeGidecekler.add({"index": i, "catId": catId, "kelime": temizlenmis});
+        }
       }
-    }
+    } // <-- For döngüsü bitişi
 
     if (geminiyeGidecekler.isNotEmpty) {
-      List<Map<int, String>> paketler = [];
+      // 1. ADIM: Kelimeleri Map anahtarı kısıtlamasından kurtararak düz bir listeye çeviriyoruz.
+      List<Map<String, dynamic>> tekilSorgular = [];
       Set<String> eklenenAnahtarlar = {};
 
       for (var item in geminiyeGidecekler) {
@@ -363,39 +372,38 @@ class DatabaseHelper {
         String kelime = item["kelime"];
         String anahtar = "${catId}_$kelime";
 
-        if (eklenenAnahtarlar.contains(anahtar)) continue;
-
-        bool eklendi = false;
-        for (var paket in paketler) {
-          if (!paket.containsKey(catId)) {
-            paket[catId] = kelime;
-            eklendi = true;
-            break;
-          }
+        // Aynı kelimeyi farklı oyuncular yazdıysa Gemini'ye 2 kere sormaya gerek yok
+        if (!eklenenAnahtarlar.contains(anahtar)) {
+          tekilSorgular.add({
+            "kategori_id": catId,
+            "kelime": kelime
+          });
+          eklenenAnahtarlar.add(anahtar);
         }
-        if (!eklendi) {
-          paketler.add({catId: kelime});
-        }
-        eklenenAnahtarlar.add(anahtar);
       }
 
-      for (var paket in paketler) {
-        Map<int, bool> geminiCevaplari =
-        await GeminiService.topluKelimeKontrol(paket);
+      // 2. ADIM: Artık TÜM listeyi TEK BİR çağrıda gönderiyoruz!
+      if (tekilSorgular.isNotEmpty) {
 
-        for (var entry in paket.entries) {
-          int catId = entry.key;
-          String kelime = entry.value;
-          bool onaylandi = geminiCevaplari[catId] ?? false;
+        Map<String, bool> geminiCevaplari = await GeminiService.topluKelimeKontrolV2(tekilSorgular, secilenHarf);
+
+        for (var item in tekilSorgular) {
+          int catId = item["kategori_id"];
+          String kelime = item["kelime"];
+          String anahtar = "${catId}_$kelime";
+
+          bool onaylandi = geminiCevaplari[anahtar] ?? false;
 
           if (onaylandi) {
+            // Sonuç dizisinde bu kelimeyi yazan herkesi doğru kabul et
             for (var gItem in geminiyeGidecekler) {
               if (gItem["catId"] == catId && gItem["kelime"] == kelime) {
                 sonuclar[gItem["index"]] = 1;
               }
             }
 
-            // 🌍 YENİ KELİMLERİ İLGİLİ DİL KODUYLA (lang) VERİTABANINA KAYDET
+            // 🚀 MALİYET DÜŞÜRÜCÜ: Firebase "onaylanmis_yeni_kelimeler" kaydı iptal edildi.
+            // Sadece uygulamanın kendi SQLite hafızasına ekliyoruz.
             await db.insert(
                 'words',
                 {
@@ -405,20 +413,6 @@ class DatabaseHelper {
                   'lang': lang
                 },
                 conflictAlgorithm: ConflictAlgorithm.ignore);
-
-            try {
-              await FirebaseFirestore.instance
-                  .collection('onaylanmis_yeni_kelimeler')
-                  .add({
-                'kelime': kelime,
-                'kategori_id': catId,
-                'harf': smartToLowerCase(secilenHarf[0]),
-                'dil': lang, // 🌍 Firebase'de dilleri ayrıştırıyoruz
-                'eklenme_tarihi': FieldValue.serverTimestamp(),
-              });
-            } catch (e) {
-              print("Firebase kelime ekleme hatası: $e");
-            }
           }
         }
       }
