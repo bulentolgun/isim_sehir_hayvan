@@ -56,6 +56,7 @@ class DefaultFirebaseOptions {
 // ==========================================
 
   // ----------------------------------------
+  // ----------------------------------------
   // ALT BÖLÜM 3.1: Web (Tarayıcı) Ayarları
   // ----------------------------------------
   static const FirebaseOptions web = FirebaseOptions(
@@ -66,8 +67,8 @@ class DefaultFirebaseOptions {
     authDomain: 'isim-sehir-multiplayer.firebaseapp.com',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
     measurementId: 'G-BLFY2RTJV1',
+    databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
   );
-
   // ----------------------------------------
   // ALT BÖLÜM 3.2: Android Ayarları (Google Play Store)
   // ----------------------------------------
@@ -77,7 +78,7 @@ class DefaultFirebaseOptions {
     appId: '1:617858400184:android:9e75b5cc98c3fb7acd594d',
     messagingSenderId: '617858400184',
     projectId: 'isim-sehir-multiplayer',
-    databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: 'https://isim-sehir-multiplayer-default-rtdb.firebaseio.com',
     storageBucket: 'isim-sehir-multiplayer.firebasestorage.app',
   );
   // ----------------------------------------

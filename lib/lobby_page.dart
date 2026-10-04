@@ -413,13 +413,12 @@ class LobbyPage extends StatelessWidget {
                       // l10n değişkeniniz zaten bu fonksiyonun en başında tanımlanmış,
                       // o yüzden doğrudan kullanabiliyoruz.
 
-                      // Oda kodunu tutan değişkeniniz kodunuzda "kod" olarak geçiyor
+                      // GÜNCELLENMİŞ DAVET MESAJI
                       String davetMesaji = "${l10n.inviteTitle}\n\n"
                           "${l10n.inviteBody}\n"
                           "${l10n.inviteRoomCode} $kod\n\n"
                           "${l10n.inviteLink}\n"
-                          "https://isim-sehir-multiplayer.web.app/join?code=$kod";
-
+                          "https://www.isimsehiroyunu.com/join?code=$kod"; // 🚀 Domain değiştirildi
                       Share.share(davetMesaji,
                           subject: l10n.inviteTitle); // subject kısmı e-posta ile paylaşımlarda başlık olur
                     },

@@ -41,11 +41,12 @@ Future<void> main() async {
   }
 // ---------------- BÖLÜM 2 SONU ----------------
 
-// ==========================================
+
 // BÖLÜM 3: FIREBASE, CRASHLYTICS VE KİMLİK DOĞRULAMA (AUTH) (ZIRHLI VERSİYON)
-// ==========================================
+/// ==========================================
+
+
   // 🚀 YENİ YÖNTEM: HATA YUTUCU ZIRH
-  // Android zaten başlattıysa çıkan duplicate-app hatasını yutup çökmeyi engeller!
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -53,23 +54,25 @@ Future<void> main() async {
   } catch (e) {
     debugPrint("⚠️ Firebase zaten çalışıyor (Android Otomatik Başlatma). Hata yoksayıldı!");
   }
+
+  // 👇 GÜVENLİK KALKANI GEÇİCİ OLARAK DEVRE DIŞI BIRAKILDI 👇
+  /*
   await FirebaseAppCheck.instance.activate(
-    // Eğer uygulama canlıdaysa PlayIntegrity (Gerçek Kullanıcı Güvenliği) kullan,
-    // Eğer emülatördeysek Debug (Geliştirici) şifresini kullan.
     androidProvider: kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
     appleProvider: kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
-
-    // 🌐 YENİ EKLENEN KISIM: WEB RECAPTCHA GÜVENLİĞİ
-    webProvider: ReCaptchaEnterpriseProvider('6Leg57AtAAAAAE9ASbQffXkOM9aI0JWN96jFmp5E'),
+    webProvider: ReCaptchaEnterpriseProvider('6Ldav8ktAAAAAMKMWLgpPganmxfUVxmV9QUAtdf5'),
   );
 
-// 🌟 ŞOK DALGASI: Eski bozuk jetonu çöpe at ve zorla yenisini al!
   try {
-    final appCheckToken = await FirebaseAppCheck.instance.getToken(true); // İçine 'true' eklerseniz eski v3 jetonunu silip yenisini almaya zorlar
+    final appCheckToken = await FirebaseAppCheck.instance.getToken(true);
     debugPrint("🛡️ App Check Jetonu başarıyla alındı: $appCheckToken");
   } catch (e) {
     debugPrint("🚨 App Check Jeton HATA: $e");
   }
+  */
+  // 👆 YORUMA ALMA İŞLEMİ BİTTİ 👆
+
+
   // 4. FIREBASE CRASHLYTICS (Hata Yakalayıcılar)
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -152,48 +155,56 @@ class _MyAppState extends State<MyApp> {
           title: 'İsim Şehir',
           debugShowCheckedModeBanner: false,
           // ============================================================================
-          // 🚀 EKLENEN KISIM BAŞLANGICI: WEB İÇİN TELEFON ÇERÇEVESİ TASARIMI
+
+          // ============================================================================
+          // 🚀 AKILLI GÖRÜNÜM: MOBİLDE APP GİBİ, MASAÜSTÜNDE WEB GİBİ
           // ============================================================================
           builder: (context, child) {
-            // Eğer oyun WEB'de çalışıyorsa bu şık çerçeveyi çiz:
             if (kIsWeb) {
-              return Container(
-                color: Colors.blueGrey.shade50, // Masaüstündeki geniş boşluğun rengi (Hafif kırık beyaz/gri)
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 430), // İdeal telefon genişliği
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 24), // Üstten ve alttan boşluk
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(36), // Telefon gibi yuvarlak köşeler
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.indigo.withOpacity(0.15), // Temanıza uygun tatlı bir gölge
-                            blurRadius: 30,
-                            spreadRadius: 8,
-                            offset: const Offset(0, 15), // Gölgeyi hafif aşağı vererek 3D hissi katar
+              // Ekran genişliğini anlık olarak ölçüyoruz
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  // EĞER KULLANICI MASAÜSTÜ BİLGİSAYARDAN (VEYA YATAY TABLETTEN) GİRİYORSA:
+                  if (constraints.maxWidth > 600) {
+                    return Container(
+                      color: Colors.blueGrey.shade50, // Masaüstü arka plan boşluk rengi
+                      child: Center(
+                        child: ConstrainedBox(
+                          // Bilgisayar ekranında oyunu maksimum 800 piksele sabitle
+                          // Böylece butonlar devasa uzamaz, masaüstü sitesi gibi şık durur
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(15), // Hafif masaüstü gölgesi
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: child, // Oyun burada çalışır
                           ),
-                        ],
-                        border: Border.all(color: Colors.white, width: 4), // Telefon kasası hissi
+                        ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(32), // İçerik köşelerden taşmasın diye kırpıyoruz
-                        child: child,
-                      ),
-                    ),
-                  ),
-                ),
+                    );
+                  }
+
+                  // EĞER KULLANICI CEP TELEFONUNUN TARAYICISINDAN GİRİYORSA:
+                  // Hiçbir kısıtlama yapma, tam ekran %100 normal APP gibi çalışsın!
+                  return child!;
+                },
               );
             }
 
-            // Eğer oyun gerçek bir MOBİL cihazda (Android/iOS) çalışıyorsa,
-            // çerçeve ekleme ve direkt tam ekran yap:
+            // Eğer oyun mağazadan indirilen yerel uygulamadaysa zaten tam ekran APP gibi çalışır
             return child!;
           },
           // ============================================================================
-          // 🚀 EKLENEN KISIM BİTİŞİ
+          // 🚀 AKILLI GÖRÜNÜM BİTİŞİ
           // ============================================================================
+
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.indigo,

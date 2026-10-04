@@ -232,10 +232,9 @@ class _GamePageState extends State<GamePage> with WidgetsBindingObserver {
                   icon: Icon(isIOS ? Icons.apple : Icons.shop),
                   label: Text(isIOS ? "App Store'dan İndir" : "Google Play'den İndir", style: const TextStyle(fontWeight: FontWeight.bold)),
                   onPressed: () async {
-                    // 🚀 DİKKAT: BURADAKİ LİNKLERİ KENDİ UYGULAMANIZIN LİNKLERİYLE DEĞİŞTİRİN
                     final String storeUrl = isIOS
-                        ? 'https://apps.apple.com/app/idSİZİN_APP_ID'
-                        : 'https://play.google.com/store/apps/details?id=com.sizin.paket.adiniz';
+                        ? 'https://apps.apple.com/app/id6800477424' // iOS kullanıcıları doğrudan App Store'a
+                        : 'https://www.isimsehiroyunu.com'; // Android kullanıcıları şimdilik web sitesine
 
                     if (await canLaunchUrl(Uri.parse(storeUrl))) {
                       await launchUrl(Uri.parse(storeUrl), mode: LaunchMode.externalApplication);
